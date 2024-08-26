@@ -1,23 +1,12 @@
-import logo from './logo.svg';
-import './App.css';
+import logo from './images/penguin.png';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="App" style ={{display:"flex", flexDirection:"column", verticalAlign:"center", alignItems:"center"}}>
+      <img src={logo} style={{width:"20%"}}></img>
+      <br/>
+      <h3>Enter Account ID To Start!</h3>
+      <input type = "text"></input>
     </div>
   );
 }
