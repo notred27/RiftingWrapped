@@ -1,8 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import logo from './images/penguin.png';
 
 function App() {
   const [puuid, setPuuid] = useState("")
+
+  useEffect(() => {
+    if(puuid !== "") {
+      // Fetch from the flask server
+      fetch(`http://localhost:5000/user/${puuid}`)
+      .then(res => res.json())  // Wait for the promise to resolve
+      .then(data => {           // Process the data with from the JSON object
+          console.log(data)
+
+      })
+      .catch((error) => console.log(error))
+    }
+
+
+  }, [puuid])
+
 
   function get_puuid(){
     // Get user data from the input
@@ -21,8 +37,13 @@ function App() {
       formData.append('id', n[1]);
 
       // Fetch from the flask server
-      fetch("http://localhost:5000/user", {method:'POST', body:formData})
-      .then(res => res.json())  // Wait for the promise to resolve
+      fetch("http://localhost:5000/puuid", {method:'POST', body:formData})
+      .then(res => {
+        if(res["status"] == 200){ // Only continue if the status is ok
+          return res.json();
+        }
+      
+      })  // Wait for the promise to resolve
       .then(data => {           // Process the data with from the JSON object
           setPuuid(data.puuid)
 

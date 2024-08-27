@@ -7,9 +7,13 @@
 
 # testing
 /coverage
+/venv/*
+!/venv/app.py
 
 # production
 /build
+
+
 
 # misc
 .DS_Store
