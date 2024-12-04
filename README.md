@@ -1,5 +1,3 @@
 
-Bring APP.PY out of venv folder before pushing
-
-flask run
-npm start
+Start flask server with `python -m flask run`
+Start react server with `npm start`
