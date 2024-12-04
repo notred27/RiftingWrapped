@@ -9,6 +9,7 @@ import dotenv
 # .\venv\Scripts\Activate   
 # flask run --debug
 
+# REACT_APP_API_KEY
 
 app = Flask(__name__)
 # Set up CORS control (tmp for localhost)
@@ -66,11 +67,11 @@ def get_user_info():
 
 
 
-@app.route("/user/<puuid>", methods=['GET'])
+@app.route("/user/<puuid>/<count>", methods=['GET'])
 @cross_origin(origin='*',headers=['Content-Type','Authorization'])  # Account for CORS
-def get_last_games(puuid):
+def get_last_games(puuid, count):
 
-    r = requests.get(f'https://americas.api.riotgames.com/tft/match/v1/matches/by-puuid/{puuid}/ids?start=0&count=20&api_key={dotenv.dotenv_values(".env")["REACT_APP_API_KEY"]}')
+    r = requests.get(f'https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?queue=400&start=0&count={count}&api_key={dotenv.dotenv_values(".env")["REACT_APP_API_KEY"]}')
 
     # If the responce is ok, return the match ids of the user's last 20 games 
     if (r.status_code == 200):
@@ -79,14 +80,17 @@ def get_last_games(puuid):
     return {"msg":"Match history not found"}, 400
 
 
-@app.route("/match/<matchId>", methods=['GET','POST','OPTIONS'])
+@app.route("/match/<matchId>", methods=['GET'])
 @cross_origin(origin='*',headers=['Content-Type','Authorization'])  # Account for CORS
-def get_match_details(matchId):
+def get_match(matchId):
 
-    r = requests.get(f'https://americas.api.riotgames.com/tft/match/v1/matches/{matchId}?api_key={dotenv.dotenv_values(".env")["REACT_APP_API_KEY"]}')
+    r = requests.get(f'https://americas.api.riotgames.com/lol/match/v5/matches/{matchId}?api_key={dotenv.dotenv_values(".env")["REACT_APP_API_KEY"]}')
 
-    # If the responce is ok, return the targeted game
+    # If the responce is ok, return the match ids of the user's last 20 games 
     if (r.status_code == 200):
         return r.json(), 200
     
     return {"msg":"Match history not found"}, 400
+
+
+

@@ -11,3 +11,8 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+
+.tableEntry p{
+  margin: 5px 0px 5px 0px;
+}
