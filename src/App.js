@@ -2,27 +2,33 @@ import { useEffect, useState } from 'react';
 import logo from './images/penguin.png';
 
 import Hist from './Hist.js'
+import DamageChart from './DamageChart.js';
+
 
 import top from './images/top.svg'
 import mid from './images/mid.svg'
 import bot from './images/bot.svg'
 import sup from './images/sup.svg'
 import jg from './images/jg.svg'
+import KDA_section from './KDA_section.js';
+
+import ChampSection from './ChampSection.js';
 
 
 function App() {
   const [puuid, setPuuid] = useState("")
-  const [matches, setMatches] = useState([]);
-  const [highestDeath, setHighestDeath] = useState([]);
+
 
   const [highestCS, setHighestCS] = useState([]);
+
+  const [ChampSec, setChampSec] = useState([]);
+  const [KDA_Section, setKDA_Section] = useState([]);
 
 
   const [matchData, setMatchData] = useState([]);
 
-  const [kdaHist, setKdaHist] = useState([]);
 
-
+// Number of games to fetch
   const count = 20
 
 
@@ -61,61 +67,9 @@ function App() {
 
   }, [puuid])
 
-  
-// Get highest Kills
-  useEffect(() => {
-    const m = matchData.sort((a,b) => {
-      const ta = a.metadata.participants.indexOf(puuid)
-      const tb = b.metadata.participants.indexOf(puuid)
+// useEffect(() => {
+// }, [matchData])
 
-      return b.info.participants[tb].kills - a.info.participants[ta].kills
-    })
-
-    const kills = []
-    for(let i = 0; i < Math.min(5, m.length); i++) {
-      kills.push(process_match(m[i]))
-    }
-    setMatches(kills)
-
-
-  }, [matchData])
-
-
-// Highest Deaths
-  useEffect(() => {
-    const m = matchData.sort((a,b) => {
-      const ta = a.metadata.participants.indexOf(puuid)
-      const tb = b.metadata.participants.indexOf(puuid)
-
-      return b.info.participants[tb].deaths - a.info.participants[ta].deaths
-    })
- 
-    const deaths = []
-    for(let i = 0; i < Math.min(5, m.length); i++) {
-      deaths.push(process_match(m[i]))
-    }
-
-    setHighestDeath(deaths)
-  }, [matchData])
-
-
-
-// K/D Histograms
-useEffect(() => {
-
-  const kills = []
-  const deaths = []
-  for(let i = 0; i < matchData.length; i++) {
-    const targetPlayer = matchData[i].metadata.participants.indexOf(puuid)
-    kills.push(matchData[i].info.participants[targetPlayer].kills)
-    deaths.push(matchData[i].info.participants[targetPlayer].deaths)
-
-  }
- 
-  if(kills.length !== 0) {
-    setKdaHist([<Hist data = {kills} numBins={8}></Hist>, <Hist data = {deaths} numBins={8}></Hist>,<h4>Kills</h4>,<h4>Deaths</h4>]);
-  }
-}, [matchData])
 
 
 // Highest CS
@@ -133,6 +87,11 @@ useEffect(() => {
     cs.push(process_cs_match(m[i]))
   }
 
+
+  setChampSec(<ChampSection puuid={puuid} matchData={matchData}></ChampSection>)
+  setKDA_Section(<KDA_section puuid={puuid} matchData={matchData}></KDA_section>)
+
+
   setHighestCS(cs)
 }, [matchData])
 
@@ -145,23 +104,23 @@ function process_cs_match(match) {
   let img
   switch(stats.individualPosition) {
     case "TOP":
-      img = <img src = {top}></img>
+      img = <img src = {top} alt='top_icon' />
       break;
 
     case "BOTTOM":
-      img = <img src = {bot}></img>
+      img = <img src = {bot} alt='bot_icon' />
       break;
 
     case "MIDDLE":
-      img = <img src = {mid}></img>
+      img = <img src = {mid} alt='mid_icon' />
       break;
 
     case "UTILITY":
-      img = <img src = {sup}></img>
+      img = <img src = {sup} alt='sup_icon' />
       break;
 
     case "JUNGLE":
-      img = <img src = {jg}></img>
+      img = <img src = {jg} alt='jg_icon' />
       break;
 
     default:
@@ -183,7 +142,7 @@ return (
     <p>{stats.kills + "/" + stats.deaths + "/" + stats.assists}</p>
 
 
-    {stats.win ? <p style={{color:"#44FF44"}}>Win</p>:<p style={{color:"#ff4444"}}>Lose</p>}
+    {stats.win ? <p style={{color:"#44FF44"}}>Win</p>:<p style={{color:"#ff4444"}}>Loss</p>}
 
     <p>{Math.floor(match.info.gameDuration / 60) + "m" + match.info.gameDuration % 60 + "s"}</p>
 
@@ -196,59 +155,6 @@ return (
   </div>);}
 
 
-  function process_match(match) {
-    const targetPlayer = match.metadata.participants.indexOf(puuid)
-    const stats = match.info.participants[targetPlayer]
-
-    // console.log(match)
-    let img
-    switch(stats.individualPosition) {
-      case "TOP":
-        img = <img src = {top}></img>
-        break;
-
-      case "BOTTOM":
-        img = <img src = {bot}></img>
-        break;
-
-      case "MIDDLE":
-        img = <img src = {mid}></img>
-        break;
-
-      case "UTILITY":
-        img = <img src = {sup}></img>
-        break;
-
-      case "JUNGLE":
-        img = <img src = {jg}></img>
-        break;
-
-      default:
-        img = <p>{stats.teamPosition}</p>
-    }
-
-
-
-    return (
-      <div className='tableEntry' style={{display:"grid", gridTemplateColumns:"repeat(8, 1fr)", width:"45vw"}}>
-
-        {/* <p>{match.info.gameMode}</p> */}
-
-        <p>{new Date(match.info.gameCreation).toLocaleString().split(',')[0]}</p>
-
-        <span>{img}</span> 
-        {/* Maybe change this to .individualPosition? */}
-
-        <p>{stats.championName}</p>
-
-        <p>{stats.kills + "/" + stats.deaths + "/" + stats.assists}</p>
-
-
-        {stats.win ? <p style={{color:"#44FF44"}}>Win</p>:<p style={{color:"#ff4444"}}>Lose</p>}
-
-        <p>{Math.floor(match.info.gameDuration / 60) + "m" + match.info.gameDuration % 60 + "s"}</p>
-      </div>);
-  }
 
 // .totalMinionsKilled gives CS
 // .totalTimeSpentDead
@@ -291,43 +197,53 @@ return (
     <div className="App" style ={{display:"flex", flexDirection:"column", verticalAlign:"center", alignItems:"center"}}>
 
       <div style={{display:"flex", flexDirection:"row", justifyContent:"center", alignItems:"center", width:"80vw", padding:"20px 0px 20px 0px"}}>
-        <img src={logo} style={{width:"30%"}}></img>
+        <img src={logo} style={{width:"30%"}} alt='tft_logo' />
 
         <span>
-          <h3>Enter Account ID To Start!</h3>
+          <h3>Enter Your Account ID To Start!</h3>
           <input type = "text" id = "name_entry"></input>
           <button onClick={get_puuid}>Go!</button>
-          <h4>Using data from past {count} matches</h4>
+          <h4>(Using data from past {count} matches)</h4>
 
         </span>
       
       </div>
       
-      {/* <h3>{puuid}</h3> */}
 
-      
+{matchData.length > 0 &&  ChampSec}
+
+<br/>
 
 
-<div style={{display:"flex", justifyContent:"space-evenly", width:"100vw"}}>
-  <div>
-    <h3>Most Kills</h3>
-    {matches}
+<div style={{display:"flex", flexDirection:"row", alignItems:"center", justifyContent:"space-evenly"}}>
+
+
+  <div style={{height:"300px", marginRight:"50px"}}>
+  <DamageChart damage = {[200,20,200]}></DamageChart>
+
   </div>
 
 
   <div>
-    <h3>Most Deaths</h3>
-    {highestDeath}
+    <h2 style={{fontWeight:"300", textAlign:"left", marginBottom:"5px"}}>You also dealt a whopping<br/><span style={{fontWeight:"800", fontSize:"30px"}}>DMG_NUM</span><br/>points of damage<br/>to other champions.</h2>
+    <h4 style={{marginTop:"5px", fontSize:"small", fontWeight:"200"}}>(That's on average 2100 pts per game!)</h4>
+
   </div>
 </div>
 
-{kdaHist.length !== 0 &&
-  
-  <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", justifyItems:"center", columnGap:"100px"}}>
-    {kdaHist}
+<div style={{display:"flex", flexDirection:"row", alignItems:"center", justifyContent:"space-evenly", width:"80vw"}}>
 
-  </div>
-}
+  <h2 style={{fontWeight:"300", textAlign:"left", height:"100px", margin:"0px"}}>This year, your team<br/> forfeited <span style={{fontWeight:"800", fontSize:"30px"}}>FF_NUM</span> times.</h2>
+
+  <h2 style={{fontWeight:"300", textAlign:"left", height:"100px", margin:"0px"}}>By comparison, your opponents<br/> forfeited in <span style={{fontWeight:"800", fontSize:"30px"}}>FF_NUM</span> games.</h2>
+
+</div>
+
+<h4><span style={{fontWeight:"800", fontSize:"20px"}}>FF_NUM</span> of these games ended before 16 minutes!</h4>
+
+    {/* Show KDA Tables and Histograms */}
+{matchData.length > 0 &&  KDA_Section}
+
       
 <h2>Some fact about their KDA like spotify wrapped (This player has an average kda of ...)</h2>
 <h2>Tends to die more at start, less at late game (compared to their teammates)</h2>

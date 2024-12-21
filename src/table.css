@@ -1,0 +1,60 @@
+
+.win_span{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #016d01;
+    background-color: #98f898;
+    /* border:solid #016d01 2px; */
+    text-align:center;
+    border-radius: 5px;
+    /* margin: 2px; */
+    font-weight: bold;
+}
+
+
+.loss_span{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #6d1301;
+    background-color: #f89d98;
+    /* border:solid #016d01 2px; */
+    text-align:center;
+    border-radius: 5px;
+    /* margin: 2px; */
+    font-weight: bold;
+}
+
+
+
+.tableEntry{
+    margin: 5px 0px 5px 0px;
+    display: grid;
+    grid-template-columns: 15% 10% 20% 20% 15% 20%;
+    min-width: 45vw; 
+    width: 45vw;
+    max-width: 300px;
+    /* justify-content: center;
+    align-items: center; */
+  }
+
+.tableEntry p{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.tableEntry span{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.kda_txt{
+    font-weight: 550;
+}
+  
