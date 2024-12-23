@@ -2,7 +2,6 @@
 import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
-import { color } from 'chart.js/helpers';
 
 // Register the necessary components
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);

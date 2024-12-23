@@ -10,6 +10,8 @@
     border-radius: 5px;
     /* margin: 2px; */
     font-weight: bold;
+    width: 60%;
+    margin-left: 20%;
 }
 
 
@@ -24,8 +26,29 @@
     border-radius: 5px;
     /* margin: 2px; */
     font-weight: bold;
+    width: 60%;
+    margin-left: 20%;
 }
 
+.tableHeader{
+    display: grid;
+    grid-template-columns: 15% 10% 20% 20% 15% 20%;
+    min-width: 45vw; 
+    width: 45vw;
+    max-width: 300px;
+    background-color: #024f4f;
+    border-radius: 5px;
+
+  }
+
+.tableHeader p{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    text-decoration: underline;
+    margin: 8px 0px 8px 0px;
+}
 
 
 .tableEntry{
@@ -44,6 +67,8 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
+    margin: 4px 0px 4px 0px;
+
 }
 
 .tableEntry span{

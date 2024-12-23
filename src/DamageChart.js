@@ -30,7 +30,7 @@ function DamageChart({damage}){
       },
       tooltip: {
         callbacks: {
-          label: (tooltipItem) => ` ${tooltipItem.raw} damage`, // Custom tooltip display (optional)
+          label: (tooltipItem) => ` ${tooltipItem.raw.toLocaleString()} damage`, // Custom tooltip display (optional)
         },
       },
     },

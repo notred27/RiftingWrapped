@@ -28,7 +28,7 @@ export default function ChampSection({puuid, matchData}) {
 
 
     const champNames = Object.keys(champDict).reverse()
-    const champVals = Object.values(champDict).sort((a,b) => b- a).slice(0,Math.min(5, champNames.length))
+    const champVals = Object.values(champDict).sort((a,b) => b- a).slice(0,Math.min(10, champNames.length))
 
     const sortedNames = []
     for(let i = 0 ; i <= champVals.length; i++) {
