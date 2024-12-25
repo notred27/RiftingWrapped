@@ -41,13 +41,33 @@ export default function TableEntry({puuid, match}) {
         }
 
 
+        const date = new Date(match.info.gameCreation)
+
+
+        function monthInt2String(m) {
+            switch(m) {
+                case 0: return "Jan";
+                case 1: return "Feb";
+                case 2: return "Mar";
+                case 3: return "Apr";
+                case 4: return "May";
+                case 5: return "Jun";
+                case 6: return "Jul";
+                case 7: return "Aug";
+                case 8: return "Sep";
+                case 9: return "Oct";
+                case 10: return "Nov";
+                case 11: return "Dec";
+
+            }
+        }
 
         return (
             <div className='tableEntry'>
 
                 {/* <p>{match.info.gameMode}</p> */}
 
-                <p>{new Date(match.info.gameCreation).toLocaleString().split(',')[0]}</p>
+                <p>{monthInt2String(date.getMonth())} {date.getDate()}</p>
 
                 <span>{img}</span>
                 {/* Maybe change this to .individualPosition? */}

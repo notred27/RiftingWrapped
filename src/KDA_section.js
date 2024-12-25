@@ -13,6 +13,25 @@ export default function KDA_section({ puuid, matchData }) {
         )
     }
 
+    // Filter out early surrendered games (before 20min)
+    matchData = matchData.filter((match) => match.info.gameDuration >= 960)
+
+    // Sort by highest KDA
+    const sortedKDA = matchData.sort((a, b) => {
+        const ta = a.metadata.participants.indexOf(puuid)
+        const tb = b.metadata.participants.indexOf(puuid)
+
+        const pa = a.info.participants[ta].challenges
+        const pb = b.info.participants[tb].challenges
+
+
+
+        return (pa.kda) - (pb.kda)
+    })
+
+
+
+
     // Sort by highest kills
     const highestKills = matchData.sort((a, b) => {
         const ta = a.metadata.participants.indexOf(puuid)
@@ -52,7 +71,7 @@ export default function KDA_section({ puuid, matchData }) {
 
     }
 
-    const kdaHist = [<Hist data={kills} numBins={8}></Hist>, <Hist data={deaths} numBins={8}></Hist>, <h4>Kills</h4>, <h4>Deaths</h4>]
+    // const kdaHist = [<Hist data={kills} numBins={8}></Hist>, <Hist data={deaths} numBins={8}></Hist>, <h4>Kills</h4>, <h4>Deaths</h4>]
     
 
     let killsUnderTurrets = 0
@@ -86,6 +105,17 @@ export default function KDA_section({ puuid, matchData }) {
 
         
     }
+
+        const bestKDA = sortedKDA[sortedKDA.length - 1].info.participants[sortedKDA[sortedKDA.length - 1].metadata.participants.indexOf(puuid)].challenges.kda
+
+        const worstKDA = sortedKDA[0].info.participants[sortedKDA[0].metadata.participants.indexOf(puuid)].challenges.kda
+
+        // const tb = b.metadata.participants.indexOf(puuid)
+
+        // const pa = a.info.participants[ta]
+        // const pb = b.info.participants[tb]
+
+        // return ((pb.kills + pb.assists) / pb.deaths) - ((pa.kills + pa.assists) / pa.deaths)
 
 
 
@@ -123,12 +153,12 @@ export default function KDA_section({ puuid, matchData }) {
             <div style={{ display: "flex", justifyContent: "space-evenly", width: "100vw" }}>
                 <div>
                     
-                    <h2>However, you were also killed<br/><span className='emphasize'>{totalDeaths.toLocaleString()}</span> times <br/> by other players this year.</h2>
+                    <h2>However, you were killed<br/><span className='emphasize'>{totalDeaths.toLocaleString()}</span> times by other<br/> players this year.</h2>
                     
                     {Math.round(timeSpentDead / 60) < 300 ? 
                         <h3>Due to this, you spent <span className='emphasize'>{Math.round(timeSpentDead / 60)}</span> minutes<br/> dead and waiting to respawn.</h3>
                         :
-                        <h3>Due to this, you spent <span className='emphasize'>{Math.round(timeSpentDead / 36)/100}</span> hours<br/> dead and waiting to respawn.</h3>                
+                        <h3>Due to this, you spent <span className='emphasize'>{Math.round(timeSpentDead / 360)/10} hours</span><br/> dead and waiting to respawn.</h3>                
                     }
 
                     
@@ -152,12 +182,42 @@ export default function KDA_section({ puuid, matchData }) {
             <h2>Of the <span className='emphasize'>{matchData.length - positiveGames}</span> games that you went negative, you won <span className='emphasize'>{Math.floor(negativeWins / (matchData.length - positiveGames) * 10000) / 100}%</span> of the time.</h2>
 
 
-            <h2>Lets see a breakdown of your kills versus deaths over the last year:</h2>
+            {/* <h2>Lets see a breakdown of your kills versus deaths over the last year:</h2> */}
 
-            <br/>
-            <div style={{height:"300px", width:"80vw" }}>
-                <KDAgraph kills={kills} deaths={deaths}></KDAgraph>
+            {/* <br/> */}
 
+            <div style={{display:"flex", flexDirection:"row"}}>
+                <div style={{height:"300px", width:"50vw"}}>
+                    <KDAgraph kills={kills} deaths={deaths}></KDAgraph>
+                </div>
+
+                <div>
+                    <h3>Your best KDA was <span className='emphasize'>{Math.round(bestKDA *100)/100}</span></h3>
+                    <div className='tableHeader'>
+                        <p>Date</p>
+                        <p>Lane</p>
+                        <p>Champ</p>
+                        <p>KDA</p>
+                        <p>Outcome</p>
+                        <p>Duration</p>
+                    </div>
+                    <TableEntry puuid={puuid} match={sortedKDA[sortedKDA.length - 1]}></TableEntry>
+
+                    <br/>
+
+                    <h3>Your worst KDA was <span className='emphasize'>{Math.round(worstKDA *100)/100}</span></h3>
+                    <div className='tableHeader'>
+                        <p>Date</p>
+                        <p>Lane</p>
+                        <p>Champ</p>
+                        <p>KDA</p>
+                        <p>Outcome</p>
+                        <p>Duration</p>
+                    </div>
+                    <TableEntry puuid={puuid} match={sortedKDA[0]}></TableEntry>
+                </div>
+                
+            
             </div>
             
         </div>

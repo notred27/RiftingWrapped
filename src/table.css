@@ -36,8 +36,8 @@
     min-width: 45vw; 
     width: 45vw;
     max-width: 300px;
-    background-color: #024f4f;
-    border-radius: 5px;
+    background-color: #004b4b;
+    /* border-radius: 5px; */
 
   }
 
@@ -46,20 +46,34 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    text-decoration: underline;
+    /* text-decoration: underline; */
+    font-weight: 700;
     margin: 8px 0px 8px 0px;
+    /* background-color: #BF4E30; */
 }
 
 
 .tableEntry{
-    margin: 5px 0px 5px 0px;
+    padding: 5px 0px 5px 0px;
     display: grid;
     grid-template-columns: 15% 10% 20% 20% 15% 20%;
     min-width: 45vw; 
     width: 45vw;
     max-width: 300px;
+    background-color: #1b2831;
+
     /* justify-content: center;
     align-items: center; */
+  }
+
+
+  .cs_tableEntry{
+    margin: 5px 0px 5px 0px;
+    display: grid;
+    grid-template-columns: 10% 8% 20% 14% 15% 15% 10% 10%;
+    min-width: 50vw; 
+    width: 50vw;
+    max-width: 300px;
   }
 
 .tableEntry p{
@@ -78,6 +92,25 @@
     align-items: center;
 }
 
+/* .tableEntry span img{
+    background-color: rgb(240, 240, 240);
+} */
+
+
+.cs_tableEntry p{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin: 4px 0px 4px 0px;
+}
+
+.cs_tableEntry span{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
 
 .kda_txt{
     font-weight: 550;

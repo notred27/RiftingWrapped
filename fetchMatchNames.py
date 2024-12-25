@@ -5,7 +5,7 @@ import json
 
 key = dotenv.dotenv_values(".env")["REACT_APP_API_KEY"]
 
-name = "bigleagueplayer#NA1"
+name = "jar#00000"
 
 tags = name.split("#")
 

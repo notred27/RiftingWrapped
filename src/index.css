@@ -38,3 +38,59 @@ h3{
 h4{
   font-weight: normal;
 }
+
+
+
+.dropdown_main {
+  font-weight: 800;
+  text-align: center;
+  /* border: 2px solid #222d61; */
+
+  border-radius: 4px;
+  background-color: #222d61;
+  padding: 8px;
+  width: 234px;
+
+}
+
+
+.dropdown_main:hover {
+  background-color: #3b467d;
+}
+
+
+
+.dropdown_menu {
+  display: none;
+  position: absolute;
+  width: 250px;
+}
+
+.dropdown_menu button{
+  font-weight: 800;
+  width: 100%;
+  border: 0px;
+  border-radius: 0px;
+  background-color: #0c112b;
+  color: ivory;
+  text-align: left;
+  padding: 10px 0px 10px 20px;
+  font-size: 16px;
+}
+
+.dropdown_menu button:hover{
+
+  background-color: #19245a;
+
+}
+
+.show {
+  display: block;
+}
+
+
+
+.roleHeader {
+  font-weight: 800;
+  margin: 2px;
+}
