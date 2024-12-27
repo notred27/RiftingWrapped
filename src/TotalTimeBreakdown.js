@@ -1,4 +1,4 @@
-import TotalTimeGraph from "./TotalTimeGraph"
+import TotalTimeGraph from "./graphs/TotalTimeGraph"
 
 
 export default function TotalTimeBreakdown({ puuid, matchData }) {

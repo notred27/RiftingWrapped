@@ -1,4 +1,4 @@
-import HorizontalBarChart from './horizontal.js'
+import HorizontalBarChart from './graphs/ChampGraph.js'
 
 
 export default function ChampSection({puuid, matchData}) {
@@ -52,9 +52,9 @@ export default function ChampSection({puuid, matchData}) {
                 <h2 style={{fontWeight:"300", textAlign:"left", marginBottom:"5px"}}>Throughout the year,<br/><span style={{fontWeight:"800", fontSize:"30px"}}>{topChamp.toUpperCase()}</span><br/>was your go-to champ<br/>on the rift.</h2>
                 
                 {numMinutes <= 60 ?
-                <h4 style={{marginTop:"5px", fontSize:"small", fontWeight:"200"}}>You played as {topChamp} for <span style={{fontWeight:"bold"}}>{numMinutes}</span> minutes <br/> (accounting for <span className='emphasize'>{Math.round(champVals[0] / matchData.length * 100)}%</span> of your games)!</h4>
+                <h4 style={{marginTop:"5px",  fontWeight:"200"}}>You played as {topChamp} for <span style={{fontWeight:"bold"}}>{numMinutes}</span> minutes,<br/>accounting for <span className='emphasize'>{Math.round(champVals[0] / matchData.length * 100)}%</span> of your games!</h4>
                 :
-                <h4 style={{marginTop:"5px", fontSize:"small", fontWeight:"200"}}>You played as {topChamp} for roughly <span style={{fontWeight:"bold"}}>{Math.round(numMinutes / 60)}</span> hours <br/> (accounting for <span className='emphasize'>{Math.round(champVals[0] / matchData.length * 100)}%</span> of your games)!</h4>
+                <h4 style={{marginTop:"5px", fontWeight:"200"}}>You played as {topChamp} for roughly <span style={{fontWeight:"bold"}}>{Math.round(numMinutes / 60)}</span> hours, <br/>accounting for <span className='emphasize'>{Math.round(champVals[0] / matchData.length * 100)}%</span> of your games!</h4>
 
             }
 

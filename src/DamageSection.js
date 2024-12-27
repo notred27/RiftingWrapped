@@ -1,4 +1,4 @@
-import DamageChart from './DamageChart.js';
+import DamageChart from './graphs/DamageChart.js';
 
 export default function DamageSection({ puuid, matchData }) {
     if (matchData.length <= 0) {

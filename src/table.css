@@ -36,7 +36,7 @@
     min-width: 45vw; 
     width: 45vw;
     max-width: 300px;
-    background-color: #004b4b;
+    background-color: #352241;
     /* border-radius: 5px; */
 
   }
@@ -60,20 +60,43 @@
     min-width: 45vw; 
     width: 45vw;
     max-width: 300px;
-    background-color: #1b2831;
+    background-color: #3a3561;
 
     /* justify-content: center;
     align-items: center; */
   }
 
+  .csTableHeader{
+    display: grid;
+    grid-template-columns: 10% 8% 20% 14% 15% 15% 9% 9%;
+    min-width: 52vw; 
+    width: 52vw;
+    max-width: 300px;
+    background-color: #004b4b;
+    /* border-radius: 5px; */
+
+  }
+
+.csTableHeader p{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    /* text-decoration: underline; */
+    font-weight: 700;
+    margin: 8px 0px 8px 0px;
+    /* background-color: #BF4E30; */
+}
 
   .cs_tableEntry{
-    margin: 5px 0px 5px 0px;
+    padding: 5px 0px 5px 0px;
     display: grid;
-    grid-template-columns: 10% 8% 20% 14% 15% 15% 10% 10%;
-    min-width: 50vw; 
-    width: 50vw;
+    grid-template-columns: 10% 8% 20% 14% 15% 15% 9% 9%;
+    min-width: 52vw; 
+    width: 52vw;
     max-width: 300px;
+    background-color: #1b2831;
+
   }
 
 .tableEntry p{

@@ -58,9 +58,12 @@ export default function CSTableEntry({puuid, match}) {
                 case 9: return "Oct";
                 case 10: return "Nov";
                 case 11: return "Dec";
+                default: return "";
 
             }
         }
+
+        const totalCS = stats.neutralMinionsKilled + stats.totalMinionsKilled
 
         return (
             <div className='cs_tableEntry'>
@@ -81,10 +84,10 @@ export default function CSTableEntry({puuid, match}) {
 
                 <p>{Math.floor(match.info.gameDuration / 60) + "m" + match.info.gameDuration % 60 + "s"}</p>
 
-                <p>{stats.totalMinionsKilled + stats.totalAllyJungleMinionsKilled + stats.totalEnemyJungleMinionsKilled}</p>
+                <p>{totalCS}</p>
 
 
-                <p>{Math.round((stats.totalMinionsKilled + stats.totalAllyJungleMinionsKilled + stats.totalEnemyJungleMinionsKilled) / (match.info.gameDuration / 60) * 100) / 100}</p>
+                <p>{Math.round(totalCS / (match.info.gameDuration / 60) * 100) / 100}</p>
 
 
             </div>);
