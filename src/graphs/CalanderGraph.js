@@ -179,7 +179,8 @@ function CalanderGraph({dates}) {
   };
 
   return (
-    <div style={{width:"80vw"}}>
+    <div style={{width:"80vw", marginLeft:"50px"}}>
+
       <Bar data={data} options={options} />
 
     </div>

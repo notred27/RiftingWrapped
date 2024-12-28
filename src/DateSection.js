@@ -29,6 +29,7 @@ export default function DateSection({puuid, matchData}) {
             <h4 style={{textAlign:"center"}}>With this dedication, you were hitting the Rift every <span className="emphasize">1 in {Math.floor(3650 / dates.reduce((partial, x) => {return partial + x}, 0)) / 10} days</span>.</h4>
        
        
+        
         </div>
     )
 }

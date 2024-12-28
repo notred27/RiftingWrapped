@@ -46,10 +46,16 @@ export default function TotalTimeBreakdown({ puuid, matchData }) {
     const timeLabels = ["Other", "Time Dead", "Time CC'ing Others", "Time Roaming", "Time Killing Baron", "Time Baron Buffed", "Time Killing Dragons"]
     const timeBreakdown = [otherTime, deadTime, ccTime, roamTime, baronTime, baronBuffTime, dragonTime]
 
-    return(
 
-        <div>
-            time breakdown: <br/> 
+    totalTime = Math.floor(totalTime / 3600)
+
+    
+    return(
+        <div style={{display:"block", paddingBottom:"200px", textAlign:"center"}}>
+
+
+        <div style={{display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center"}}>
+            {/* time breakdown: <br/> 
             Total time: {Math.round(totalTime / 360) /10 } <br/> 
             CC time: {Math.round(ccTime / 360) /10} <br/> 
             Dead time: {Math.round(deadTime / 360) /10} <br/> 
@@ -61,15 +67,22 @@ export default function TotalTimeBreakdown({ puuid, matchData }) {
 
             Other time: {timeBreakdown} <br/> 
 
-            Time spent playing winning games?
+            Time spent playing winning games? */}
 
-            <div style={{width:"90vw"}}>
+<h2 className="emphasize">In Conclusion</h2>
+
+
             <TotalTimeGraph times={timeBreakdown} labels={timeLabels}></TotalTimeGraph>
 
-            </div>
+            <h2>You spent <span className="emphasize">{totalTime} hours</span><br/> playing draft pick this year.</h2>
 
+            <h4>That's equivalent to <span className="emphasize">{Math.floor(totalTime / 8)} hours</span> or <span className="emphasize">{Math.floor(totalTime / 24)} full days</span>, for better or worse.</h4>
+            
 
         </div>
+
+        </div>
+
     )
 
 }

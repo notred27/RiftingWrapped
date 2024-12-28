@@ -14,8 +14,6 @@ import Josh from './player_data/Starmany_match_data.json'
 import logo from './images/penguin.png';
 
 
-
-
 import KDAsection from './KDAsection.js';
 import ChampSection from './ChampSection.js';
 import DamageSection from './DamageSection.js';
@@ -24,11 +22,12 @@ import LaneSection from './LaneSection.js';
 import TotalTimeBreakdown from './TotalTimeBreakdown.js';
 import DateSection from './DateSection.js';
 
+
+
 function App() {
   const [puuid, setPuuid] = useState("");
   const [selectedPlayer, setSelectedPlayer] = useState("");
   const [matchData, setMatchData] = useState([]);
-
 
   const [DateSec, setDateSec] = useState([]);
   const [ChampSec, setChampSec] = useState([]);
@@ -36,6 +35,7 @@ function App() {
   const [FFSec, setFFSec] = useState([]);
   const [KDASection, setKDASection] = useState([]);
   const [LaneSec, setLaneSec] = useState([]);
+
   const [TimeBreakdown, setTimeBreakdown] = useState([]);
 
 
@@ -44,74 +44,75 @@ function App() {
   // const count = 20
 
 
-  // Get matches when a valid user is entered
-  useEffect(() => {
-    if (puuid !== "") {
-      // Fetch from the flask server
-      //   fetch(`http://localhost:5000/user/${puuid}/${count}`) // Get user's x most recent draft games
-      //     .then(res => res.json())  // Wait for the promise to resolve
+  // // Get matches when a valid user is entered
+  // useEffect(() => {
+  //   if (puuid !== "") {
+  //     // Fetch from the flask server
+  //     //   fetch(`http://localhost:5000/user/${puuid}/${count}`) // Get user's x most recent draft games
+  //     //     .then(res => res.json())  // Wait for the promise to resolve
 
-      //     .then(data => {           // Process the data with from the JSON object
+  //     //     .then(data => {           // Process the data with from the JSON object
 
-      //       const matchList = []  // Temp list of matches for batched request
-      //       if (data.length !== 0) {
+  //     //       const matchList = []  // Temp list of matches for batched request
+  //     //       if (data.length !== 0) {
 
-      //         const fetchPromises = data.map(matchId =>
-      //           fetch(`http://localhost:5000/match/${matchId}`)
-      //             .then(res => res.json())  // Wait for the promise to resolve
-      //             .then(matches => {
-      //               matchList.push(matches);  // Add the fetched data to matchList
-      //             })
-      //         );
+  //     //         const fetchPromises = data.map(matchId =>
+  //     //           fetch(`http://localhost:5000/match/${matchId}`)
+  //     //             .then(res => res.json())  // Wait for the promise to resolve
+  //     //             .then(matches => {
+  //     //               matchList.push(matches);  // Add the fetched data to matchList
+  //     //             })
+  //     //         );
 
-      //         // Wait till all promises are resolved, then update useState with this data
-      //         Promise.all(fetchPromises)
-      //           .then(() => { setMatchData(matchList); }) // Update the match list
-      //           .catch(error => { console.error('Error with fetch:', error); });
+  //     //         // Wait till all promises are resolved, then update useState with this data
+  //     //         Promise.all(fetchPromises)
+  //     //           .then(() => { setMatchData(matchList); }) // Update the match list
+  //     //           .catch(error => { console.error('Error with fetch:', error); });
 
-      //       }
+  //     //       }
 
-      //     })
+  //     //     })
 
-      //     .catch((error) => console.error(error))
+  //     //     .catch((error) => console.error(error))
 
 
-      switch (puuid) {
-        case "DtXnq3chwI7rBuqeyQJcCwmIyw12dVJwf-FqbaZiuU5X0JGjdjT1Y1Zt5sX3TgwPxJtCwBq__NeHLw":
-          setMatchData(John);
-          setSelectedPlayer("Jar");
-          break;
+  //     switch (puuid) {
+  //       case "DtXnq3chwI7rBuqeyQJcCwmIyw12dVJwf-FqbaZiuU5X0JGjdjT1Y1Zt5sX3TgwPxJtCwBq__NeHLw":
+  //         // const d = await import('./player_data/jar_match_data.json')
+  //         setMatchData(John);
+  //         setSelectedPlayer("Jar");
+  //         break;
 
-        case "diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIPUZlPo9adlsdFYU6Sr8NzQJjiJXnPb6A":
-          setMatchData(Michael);
-          setSelectedPlayer("MrWarwickWide");
-          break;
+  //       case "diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIPUZlPo9adlsdFYU6Sr8NzQJjiJXnPb6A":
+  //         setMatchData(Michael);
+  //         setSelectedPlayer("MrWarwickWide");
+  //         break;
 
-        case "i4E4IYdhi9-JXuF6hchhPdPC6clE8jOPwBrYBLG7xEKDRk3Y-Fqtw-tcSX0FGn_wo4RY3PZG3MUdlw":
-          setMatchData(Sam);
-          setSelectedPlayer("SemThigh");
-          break;
+  //       case "i4E4IYdhi9-JXuF6hchhPdPC6clE8jOPwBrYBLG7xEKDRk3Y-Fqtw-tcSX0FGn_wo4RY3PZG3MUdlw":
+  //         setMatchData(Sam);
+  //         setSelectedPlayer("SemThigh");
+  //         break;
 
-        case "TDQjFdHq3qPgUtc1VNmpCOBwQpwAPEeRDuqws_7oYv3SVQqzAgNfXPtzjpSpmdptJMTyx6nwLzYutA":
-          setMatchData(Erik);
-          setSelectedPlayer("BigLeaguePlayer");
-          break;
+  //       case "TDQjFdHq3qPgUtc1VNmpCOBwQpwAPEeRDuqws_7oYv3SVQqzAgNfXPtzjpSpmdptJMTyx6nwLzYutA":
+  //         setMatchData(Erik);
+  //         setSelectedPlayer("BigLeaguePlayer");
+  //         break;
 
-        case "XPCafNC_zNQCoppRjcKZWzk8JQ3zGjt6lDWqX3gQgDVoWhvjkbbT9DOrh9ZibvjJ_VVy0EzawQLTVw":
-          setMatchData(Ian);
-          setSelectedPlayer("ThiccShinobi2");
-          break;
+  //       case "XPCafNC_zNQCoppRjcKZWzk8JQ3zGjt6lDWqX3gQgDVoWhvjkbbT9DOrh9ZibvjJ_VVy0EzawQLTVw":
+  //         setMatchData(Ian);
+  //         setSelectedPlayer("ThiccShinobi2");
+  //         break;
 
-        case "Wo7YQhhVUI-sHRN03UKEKFV3N5J7TpF3W1l_xos-gf45P8qKCKOaAgjzRL36Qb_XXq-3-d68Yz72mQ":
-          setMatchData(Josh);
-          setSelectedPlayer("Starmany");
-          break;
+  //       case "Wo7YQhhVUI-sHRN03UKEKFV3N5J7TpF3W1l_xos-gf45P8qKCKOaAgjzRL36Qb_XXq-3-d68Yz72mQ":
+  //         setMatchData(Josh);
+  //         setSelectedPlayer("Starmany");
+  //         break;
 
-        default:
-          break;
-      }
-    }
-  }, [puuid])
+  //       default:
+  //         break;
+  //     }
+  //   }
+  // }, [puuid])
 
 
 
@@ -168,6 +169,42 @@ function App() {
   // Set precalculated puuid
   function get_puuid_static(id) {
     setPuuid(id)
+
+
+    switch (id) {
+      case "DtXnq3chwI7rBuqeyQJcCwmIyw12dVJwf-FqbaZiuU5X0JGjdjT1Y1Zt5sX3TgwPxJtCwBq__NeHLw":
+        setMatchData(John);
+        setSelectedPlayer("Jar");
+        break;
+
+      case "diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIPUZlPo9adlsdFYU6Sr8NzQJjiJXnPb6A":
+        setMatchData(Michael);
+        setSelectedPlayer("MrWarwickWide");
+        break;
+
+      case "i4E4IYdhi9-JXuF6hchhPdPC6clE8jOPwBrYBLG7xEKDRk3Y-Fqtw-tcSX0FGn_wo4RY3PZG3MUdlw":
+        setMatchData(Sam);
+        setSelectedPlayer("SemThigh");
+        break;
+
+      case "TDQjFdHq3qPgUtc1VNmpCOBwQpwAPEeRDuqws_7oYv3SVQqzAgNfXPtzjpSpmdptJMTyx6nwLzYutA":
+        setMatchData(Erik);
+        setSelectedPlayer("BigLeaguePlayer");
+        break;
+
+      case "XPCafNC_zNQCoppRjcKZWzk8JQ3zGjt6lDWqX3gQgDVoWhvjkbbT9DOrh9ZibvjJ_VVy0EzawQLTVw":
+        setMatchData(Ian);
+        setSelectedPlayer("ThiccShinobi2");
+        break;
+
+      case "Wo7YQhhVUI-sHRN03UKEKFV3N5J7TpF3W1l_xos-gf45P8qKCKOaAgjzRL36Qb_XXq-3-d68Yz72mQ":
+        setMatchData(Josh);
+        setSelectedPlayer("Starmany");
+        break;
+
+      default:
+        break;
+    }
   }
 
 
@@ -192,6 +229,8 @@ function App() {
 
 
   return (
+    <div style={{position:"relative", minHeight:"90vh", paddingTop:"10vh"}}>
+
     <div className="App" style={{ display: "flex", flexDirection: "column", verticalAlign: "center", alignItems: "center", gap: "20px" }}>
 
       <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center", width: "80vw", padding: "20px 0px 20px 0px" }}>
@@ -202,7 +241,7 @@ function App() {
           <input type="text" id="name_entry"></input>
           <button onClick={get_puuid}>Go!</button>
           <h4>(Using data from past {count} matches)</h4> */}
-          <h1>Rift-Recap 2024</h1>
+          <h1>Rift Recap 2024</h1>
 
           <h1 style={{ marginBottom: "10px", fontWeight: "900" }}>{selectedPlayer}</h1>
 
@@ -219,6 +258,7 @@ function App() {
         </span>
 
       </div>
+      
 
 
       {matchData.length > 0 && DateSec}
@@ -235,7 +275,6 @@ function App() {
 
 
 
-      Ping pie chart
 
 
 
@@ -245,6 +284,8 @@ function App() {
 
 
       {matchData.length > 0 && LaneSec}
+
+
 
 
       {/* <h2>Some fact about their KDA like spotify wrapped (This player has an average kda of ...)</h2> */}
@@ -309,8 +350,11 @@ function App() {
       {matchData.length > 0 && TimeBreakdown}
 
 
-      <h6 style={{ width: "60vw", textAlign: "center" }}>All data used in Rift-Recap comes from the user's draft pick games played in 2024. Rift-Recap isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</h6>
     </div>
+    <h6 style={{ width: "60vw", textAlign: "center", position:"absolute", bottom:"0", marginLeft:"20vw", marginRight:"20vw"}}>All data used in Rift-Recap comes from the user's draft pick games played in 2024. Rift-Recap isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</h6>
+
+    </div>
+
   );
 }
 
