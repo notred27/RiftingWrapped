@@ -241,7 +241,7 @@ function App() {
           <input type="text" id="name_entry"></input>
           <button onClick={get_puuid}>Go!</button>
           <h4>(Using data from past {count} matches)</h4> */}
-          <h1>Rift Recap 2024</h1>
+          <h1>Rifting Wrapped 2024</h1>
 
           <h1 style={{ marginBottom: "10px", fontWeight: "900" }}>{selectedPlayer}</h1>
 
@@ -273,18 +273,12 @@ function App() {
       {matchData.length > 0 && FFSec}
 
 
-
-
-
-
-
-
-      {/* Show KDA Tables and Histograms */}
       {matchData.length > 0 && KDASection}
 
 
       {matchData.length > 0 && LaneSec}
 
+      {matchData.length > 0 && TimeBreakdown}
 
 
 
@@ -347,7 +341,6 @@ function App() {
 
       {/* <h3>Stacked bar chart breakdown of time spent dead, winning, losing, cc'd, and other categories</h3> */}
 
-      {matchData.length > 0 && TimeBreakdown}
 
 
     </div>

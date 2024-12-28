@@ -1,6 +1,6 @@
 {
-  "name": "tft-app",
-  "version": "0.1.0",
+  "name": "rifting-wrapped",
+  "version": "1.0.0",
   "private": true,
   "proxy": "http://localhost:5000",
   "dependencies": {
@@ -39,5 +39,22 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
+    "@babel/preset-react": "^7.26.3"
+  },
+  "description": "A sample review of a lol player's yearly stats",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/notred27/RiftingWrapped.git"
+  },
+  "author": "notred27",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/notred27/RiftingWrapped/issues"
+  },
+  "homepage": "https://github.com/notred27/RiftingWrapped#readme"
 }
