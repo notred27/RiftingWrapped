@@ -23,6 +23,10 @@ import TotalTimeBreakdown from './TotalTimeBreakdown.js';
 import DateSection from './DateSection.js';
 
 
+import TodoList from './TodoList.tsx';
+
+
+
 
 function App() {
   const [puuid, setPuuid] = useState("");
@@ -40,6 +44,8 @@ function App() {
 
 
 
+
+  
   // Number of games to fetch
   // const count = 20
 
@@ -260,6 +266,7 @@ function App() {
       </div>
       
 
+            <TodoList></TodoList>
 
       {matchData.length > 0 && DateSec}
 
