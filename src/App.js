@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 
 
 // Use lazy or await for better performance
-import Michael from './player_data/MrWarwickWide_match_data.json';
-import John from './player_data/jar_match_data.json';
-import Sam from './player_data/SemThigh_match_data.json'
-import Erik from './player_data/bigleagueplayer_match_data.json'
-import Ian from './player_data/ThiccShinobi2_match_data.json'
-import Josh from './player_data/Starmany_match_data.json'
+// import Michael from './player_data/MrWarwickWide_match_data.json';
+// import John from './player_data/jar_match_data.json';
+// import Sam from './player_data/SemThigh_match_data.json'
+// import Erik from './player_data/bigleagueplayer_match_data.json'
+// import Ian from './player_data/ThiccShinobi2_match_data.json'
+// import Josh from './player_data/Starmany_match_data.json'
 
 
 
@@ -179,32 +179,32 @@ function App() {
 
     switch (id) {
       case "DtXnq3chwI7rBuqeyQJcCwmIyw12dVJwf-FqbaZiuU5X0JGjdjT1Y1Zt5sX3TgwPxJtCwBq__NeHLw":
-        setMatchData(John);
+        // setMatchData(John);
         setSelectedPlayer("Jar");
         break;
 
       case "diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIPUZlPo9adlsdFYU6Sr8NzQJjiJXnPb6A":
-        setMatchData(Michael);
+        // setMatchData(Michael);
         setSelectedPlayer("MrWarwickWide");
         break;
 
       case "i4E4IYdhi9-JXuF6hchhPdPC6clE8jOPwBrYBLG7xEKDRk3Y-Fqtw-tcSX0FGn_wo4RY3PZG3MUdlw":
-        setMatchData(Sam);
+        // setMatchData(Sam);
         setSelectedPlayer("SemThigh");
         break;
 
       case "TDQjFdHq3qPgUtc1VNmpCOBwQpwAPEeRDuqws_7oYv3SVQqzAgNfXPtzjpSpmdptJMTyx6nwLzYutA":
-        setMatchData(Erik);
+        // setMatchData(Erik);
         setSelectedPlayer("BigLeaguePlayer");
         break;
 
       case "XPCafNC_zNQCoppRjcKZWzk8JQ3zGjt6lDWqX3gQgDVoWhvjkbbT9DOrh9ZibvjJ_VVy0EzawQLTVw":
-        setMatchData(Ian);
+        // setMatchData(Ian);
         setSelectedPlayer("ThiccShinobi2");
         break;
 
       case "Wo7YQhhVUI-sHRN03UKEKFV3N5J7TpF3W1l_xos-gf45P8qKCKOaAgjzRL36Qb_XXq-3-d68Yz72mQ":
-        setMatchData(Josh);
+        // setMatchData(Josh);
         setSelectedPlayer("Starmany");
         break;
 

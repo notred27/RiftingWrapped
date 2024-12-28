@@ -4,11 +4,12 @@
 /.pnp
 .pnp.js
 
+/src/player_data
 # testing
 /coverage
 /venv
 /__pycache__
-
+/match_names
 
 # production
 /build
