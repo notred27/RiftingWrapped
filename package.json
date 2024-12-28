@@ -1,6 +1,6 @@
 {
   "name": "rifting-wrapped",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "proxy": "http://localhost:5000",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
@@ -45,7 +45,9 @@
     "@babel/preset-react": "^7.26.3"
   },
   "description": "A sample review of a lol player's yearly stats",
-  "main": "index.js",
+  "main": "src/index.js",
+  "type": "module",
+  
   "repository": {
     "type": "git",
     "url": "git+https://github.com/notred27/RiftingWrapped.git"
