@@ -24,7 +24,7 @@ import DateSection from './DateSection.js';
 
 
 
-function App() {
+function RiftRecap() {
   const [puuid, setPuuid] = useState("");
   const [selectedPlayer, setSelectedPlayer] = useState("");
   const [matchData, setMatchData] = useState([]);
@@ -351,4 +351,4 @@ function App() {
   );
 }
 
-export default App;
+export default RiftRecap;
