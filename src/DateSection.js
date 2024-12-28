@@ -1,4 +1,4 @@
-import CalanderGraph from "./graphs/CalanderGraph";
+import CalanderGraph from "./graphs/CalanderGraph.js";
 
 export default function DateSection({puuid, matchData}) {
     if(matchData.length <= 0){

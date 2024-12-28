@@ -1,4 +1,4 @@
-import PingGraph from "./graphs/PingGraph"
+import PingGraph from "./graphs/PingGraph.js"
 
 
 export default function PingSection({ puuid, matchData }) {
