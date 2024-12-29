@@ -23,7 +23,7 @@ import TotalTimeBreakdown from './TotalTimeBreakdown.js';
 import DateSection from './DateSection.js';
 
 
-import TodoList from './TodoList.tsx';
+import TodoList from './TodoList.js';
 
 
 

@@ -40,6 +40,12 @@
               "list",
               "write",
               "delete"
+            ],
+            "entityidentity": [
+              "get",
+              "list",
+              "write",
+              "delete"
             ]
           }
         }
