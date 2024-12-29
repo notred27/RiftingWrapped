@@ -1,29 +1,29 @@
 import React from 'react';
-import { uploadData } from 'aws-amplify/storage';
+// import { uploadData } from 'aws-amplify/storage';
 
 import { downloadData } from 'aws-amplify/storage';
 
 
 
 
-export default function TodoList() {
-  const [file, setFile] = React.useState();
+export default function PlayerDataStorage({setData, playerName, puuid}) {
+  // const [file, setFile] = React.useState();
 
-  const handleChange = (event) => {
-    setFile(event.target.files[0]);
-  };
+  // const handleChange = (event) => {
+  //   setFile(event.target.files[0]);
+  // };
 
 
   async function getFile() {
     console.log("Fetching")
     try {
       const downloadResult = await downloadData({
-        path: "player-data/MrWarwickWide_match_data.json"
+        path: `player-data/${playerName}_match_data.json`
       }).result;
-      const text = await downloadResult.body.json();
-      // Alternatively, you can use `downloadResult.body.blob()`
-      // or `downloadResult.body.json()` get read body in Blob or JSON format.
-      console.log('Succeed: ', text);
+
+      const text = await downloadResult.body.text();
+
+      setData(puuid, JSON.parse(text));
     } catch (error) {
       console.log('Error : ', error);
     }
@@ -33,8 +33,8 @@ export default function TodoList() {
 
 
   return (
-    <div>
-      <input type="file" onChange={handleChange} />
+    <div >
+      {/* <input type="file" onChange={handleChange} />
       <button
         onClick={() => {
           uploadData({
@@ -46,9 +46,9 @@ export default function TodoList() {
         }
       }>
         Upload
-      </button>
+      </button> */}
 
-      <button onClick={getFile}>Get file</button>
+      <button onClick={getFile}>{playerName}</button>
     </div>
   );
 }

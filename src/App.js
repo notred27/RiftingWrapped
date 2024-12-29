@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 
 // Use lazy or await for better performance
@@ -23,7 +23,7 @@ import TotalTimeBreakdown from './TotalTimeBreakdown.js';
 import DateSection from './DateSection.js';
 
 
-import TodoList from './TodoList.js';
+import PlayerDataStorage from './TodoList.js';
 
 
 
@@ -173,13 +173,13 @@ function App() {
 
 
   // Set precalculated puuid
-  function get_puuid_static(id) {
+  function get_puuid_static(id, json) {
     setPuuid(id)
+
 
 
     switch (id) {
       case "DtXnq3chwI7rBuqeyQJcCwmIyw12dVJwf-FqbaZiuU5X0JGjdjT1Y1Zt5sX3TgwPxJtCwBq__NeHLw":
-        // setMatchData(John);
         setSelectedPlayer("Jar");
         break;
 
@@ -211,6 +211,9 @@ function App() {
       default:
         break;
     }
+
+    setMatchData(json);
+
   }
 
 
@@ -232,6 +235,9 @@ function App() {
     }
   }
 
+  function Loading() {
+    return <h2>🌀 Loading...</h2>;
+  }
 
 
   return (
@@ -254,19 +260,28 @@ function App() {
 
           <div id='playerSelect' className='dropdown_main' onClick={toggleDropdown}>Select A Player To Start</div>
           <div id='dropdown_menu1' className='dropdown_menu'>
+            {/* 
             <button onClick={() => { get_puuid_static("TDQjFdHq3qPgUtc1VNmpCOBwQpwAPEeRDuqws_7oYv3SVQqzAgNfXPtzjpSpmdptJMTyx6nwLzYutA") }}>Bigleagueplayer</button><br />
             <button onClick={() => { get_puuid_static("DtXnq3chwI7rBuqeyQJcCwmIyw12dVJwf-FqbaZiuU5X0JGjdjT1Y1Zt5sX3TgwPxJtCwBq__NeHLw") }}>Jar</button><br />
             <button onClick={() => { get_puuid_static("diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIPUZlPo9adlsdFYU6Sr8NzQJjiJXnPb6A") }}>MrWarwickWide</button><br />
             <button onClick={() => { get_puuid_static("i4E4IYdhi9-JXuF6hchhPdPC6clE8jOPwBrYBLG7xEKDRk3Y-Fqtw-tcSX0FGn_wo4RY3PZG3MUdlw") }}>SemThigh</button><br />
             <button onClick={() => { get_puuid_static("Wo7YQhhVUI-sHRN03UKEKFV3N5J7TpF3W1l_xos-gf45P8qKCKOaAgjzRL36Qb_XXq-3-d68Yz72mQ") }}>Starmany</button><br />
             <button onClick={() => { get_puuid_static("XPCafNC_zNQCoppRjcKZWzk8JQ3zGjt6lDWqX3gQgDVoWhvjkbbT9DOrh9ZibvjJ_VVy0EzawQLTVw") }}>ThiccShinobi2</button><br />
+          */}
+         
+            <PlayerDataStorage setData = {get_puuid_static} playerName={"Bigleagueplayer"} puuid={"TDQjFdHq3qPgUtc1VNmpCOBwQpwAPEeRDuqws_7oYv3SVQqzAgNfXPtzjpSpmdptJMTyx6nwLzYutA"}></PlayerDataStorage>
+            <PlayerDataStorage setData = {get_puuid_static} playerName={"Jar"} puuid={"DtXnq3chwI7rBuqeyQJcCwmIyw12dVJwf-FqbaZiuU5X0JGjdjT1Y1Zt5sX3TgwPxJtCwBq__NeHLw"}></PlayerDataStorage>
+            <PlayerDataStorage setData = {get_puuid_static} playerName={"MrWarwickWide"} puuid={"diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIPUZlPo9adlsdFYU6Sr8NzQJjiJXnPb6A"}></PlayerDataStorage>
+            <PlayerDataStorage setData = {get_puuid_static} playerName={"SemThigh"} puuid={"i4E4IYdhi9-JXuF6hchhPdPC6clE8jOPwBrYBLG7xEKDRk3Y-Fqtw-tcSX0FGn_wo4RY3PZG3MUdlw"}></PlayerDataStorage>
+            <PlayerDataStorage setData = {get_puuid_static} playerName={"Starmany"} puuid={"Wo7YQhhVUI-sHRN03UKEKFV3N5J7TpF3W1l_xos-gf45P8qKCKOaAgjzRL36Qb_XXq-3-d68Yz72mQ"}></PlayerDataStorage>
+            <PlayerDataStorage setData = {get_puuid_static} playerName={"ThiccShinobi2"} puuid={"XPCafNC_zNQCoppRjcKZWzk8JQ3zGjt6lDWqX3gQgDVoWhvjkbbT9DOrh9ZibvjJ_VVy0EzawQLTVw"}></PlayerDataStorage>
+         
           </div>
         </span>
 
       </div>
       
 
-            <TodoList></TodoList>
 
       {matchData.length > 0 && DateSec}
 
@@ -278,11 +293,6 @@ function App() {
 
 
       {matchData.length > 0 && FFSec}
-
-
-
-
-
 
 
 
