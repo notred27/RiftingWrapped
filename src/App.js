@@ -23,7 +23,7 @@ import TotalTimeBreakdown from './TotalTimeBreakdown.js';
 import DateSection from './DateSection.js';
 
 
-import PlayerDataStorage from './TodoList.js';
+import PlayerDataStorage from './PlayerDataStorage.js';
 
 
 
@@ -269,8 +269,8 @@ function App() {
             <button onClick={() => { get_puuid_static("XPCafNC_zNQCoppRjcKZWzk8JQ3zGjt6lDWqX3gQgDVoWhvjkbbT9DOrh9ZibvjJ_VVy0EzawQLTVw") }}>ThiccShinobi2</button><br />
           */}
          
-            <PlayerDataStorage setData = {get_puuid_static} playerName={"Bigleagueplayer"} puuid={"TDQjFdHq3qPgUtc1VNmpCOBwQpwAPEeRDuqws_7oYv3SVQqzAgNfXPtzjpSpmdptJMTyx6nwLzYutA"}></PlayerDataStorage>
-            <PlayerDataStorage setData = {get_puuid_static} playerName={"Jar"} puuid={"DtXnq3chwI7rBuqeyQJcCwmIyw12dVJwf-FqbaZiuU5X0JGjdjT1Y1Zt5sX3TgwPxJtCwBq__NeHLw"}></PlayerDataStorage>
+            <PlayerDataStorage setData = {get_puuid_static} playerName={"bigleagueplayer"} puuid={"TDQjFdHq3qPgUtc1VNmpCOBwQpwAPEeRDuqws_7oYv3SVQqzAgNfXPtzjpSpmdptJMTyx6nwLzYutA"}></PlayerDataStorage>
+            <PlayerDataStorage setData = {get_puuid_static} playerName={"jar"} puuid={"DtXnq3chwI7rBuqeyQJcCwmIyw12dVJwf-FqbaZiuU5X0JGjdjT1Y1Zt5sX3TgwPxJtCwBq__NeHLw"}></PlayerDataStorage>
             <PlayerDataStorage setData = {get_puuid_static} playerName={"MrWarwickWide"} puuid={"diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIPUZlPo9adlsdFYU6Sr8NzQJjiJXnPb6A"}></PlayerDataStorage>
             <PlayerDataStorage setData = {get_puuid_static} playerName={"SemThigh"} puuid={"i4E4IYdhi9-JXuF6hchhPdPC6clE8jOPwBrYBLG7xEKDRk3Y-Fqtw-tcSX0FGn_wo4RY3PZG3MUdlw"}></PlayerDataStorage>
             <PlayerDataStorage setData = {get_puuid_static} playerName={"Starmany"} puuid={"Wo7YQhhVUI-sHRN03UKEKFV3N5J7TpF3W1l_xos-gf45P8qKCKOaAgjzRL36Qb_XXq-3-d68Yz72mQ"}></PlayerDataStorage>

@@ -16,14 +16,14 @@ export default function TotalTimeBreakdown({ puuid, matchData }) {
     let baronTime = 0
     let dragonTime = 0
 
-    for(let i = 0; i < matchData.length; i++) {
+    for (let i = 0; i < matchData.length; i++) {
         const targetPlayer = matchData[i].metadata.participants.indexOf(puuid)
 
         totalTime += matchData[i].info.gameDuration
         ccTime += matchData[i].info.participants[targetPlayer].totalTimeCCDealt
         deadTime += matchData[i].info.participants[targetPlayer].totalTimeSpentDead
 
-        if(matchData[i].info.gameDuration > 25 * 60) {
+        if (matchData[i].info.gameDuration > 25 * 60) {
             roamTime += matchData[i].info.gameDuration - (25 * 60)
         }
 
@@ -49,37 +49,25 @@ export default function TotalTimeBreakdown({ puuid, matchData }) {
 
     totalTime = Math.floor(totalTime / 3600)
 
-    
-    return(
-        <div style={{display:"block", paddingBottom:"200px", textAlign:"center"}}>
+
+    return (
+        <div style={{ display: "block", paddingBottom: "200px", textAlign: "center" }}>
 
 
-        <div style={{display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center"}}>
-            {/* time breakdown: <br/> 
-            Total time: {Math.round(totalTime / 360) /10 } <br/> 
-            CC time: {Math.round(ccTime / 360) /10} <br/> 
-            Dead time: {Math.round(deadTime / 360) /10} <br/> 
-            Roam time: {Math.round(roamTime / 360) /10} <br/> 
-            Baron time: {Math.round(baronTime * 40 / 360) /10} <br/> 
-            Time spent baron buffed: {Math.round(baronTime * 180 / 360) /10} <br/> 
-
-            Dragon time: {Math.round(dragonTime * 50 / 360) /10} <br/> 
-
-            Other time: {timeBreakdown} <br/> 
-
-            Time spent playing winning games? */}
-
-<h2 className="emphasize">In Conclusion</h2>
+            <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
 
 
-            <TotalTimeGraph times={timeBreakdown} labels={timeLabels}></TotalTimeGraph>
+                <h2 className="emphasize">In Conclusion</h2>
 
-            <h2>You spent <span className="emphasize">{totalTime} hours</span><br/> playing draft pick this year.</h2>
 
-            <h4>That's equivalent to <span className="emphasize">{Math.floor(totalTime / 8)} hours</span> or <span className="emphasize">{Math.floor(totalTime / 24)} full days</span>, for better or worse.</h4>
-            
+                <TotalTimeGraph times={timeBreakdown} labels={timeLabels}></TotalTimeGraph>
 
-        </div>
+                <h2>You spent <span className="emphasize">{totalTime} hours</span><br /> playing draft pick this year.</h2>
+
+                <h4>That's equivalent to <span className="emphasize">{Math.floor(totalTime / 8)} hours</span> or <span className="emphasize">{Math.floor(totalTime / 24)} full days</span>, for better or worse.</h4>
+
+
+            </div>
 
         </div>
 

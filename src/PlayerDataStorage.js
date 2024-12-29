@@ -7,7 +7,7 @@ import { downloadData } from 'aws-amplify/storage';
 
 
 export default function PlayerDataStorage({setData, playerName, puuid}) {
-  // const [file, setFile] = React.useState();
+  const [file, setFile] = React.useState();
 
   // const handleChange = (event) => {
   //   setFile(event.target.files[0]);
