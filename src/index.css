@@ -64,6 +64,7 @@ h4{
   display: none;
   position: absolute;
   width: 250px;
+  z-index: 5;
 }
 
 .dropdown_menu button{
@@ -86,6 +87,8 @@ h4{
 
 .show {
   display: block;
+  z-index: 5;
+
 }
 
 

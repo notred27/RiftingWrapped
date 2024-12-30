@@ -5,7 +5,7 @@ import json
 
 key = dotenv.dotenv_values(".env")["REACT_APP_API_KEY"]
 
-name = "Starmany#NA1"
+name = "lost panda#7355"
 
 tags = name.split("#")
 
@@ -84,5 +84,5 @@ def getMatchInfo():
         
 
 
-
+# getMatchIds(puuid)
 getMatchInfo()

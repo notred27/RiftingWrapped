@@ -271,6 +271,7 @@ function App() {
          
             <PlayerDataStorage setData = {get_puuid_static} playerName={"bigleagueplayer"} puuid={"TDQjFdHq3qPgUtc1VNmpCOBwQpwAPEeRDuqws_7oYv3SVQqzAgNfXPtzjpSpmdptJMTyx6nwLzYutA"}></PlayerDataStorage>
             <PlayerDataStorage setData = {get_puuid_static} playerName={"jar"} puuid={"DtXnq3chwI7rBuqeyQJcCwmIyw12dVJwf-FqbaZiuU5X0JGjdjT1Y1Zt5sX3TgwPxJtCwBq__NeHLw"}></PlayerDataStorage>
+            <PlayerDataStorage setData = {get_puuid_static} playerName={"LostPanda"} puuid={"KT-IOAcBE30hmg2NjLILeuaqZR-KKtewV5eOPeXpioqot_yx4Qwlh8BKq4KkwQhxLJu45uiX3PkvRg"}></PlayerDataStorage>
             <PlayerDataStorage setData = {get_puuid_static} playerName={"MrWarwickWide"} puuid={"diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIPUZlPo9adlsdFYU6Sr8NzQJjiJXnPb6A"}></PlayerDataStorage>
             <PlayerDataStorage setData = {get_puuid_static} playerName={"SemThigh"} puuid={"i4E4IYdhi9-JXuF6hchhPdPC6clE8jOPwBrYBLG7xEKDRk3Y-Fqtw-tcSX0FGn_wo4RY3PZG3MUdlw"}></PlayerDataStorage>
             <PlayerDataStorage setData = {get_puuid_static} playerName={"Starmany"} puuid={"Wo7YQhhVUI-sHRN03UKEKFV3N5J7TpF3W1l_xos-gf45P8qKCKOaAgjzRL36Qb_XXq-3-d68Yz72mQ"}></PlayerDataStorage>
