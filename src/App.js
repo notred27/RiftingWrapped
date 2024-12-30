@@ -208,6 +208,10 @@ function App() {
         setSelectedPlayer("Starmany");
         break;
 
+      case "KT-IOAcBE30hmg2NjLILeuaqZR-KKtewV5eOPeXpioqot_yx4Qwlh8BKq4KkwQhxLJu45uiX3PkvRg":
+        setSelectedPlayer("LostPanda");
+        break;
+
       default:
         break;
     }
@@ -235,9 +239,7 @@ function App() {
     }
   }
 
-  function Loading() {
-    return <h2>🌀 Loading...</h2>;
-  }
+
 
 
   return (
