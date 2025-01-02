@@ -33,28 +33,23 @@ export default function FFSection({puuid, matchData}) {
         } else {
             totalNonSurrenderTime += matchData[i].info.gameDuration
         }
-        
-        
-        
     }
 
 
     return (
-        <div style={{display: "flex", flexDirection: "column", alignItems: "center", gap:"20px"}}> 
+        <div className='centeredColumn' > 
 
             <img src={ff_img} alt='ff_vote' />
 
+            <div id='SurrenderGrid'>
 
-            <div style={{ display: "grid", gridTemplateColumns:"50% 50%", columnGap:"20px", width:"80vw", height:"60px"}}>
+                <h2>This year, your team forfeited <br/><span className='emphasize' style={{fontSize: "30px" }}>{teamff}</span> times.</h2>
 
-                <h2 style={{gridRow:"1", fontWeight: "300", textAlign: "center", height: "100px", margin: "0px" }}>This year, your team forfeited <br/><span style={{ fontWeight: "800", fontSize: "30px" }}>{teamff}</span> times.</h2>
-
-                <h2 style={{gridRow:"1", fontWeight: "300", textAlign: "center", height: "100px", margin: "0px" }}>Opponents forfeited against you <br/><span style={{ fontWeight: "800", fontSize: "30px" }}>{opponentff}</span> times.</h2>
+                <h2>Opponents forfeited against you <br/><span className='emphasize' style={{fontSize: "30px" }}>{opponentff}</span> times.</h2>
             </div>
 
-            <h3 style={{textAlign:"center", margin:"0px"}}><span style={{ fontWeight: "800", fontSize: "25px" }}>{under16}</span> of these games ended before 16 minutes!</h3>
-            <br/>
-            <h3 style={{textAlign:"center"}}>It's estimated that you saved <span style={{ fontWeight: "800", fontSize: "20px" }}>{Math.floor((totalNonSurrenderTime / (matchData.length - teamff - opponentff) * (teamff + opponentff) - totalSurrenderTime) / 36) / 100} hours</span> of playtime<br/> from these early surrenders.</h3>
+            <h3 style={{textAlign:"center", margin:"0px"}}><br/><span className='emphasize' style={{fontSize:"25px"}}>{under16}</span> of these games ended before 16 minutes!</h3>
+            <h3 style={{textAlign:"center"}}>It's estimated that you saved <span className='emphasize' style={{fontSize:"25px"}}>{Math.floor((totalNonSurrenderTime / (matchData.length - teamff - opponentff) * (teamff + opponentff) - totalSurrenderTime) / 36) / 100} hours</span> of playtime<br/> from these early surrenders.</h3>
         </div>
     )
 }

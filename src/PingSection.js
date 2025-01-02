@@ -30,7 +30,7 @@ export default function PingSection({ puuid, matchData }) {
         <div>
             <h2 className="emphasize" style={{ textAlign: "center" }}>You also <i>loved</i> to alert your teammates</h2>
 
-            <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+            <div className="centeredRow">
 
                 <div style={{ width: "50vw", textAlign: "right", paddingRight: "50px" }}>
                     <h2>You made a total of <br /><span className="emphasize">{pingArr.reduce((sum, x) => sum + x, 0).toLocaleString()} pings</span> to your <br />teammates this year,<br />
@@ -42,7 +42,6 @@ export default function PingSection({ puuid, matchData }) {
 
                 <div style={{ width: "40vw", height: "300px" }}>
                     <PingGraph pings={pingArr} labels={labels}></PingGraph>
-
                 </div>
 
             </div>

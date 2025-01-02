@@ -18,7 +18,7 @@ export default function DateSection({puuid, matchData}) {
 
     return (
         <div >
-            <h1 style={{fontWeight:"800"}}>Let's dive in to your performance this year.</h1>
+            <h1 className='emphasize'>Let's dive in to your performance this year.</h1>
 
             <h4 style={{textAlign:"left", fontWeight:"bolder", margin:"0px"}}>Breakdown of Games by Date</h4>
             <CalanderGraph dates ={dates}></CalanderGraph>
