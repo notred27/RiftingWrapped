@@ -56,11 +56,13 @@
 .tableEntry{
     padding: 5px 0px 5px 0px;
     display: grid;
-    grid-template-columns: 15% 10% 20% 20% 15% 20%;
-    min-width: 45vw; 
-    width: 45vw;
-    max-width: 300px;
-    background-color: #3a3561;
+    grid-template-columns: 20% 20% 20% 20%  20%;
+    min-width: 600px; 
+    /* width: 45vw;
+    max-width: 300px; */
+    justify-content: center;
+    align-items: center;
+    /* background-color: #3a3561; */
 
     /* justify-content: center;
     align-items: center; */

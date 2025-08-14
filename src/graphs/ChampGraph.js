@@ -6,7 +6,7 @@ import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, Li
 // Register the necessary components
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
-function HorizontalBarChart({champs, values}) {
+function HorizontalBarChart({ champs, values }) {
   // Example data for the chart
   const data = {
     labels: champs,
@@ -21,7 +21,7 @@ function HorizontalBarChart({champs, values}) {
   };
 
   const options = {
-    indexAxis: 'y', // Makes the bar chart horizontal
+    indexAxis: 'y',
     responsive: true,
     scales: {
       x: {
@@ -31,26 +31,40 @@ function HorizontalBarChart({champs, values}) {
 
       y: {
         grid: {
-            display: false, // Hide the grid lines
-          },
-          ticks: {
-            color:"#edece5",
-            fontSize:20,
+          display: false,
+        },
+        ticks: {
+          color: "#fffce8",
+          fontSize: 20,
 
-            display: true, // Keep the ticks visible
-          },
-          border: {
-            display: false, // Hide the border (line)
-          },
+          display: true,
+        },
+        border: {
+          display: false,
+        },
 
       }
     },
     plugins: {
-        legend: {
-            display: false,
+      legend: {
+        display: false,
+      },
+      title: {
+        display: true,
+        text: 'Most Played Champions',
+        position: 'bottom',
+        color: '#fffce8',
+        font: {
+          size: 15,
+          weight: 'bold',
+        },
+        padding: {
+          top: 2,
+          bottom: 0
         }
+      },
     }
-    
+
   };
 
   return (

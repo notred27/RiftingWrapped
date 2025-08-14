@@ -1,30 +1,29 @@
-// PieChart.js
-import React from 'react';
-import { Doughnut  } from 'react-chartjs-2';
+import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, CategoryScale } from 'chart.js';
 
-// Register necessary Chart.js components
+
 ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale);
 
-function PingGraph({pings, labels}){
+function PingGraph({ pings, labels }) {
   // Example data for the pie chart
   const data = {
-    labels: labels, 
+    labels: labels,
     datasets: [
       {
-        data: pings, 
-        backgroundColor: ["#C1292E","#96C9DC","#449DD1","#138A36","#C6ECAE","#D5C7BC","#FFC100","#F06C9B"],
-        borderWidth: 0,
+        data: pings,
+        backgroundColor: ["#fa7970", "#ea6a78", "#d65e7e", "#bf5582", "#a64e83", "#8c4880", "#72437a", "#583d71", "#403665", "#292f56"],
+        borderWidth: 2,
+        borderColor : "#1a0a1fff"
       },
     ],
   };
 
 
   const options = {
-    responsive: true, // Make the chart responsive
+    responsive: true,
     plugins: {
       legend: {
-        position: 'right', 
+        position: 'right',
       },
       tooltip: {
         callbacks: {
@@ -35,9 +34,7 @@ function PingGraph({pings, labels}){
   };
 
   return (
-
-      <Doughnut data={data} options={options} />
-
+    <Doughnut data={data} options={options} />
   );
 };
 

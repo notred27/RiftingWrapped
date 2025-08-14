@@ -10,20 +10,9 @@ ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 function KDAgraph({kills, deaths}) {
 
-    const largest = Math.max(Math.max(...kills), Math.max(...deaths)) + 1
+    const largest = Math.max(kills.length, deaths.length) 
     const labels =  new Array(largest).fill(0).map((_, index) => index)
 
-    const killHist = new Array(largest).fill(0)
-
-    for(let i = 0; i < kills.length; i++) {
-        killHist[kills[i]] += 1
-    }
-
-    const deathHist = new Array(largest).fill(0)
-
-    for(let i = 0; i < deaths.length; i++) {
-        deathHist[deaths[i]] += 1
-    }
 
   // Example data for the chart
   const data = {
@@ -31,14 +20,14 @@ function KDAgraph({kills, deaths}) {
     datasets: [
       {
         label: 'Kills',
-        data: killHist,
+        data: kills,
         backgroundColor: '#fa7970',
         borderColor: '#fa7970',
         borderWidth: 1,
       },
       {
         label: 'Deaths',
-        data: deathHist,
+        data: deaths,
         backgroundColor: '#292f56',
         borderColor: '#292f56',
         borderWidth: 1,
