@@ -5,7 +5,6 @@ import KDAgraph from './../graphs/KDAgraph.js'
 import MapOverlay from './../graphs/MapOverlay.js';
 
 export default function KDAsection({ puuid, year }) {
-
     const [loading, setLoading] = useState(true);
     const [highestKillGames, setHighestKillGames] = useState(null);
 
@@ -27,12 +26,12 @@ export default function KDAsection({ puuid, year }) {
             setLoading(true);
             try {
                 const [deathsRes, killsRes, totalsRes, killFreq, deathFreq, kdaRes] = await Promise.all([
-                    fetch(`http://localhost:5000/highestDeathGames/${puuid}?year=${year}`),
-                    fetch(`http://localhost:5000/highestKillGames/${puuid}?year=${year}`),
-                    fetch(`http://localhost:5000/matchTotals/${puuid}?year=${year}`),
-                    fetch(`http://localhost:5000/killFrequency/${puuid}?year=${year}`),
-                    fetch(`http://localhost:5000/deathFrequency/${puuid}?year=${year}`),
-                    fetch(`http://localhost:5000/kda/${puuid}?year=${year}`),
+                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/highestDeathGames/${puuid}?year=${year}`),
+                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/highestKillGames/${puuid}?year=${year}`),
+                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/matchTotals/${puuid}?year=${year}`),
+                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/killFrequency/${puuid}?year=${year}`),
+                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/deathFrequency/${puuid}?year=${year}`),
+                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/kda/${puuid}?year=${year}`),
                 ]);
 
                 if (!deathsRes.ok || !killsRes.ok || !totalsRes.ok || !killFreq.ok || !deathFreq.ok || !kdaRes.ok) {
@@ -88,7 +87,7 @@ export default function KDAsection({ puuid, year }) {
                     <h4 className='tableLabel'>Your Games With The Most Kills</h4>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-evenly" }}>
+                <div className='verticalSpacing'>
                     <h2>
                         You killed <span className='emphasize'>{combatStats.totalKills.toLocaleString()}</span> champs,
                         <br />
@@ -113,12 +112,8 @@ export default function KDAsection({ puuid, year }) {
             </div>
 
 
-
-
-
-
             <div className='splitColumn'>
-                <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-evenly", textAlign: "right" }}>
+                <div className='verticalSpacing' style={{textAlign: "right" }}>
                     <h2>
                         However, you were killed
                         <br />
@@ -155,7 +150,7 @@ export default function KDAsection({ puuid, year }) {
             </div>
 
 
-            <div id='KDAGraphContainer'>
+            <div className='chartContainer'>
                 <KDAgraph kills={killFreqArr} deaths={deathFreqArr} />
             </div>
 

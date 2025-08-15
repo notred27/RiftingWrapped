@@ -5,12 +5,11 @@ export default function FFSection({ puuid, year }) {
     const [ffData, setFfData] = useState(null);
     const [loading, setLoading] = useState(true);
 
-
     useEffect(() => {
         async function fetchFFData() {
 
             try {
-                const res = await fetch(`http://localhost:5000/forfeit/${puuid}?year=${year}`);
+                const res = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/forfeit/${puuid}?year=${year}`);
 
                 if (!res.ok) {
                     throw new Error("Error from database.")
@@ -40,9 +39,8 @@ export default function FFSection({ puuid, year }) {
     const secondsSaved = estimatedFullDuration - ffData["totalSurrenderTime"];
     const hoursSaved = Math.floor(secondsSaved / 36) / 100;
 
-
-
     const icons = [];
+
     for (let i = 0; i < Math.floor(hoursSaved + 0.5); i++) {
         const isLast = i === Math.floor(hoursSaved + 0.5) - 1 && Math.floor(hoursSaved + 0.5) !== Math.floor(hoursSaved);
         icons.push(
@@ -54,8 +52,8 @@ export default function FFSection({ puuid, year }) {
                     fontSize: "40px",
                     overflow: "hidden",
                     display: "inline-block",
-                    width: isLast ? "0.5em" : "auto", // only show half of the last icon
-                    clipPath: isLast ? "inset(0 30% 0 0)" : "none", // clip right half
+                    width: isLast ? "0.5em" : "auto",
+                    clipPath: isLast ? "inset(0 30% 0 0)" : "none",
                 }}
             >&nbsp;</i>);
 
@@ -68,22 +66,18 @@ export default function FFSection({ puuid, year }) {
     return (
         <div className='centeredColumn' >
 
-            {/* <img src={ff_img} alt='ff_vote' /> */}
-
             <div id='SurrenderGrid'>
 
-                <h2>This year, your team forfeited <br /><span className='emphasize' style={{ fontSize: "30px", color:"#741616" }}>{ffData["numSurrenders"] - ffData["numSurrendersWon"]} times</span>.</h2>
+                <h2>This year, your team forfeited <br /><span className='emphasize' style={{ color: "#741616" }}>{ffData["numSurrenders"] - ffData["numSurrendersWon"]} times</span>.</h2>
 
-                <h2>Opponents forfeited against you <br /><span className='emphasize' style={{ fontSize: "30px", color:"#008e25"  }}>{ffData["numSurrendersWon"]} times</span>.</h2>
-            
-                <h2><span className='emphasize' style={{ fontSize: "30px", color:"#9c9c9cff"}}>{ffData["gamesEndingBefore16"]} of these games</span><br />ended before 16 minutes!</h2>
-            
-            
+                <h2>Opponents forfeited against you <br /><span className='emphasize' style={{ color: "#008e25" }}>{ffData["numSurrendersWon"]} times</span>.</h2>
+
+                <h2><span className='emphasize' style={{ color: "#9c9c9cff" }}>{ffData["gamesEndingBefore16"]} of these games</span><br />ended before 16 minutes!</h2>
             </div>
 
             <br />
 
-            <h2 style={{ textAlign: "center" }}>{icons} <br/><br/>It's estimated that you saved at least<br /> <span className='emphasize' style={{ fontSize: "40px" }}>{hoursSaved} hours of playtime</span><br /> from these early surrenders.</h2>
+            <h2 style={{ textAlign: "center" }}>{icons} <br /><br />It's estimated that you saved at least<br /> <span className='emphasize' style={{ fontSize: "40px" }}>{hoursSaved} hours of playtime</span><br /> from these early surrenders.</h2>
         </div>
     )
 }

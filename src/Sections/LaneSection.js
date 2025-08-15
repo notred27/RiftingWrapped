@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 
 import TableEntry from '../TableEntry.js';
-
 import RoleGraph from '../graphs/RoleGraph.js';
 import ObjectiveBubbleChart from '../graphs/ObjectiveBubbleChart.js';
 import PingGraph from '../graphs/PingGraph.js';
-
+import SectionImage from './../SectionImage.js';
 
 export default function LaneSection({ puuid, year }) {
     const [roleArr, setRoleArr] = useState([]);
@@ -19,10 +18,10 @@ export default function LaneSection({ puuid, year }) {
         async function fetchRoles() {
             try {
                 const [roles, cs, objectives, pings] = await Promise.all([
-                    fetch(`http://localhost:5000/role/${puuid}?year=${year}`),
-                    fetch(`http://localhost:5000/cs/${puuid}?year=${year}`),
-                    fetch(`http://localhost:5000/objectives/${puuid}?year=${year}`),
-                    fetch(`http://localhost:5000/pings/${puuid}?year=${year}`),
+                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/role/${puuid}?year=${year}`),
+                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/cs/${puuid}?year=${year}`),
+                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/objectives/${puuid}?year=${year}`),
+                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/pings/${puuid}?year=${year}`),
                 ]);
                 if (!roles.ok || !cs.ok || !objectives.ok || !pings.ok) {
                     throw new Error('Error from database.');
@@ -85,6 +84,8 @@ export default function LaneSection({ puuid, year }) {
         if (puuid) {
             fetchRoles();
         }
+
+
     }, [puuid, year]);
 
     if (loading) return <div>Loading...</div>;
@@ -96,47 +97,10 @@ export default function LaneSection({ puuid, year }) {
 
     return (
         <>
-            <div style={{ height: '225px', width: "fit-content", overflow: 'hidden', position: 'relative' }}>
-                <img
-                    src={`https://cmsassets.rgpub.io/sanity/images/dsfx7636/news_live/89a02acb4e25a0083d9072ca226c25eac75da6bd-1280x720.jpg?auto=format&fit=crop&q=80&h=537&w=956&crop=center`}
-                    alt="Background"
-                    style={{
-                        objectFit: 'cover',
-                        objectPosition: 'center',
-                        transform: 'translateY(-40%)',
-                        height: 'auto',
-                        zIndex: 0,
-                        display: 'block',
-                        margin: 'auto',
-                        maxWidth: '80vw',
-                        minHeight: '450px'
-                    }}
-                />
-
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '15%',
-                        height: '100%',
-                        background: 'linear-gradient(to right, #0d1317, transparent)',
-                        pointerEvents: 'none',
-                    }}
-                />
-
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        right: 0,
-                        width: '15%',
-                        height: '100%',
-                        background: 'linear-gradient(to left, #0d1317, transparent)',
-                        pointerEvents: 'none',
-                    }}
-                />
-            </div>
+            <SectionImage 
+                imgUrl={`https://cmsassets.rgpub.io/sanity/images/dsfx7636/news_live/89a02acb4e25a0083d9072ca226c25eac75da6bd-1280x720.jpg?auto=format&fit=crop&q=80&h=537&w=956&crop=center`}
+                offset = {"40"}
+            />
 
             <h2 className='emphasize'>Let's see how you did in your lane this year</h2>
 
@@ -176,7 +140,7 @@ export default function LaneSection({ puuid, year }) {
                 </div>
 
 
-                <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-evenly", textAlign: "right" }}>
+                <div className="verticalSpacing" style={{ textAlign: "right" }}>
                     <h2>
                         You hit new highs with
                         <br />
@@ -200,7 +164,7 @@ export default function LaneSection({ puuid, year }) {
 
             <div className='splitColumn'>
 
-                <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-evenly", textAlign: "left" }}>
+                <div className='verticalSpacing' >
                     <h2>
                         However, you also hit new
                         <br />
@@ -209,33 +173,24 @@ export default function LaneSection({ puuid, year }) {
                         you had <span className='emphasize'>less than 100 cs.</span>
                     </h2>
 
-
                     <h2>
                         This excludes special gamemodes,
                         <br />
                         games that lasted less than 15 minutes.
-
                     </h2>
-
                 </div>
-
 
                 <div>
                     {csArr.worstCs.map((game, idx) => <TableEntry key={`Lowest_CS_Entry_${idx}`} puuid={puuid} match={game} />)}
 
                     <h4 className='tableLabel'>Your Games With The Lowest CS</h4>
                 </div>
-
-
-
             </div>
 
 
             <div className='splitColumn'>
-
                 <div>
                     <h2 className='emphasize'>You also helped to take down tons of objectives,</h2>
-
 
                     <ObjectiveBubbleChart objectives={{
                         barons: objectiveArr["barons"],
@@ -254,8 +209,6 @@ export default function LaneSection({ puuid, year }) {
                         <br />
                         Let's just hope they listened.
                     </h2>
-
-
 
                     <div style={{ width: "400px", height: "500px" }}>
                         {pingArr && <PingGraph pings={Object.values(pingArr)} labels={Object.keys(pingArr)} />}

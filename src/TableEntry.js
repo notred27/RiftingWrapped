@@ -3,10 +3,8 @@ import mid from './images/mid.svg'
 import bot from './images/bot.svg'
 import sup from './images/sup.svg'
 import jg from './images/jg.svg'
-import './table.css'
 
-
-export default function TableEntry({puuid, match }) {
+export default function TableEntry({ puuid, match }) {
 
     const stats = match.stats
 
@@ -24,8 +22,7 @@ export default function TableEntry({puuid, match }) {
             case 9: return "Oct";
             case 10: return "Nov";
             case 11: return "Dec";
-            default:
-                return "";
+            default: return "";
         }
     }
 
@@ -42,9 +39,7 @@ export default function TableEntry({puuid, match }) {
         1900: "URF (Special)",
         2010: "Snow ARAM",
         2020: "Pick URF",
-
     }
-
 
 
     let img
@@ -76,14 +71,12 @@ export default function TableEntry({puuid, match }) {
     const date = new Date(match.matchInfo.gameCreated)
 
     return (
-        <div onClick={()=> window.open(`https://mobalytics.gg/lol/match/na/${match.stats.riotIdGameName}-${match.stats.riotIdTagline}/${match.stats.matchId.split("_")[1]}`, "_blank")} style={{ background: `${stats.win ? "linear-gradient(90deg, #18bd9b80 0%, rgba(49, 41, 85, 0.5) 100%)" : "linear-gradient(90deg, #c9678f80 0%, rgba(49, 41, 85, 0.5) 100%)"}`, borderRadius: "4px", marginBottom: "5px", cursor:"pointer"}}>
+        <div onClick={() => window.open(`https://mobalytics.gg/lol/match/na/${match.stats.riotIdGameName}-${match.stats.riotIdTagline}/${match.stats.matchId.split("_")[1]}`, "_blank")} style={{ background: `${stats.win ? "linear-gradient(90deg, #18bd9b80 0%, rgba(49, 41, 85, 0.5) 100%)" : "linear-gradient(90deg, #c9678f80 0%, rgba(49, 41, 85, 0.5) 100%)"}`, borderRadius: "4px", marginBottom: "5px", cursor: "pointer" }}>
 
 
             <span style={{ color: "#e2e2e2ff", fontSize: "0.8rem", fontWeight: "600", marginLeft: "10px", paddingTop: "5px" }}>{monthInt2String(date.getMonth())} {date.getDate()} ∙ {Math.floor(match.matchInfo.gameDuration / 60)} minutes</span>
 
             <div className='tableEntry' >
-
-
 
                 <div style={{ position: "relative", width: "50px", marginLeft: "20px" }}>
 
@@ -138,9 +131,6 @@ export default function TableEntry({puuid, match }) {
                 </div>
 
                 <p>{QUEUE_ID_MAP[match.queueId]}</p>
-
-
-
 
             </div>
 

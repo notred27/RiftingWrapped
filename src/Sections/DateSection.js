@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+
 import CalanderGraph from '../graphs/CalanderGraph';
 
 export default function DateSection({ puuid, year }) {
@@ -8,7 +9,7 @@ export default function DateSection({ puuid, year }) {
     useEffect(() => {
         async function fetchMonthlyStats() {
             try {
-                const response = await fetch(`http://localhost:5000/matchesByDate/${puuid}?year=${year}`);
+                const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/matchesByDate/${puuid}?year=${year}`);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -43,29 +44,23 @@ export default function DateSection({ puuid, year }) {
     }
 
     return (
-        <div>
-            <h1 className='emphasize'>Let's dive in to your performance this year.</h1>
+        <div style={{ textAlign: "center" }}>
+            <h1 className='emphasize'>Let's dive in to your performance in <span className='emphasize' style={{fontSize:"40px"}}>{year}</span>!</h1>
 
-            
-
-            <h2 style={{ textAlign: "center" }}>
+            <h2>
                 This year, you visited the Rift in <br />
-                <span style={{ fontSize: "40px", fontWeight: "800" }}>{totalGames} games of League</span><br />
+                <span className='emphasize' style={{fontSize:"40px"}}>{totalGames} games of League</span><br />
                 spread across <br />
-                <span style={{ fontSize: "40px", fontWeight: "800" }}>{totalUniqueDays} different days!</span>
+                <span className='emphasize' style={{fontSize:"40px"}}>{totalUniqueDays} different days!</span>
             </h2>
 
-            <h4 style={{ textAlign: "center" }}>
+            <h4>
                 With this dedication, you were hitting the Rift every{" "}
                 <span className="emphasize">
                     1 in {(Math.floor(3650 / totalUniqueDays) / 10).toFixed(1)} days
                 </span>.
             </h4>
 
-
-            <h4 style={{ textAlign: "left", fontWeight: "bolder", margin: "0px" }}>
-                Game Distribution by Month
-            </h4>
             <CalanderGraph dates={dates} />
         </div>
     );

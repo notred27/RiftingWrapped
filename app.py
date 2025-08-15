@@ -18,7 +18,7 @@ client = MongoClient(MONGO_URI)
 db = client['rifting-wrapped-2024']
 matches_collection = db['player-matches']
 
-
+player_collection = db['tracked-players']
 
 # Test endpoint for GET requests
 @app.route('/ping', methods=['GET'])
@@ -1188,7 +1188,7 @@ def get_all(puuid):
                 {"$project": {"_id": 0}},
 
             ]
-            #  Add other sub-pipelines: forfeit, objectives, totals, frequencies, KDA extremes, etc.
+
         }
     })
 
@@ -1211,3 +1211,72 @@ def delete_by_puuid():
         "deletedCount": result.deleted_count,
         "status": "success" if result.deleted_count > 0 else "no matches found"
     }), 200
+
+
+
+
+
+@app.route('/add_user', methods=['POST'])
+def add_by_display_name():
+
+    if 'displayName' not in request.form or 'tag' not in request.form:
+        return {"msg":"Payload is missing displayName or tag"}, 400
+    
+    displayName = request.form.get('displayName')
+    tag = request.form.get('tag')
+    ## region = request.form.get('region')
+
+    if displayName is None or tag is None:
+            return {"msg":"Payload is missing displayName or tag"}, 400
+
+    key = dotenv.dotenv_values(".env")["REACT_APP_API_KEY"]
+    r = requests.get(f'https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{displayName}/{tag}?api_key={key}')
+
+    if (r.status_code == 200):
+        data = r.json()
+        result = player_collection.update_one(
+            {"displayName": displayName},
+            {"$set": {"displayName": displayName, "tag":tag, "puuid": data["puuid"]}},
+            upsert=True
+        )
+
+        return {"matched_count": result.matched_count, "modified_count": result.modified_count, "msg":"User added successfully."}, 200
+
+    if (r.status_code == 404):
+        return {"msg":"User not found"}, 404
+
+    return {"msg":"Error fetching data from riot API"}, 400
+
+
+
+@app.route('/get_user', methods=['POST'])
+def get_player_info():
+    if 'displayName' not in request.form or 'tag' not in request.form:
+        return {"msg":"Payload is missing displayName or tag"}, 400
+    
+    displayName = request.form.get('displayName')
+    tag = request.form.get('tag')
+    ## region = request.form.get('region')
+
+    if displayName is None or tag is None:
+            return {"msg":"Payload is missing displayName or tag"}, 400
+    
+    pipeline = [
+    {
+        "$match": {
+            "displayName": { "$regex": f"^{displayName}$", "$options": "i" },
+            "tag": { "$regex": f"^{tag}$", "$options": "i" }
+        }
+    },
+    {
+        "$project": { "_id": 0 }
+    }
+]
+
+    results = list(player_collection.aggregate(pipeline))
+
+    if(len(results) < 1):
+        return jsonify({"msg":"User not found"}), 404
+
+
+    return jsonify(results), 200

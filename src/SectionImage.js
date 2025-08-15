@@ -1,0 +1,56 @@
+
+
+export default function ({ imgUrl, offset }) {
+    return (
+        <div
+            style={{
+                height: '225px',
+                width: 'fit-content',
+                overflow: 'hidden',
+                position: 'relative',
+            }}
+        >
+            <img
+                src={imgUrl}
+                alt={`Banner Splash`}
+                style={{
+                    objectFit: 'cover',
+                    objectPosition: 'center',
+                    transform: `translateY(-${offset}%)`,
+                    height: 'auto',
+                    zIndex: 0,
+                    display: 'block',
+                    margin: 'auto',
+                    maxWidth: '100vw',
+                }}
+            />
+
+            {/* Left gradient overlay */}
+            <div
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '15%',
+                    height: '100%',
+                    background: 'linear-gradient(to right, #0d1317, transparent)',
+                    pointerEvents: 'none',
+                }}
+            />
+
+            {/* Right gradient overlay */}
+            <div
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    width: '15%',
+                    height: '100%',
+                    background: 'linear-gradient(to left, #0d1317, transparent)',
+                    pointerEvents: 'none',
+                }}
+            />
+        </div>
+    );
+}
+

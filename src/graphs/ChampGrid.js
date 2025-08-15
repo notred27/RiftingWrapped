@@ -1,10 +1,8 @@
-// import React from 'react';
-// import './ChampionGrid.css';
 import './ChampGrid.css'
 
 export default function ChampGrid({
-  allChampions = [],    // [{id: "Aatrox", name: "Aatrox"}, ...]
-  playedChampions = [], // ["Aatrox", "Ahri", ...]
+  allChampions = [],
+  playedChampions = [],
   champData= [],
   version = '13.14.1',
 }) {

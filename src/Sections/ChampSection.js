@@ -1,8 +1,10 @@
-import {useEffect, useState} from 'react'
+import { useEffect, useState } from 'react'
 
 import HorizontalBarChart from '../graphs/ChampGraph.js'
 import ChampGrid from '../graphs/ChampGrid.js'
+import SectionImage from '../SectionImage.js'
 
+import './../SectionImage.js'
 
 export default function ChampSection({ puuid, year }) {
     const [champData, setChampData] = useState(null)
@@ -12,11 +14,11 @@ export default function ChampSection({ puuid, year }) {
     const [allChampions, setAllChampions] = useState([]);
     const [version, setVersion] = useState('');
 
-
+    
     useEffect(() => {
         async function fetchChampData() {
             try {
-                const response = await fetch(`http://localhost:5000/champs/${puuid}?year=${year}`)
+                const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/champs/${puuid}?year=${year}`)
                 if (!response.ok) {
                     throw new Error('Network response was not ok')
                 }
@@ -97,64 +99,34 @@ export default function ChampSection({ puuid, year }) {
 
 
     return (
-
         <>
-            <div style={{ height: '225px', width: "fit-content", overflow: 'hidden', position: 'relative' }}>
-                <img
-                    src={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${topChamp}_0.jpg`}
-                    alt="Background"
-                    style={{
-                        objectFit: 'cover',
-                        objectPosition: 'center',
-                        transform: 'translateY(-40%)',
-                        height: 'auto',
-                        zIndex: 0,
-                        display: 'block',
-                        margin: 'auto',
-                        maxWidth: '100vw'
-
-                    }}
-                />
-
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '15%',
-                        height: '100%',
-                        background: 'linear-gradient(to right, #0d1317, transparent)',
-                        pointerEvents: 'none',
-                    }}
-                />
-
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        right: 0,
-                        width: '15%',
-                        height: '100%',
-                        background: 'linear-gradient(to left, #0d1317, transparent)',
-                        pointerEvents: 'none',
-                    }}
-                />
-            </div>
+            <SectionImage
+                imgUrl={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${topChamp}_0.jpg`}
+                offset = {"35"}
+            />
 
             <div className='centeredRow'>
-
-
                 <div>
-                    <h2 style={{ fontWeight: "300", textAlign: "left", marginBottom: "5px" }}>
-                        <span className='emphasize' style={{ fontSize: "60px" }}>{topChamp.toUpperCase()}</span><br />
+                    <h2 >
+                        <span className='emphasize' style={{ fontSize: "60px" }}>
+                            {topChamp.toUpperCase()}
+                        </span>
+                        <br />
                         was your go-to champ on the rift this year.
                     </h2>
-                    <h4 style={{ marginTop: "5px", fontWeight: "200" }}>
-                        You played as {topChamp} in <span className='emphasize'>{topCount}</span> games,<br />
-                        accounting for <span className='emphasize'>{Math.round((topCount / totalGames) * 100)}%</span> of your total games!
+                    <h4>
+                        You played as {topChamp} in
+                        <span className='emphasize'>
+                            &nbsp;{topCount}&nbsp;
+                        </span>
+                        games,
+                        <br />
+                        accounting for
+                        <span className='emphasize'>
+                            &nbsp;{Math.round((topCount / totalGames) * 100)}%&nbsp;
+                        </span>
+                        of your total games!
                     </h4>
-
-
                 </div>
 
                 <div id='ChampHistogram'>
@@ -165,7 +137,6 @@ export default function ChampSection({ puuid, year }) {
                 </div>
 
             </div>
-
 
             <div>
                 You also played as {champNames.length} of {champCount} unique champions
@@ -178,7 +149,6 @@ export default function ChampSection({ puuid, year }) {
                 champData={champData}
                 version={version}
             />
-
         </>
     )
 }

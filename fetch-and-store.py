@@ -12,8 +12,6 @@ API_KEY = os.getenv("REACT_APP_API_KEY")
 MONGO_URI_SECRET = os.getenv("MONGO_URI") 
 
 
-seed_puuid = "BBPD4EiT1_2PSAvgQDct-_pYMqKrAuWa0cTTP5d8xOqbEuWWkqJ6fg9bfm98NKY4YxnrInvZrUhPOA"
-
 
 tracked_puuids = {
     "i4E4IYdhi9-JXuF6hchhPdPC6clE8jOPwBrYBLG7xEKDRk3Y-Fqtw-tcSX0FGn_wo4RY3PZG3MUdlw",
@@ -26,8 +24,8 @@ tracked_puuids = {
     "BBPD4EiT1_2PSAvgQDct-_pYMqKrAuWa0cTTP5d8xOqbEuWWkqJ6fg9bfm98NKY4YxnrInvZrUhPOA",
 }
 
-cutoffDate = 1735689600
-
+# cutoffDate = 1735689600 # Jan 1st, 2025
+cutoffDate = 1754022272
 
 client = MongoClient(MONGO_URI_SECRET)
 db = client["rifting-wrapped-2024"]
@@ -52,7 +50,6 @@ def safe_request(url, params=None):
             time.sleep(10)
 
 def sanity_check(collection):
-    
     pipeline = [
         {
             "$group": {
@@ -270,34 +267,36 @@ def store_match(match_data, timeline_data):
 
 def main():
     print("Starting Riot match sync...")
-    offset = 0
-    count = 100
 
-    while True:
+    for user_puuid in tracked_puuids:
+        offset = 0
+        count = 100
 
-        match_ids = get_match_ids(seed_puuid, start=offset, count=count)
-        if not match_ids:
-            print("No more matches found.")
-            break
+        while True:
 
-        for match_id in match_ids:
+            match_ids = get_match_ids(user_puuid, start=offset, count=count)
+            if not match_ids:
+                print("No more matches found.")
+                break
 
-            if match_id_exists(match_id, seed_puuid):
-                print(f"  Match {match_id} already found from another query. Skipping.")
-                continue
+            for match_id in match_ids:
 
-            try:
-                match_data = get_match_data(match_id)
-                timeline_data = get_timeline_data(match_id)
+                if match_id_exists(match_id, user_puuid):
+                    print(f"  Match {match_id} already found from another query. Skipping.")
+                    continue
 
-                store_match(match_data, timeline_data)
-                time.sleep(1) 
+                try:
+                    match_data = get_match_data(match_id)
+                    timeline_data = get_timeline_data(match_id)
 
-            except Exception as e:
-                print(f"Error fetching match {match_id}: {e}")
-                time.sleep(1)
+                    store_match(match_data, timeline_data)
+                    time.sleep(1) 
 
-        offset += count
+                except Exception as e:
+                    print(f"Error fetching match {match_id}: {e}")
+                    time.sleep(1)
+
+            offset += count
 
 
 

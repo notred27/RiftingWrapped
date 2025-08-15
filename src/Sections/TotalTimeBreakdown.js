@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
+
 import TotalTimeGraph from "../graphs/TotalTimeGraph"
+import SectionImage from './../SectionImage.js';
 
 export default function TotalTimeBreakdown({ puuid, year }) {
-
-
     const [loading, setLoading] = useState(true);
     const [timeArr, setTimeArr] = useState([]);
 
     useEffect(() => {
         async function fetchData() {
             try {
-                const response = await fetch(`http://localhost:5000/totalStats/${puuid}?year=${year}`);
+                const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/totalStats/${puuid}?year=${year}`);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -54,49 +54,10 @@ export default function TotalTimeBreakdown({ puuid, year }) {
 
     return (
         <>
-
-            <div style={{ height: '225px', width: "fit-content", overflow: 'hidden', position: 'relative' }}>
-                <img
-                    src="https://cdn1.epicgames.com/offer/24b9b5e323bc40eea252a10cdd3b2f10/EGS_LeagueofLegends_RiotGames_S1_2560x1440-80471666c140f790f28dff68d72c384b"
-                    alt="Background"
-                    style={{
-                        objectFit: 'cover',
-                        objectPosition: 'center',
-                        transform: 'translateY(-10%)',
-                        height: 'auto',
-                        zIndex: 0,
-                        display: 'block',
-                        margin: 'auto',
-                        maxWidth: '80vw'
-
-                    }}
-                />
-
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '15%',
-                        height: '100%',
-                        background: 'linear-gradient(to right, #0d1317, transparent)',
-                        pointerEvents: 'none',
-                    }}
-                />
-
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        right: 0,
-                        width: '15%',
-                        height: '100%',
-                        background: 'linear-gradient(to left, #0d1317, transparent)',
-                        pointerEvents: 'none',
-                    }}
-                />
-            </div>
-
+            <SectionImage 
+                imgUrl={`https://cdn1.epicgames.com/offer/24b9b5e323bc40eea252a10cdd3b2f10/EGS_LeagueofLegends_RiotGames_S1_2560x1440-80471666c140f790f28dff68d72c384b`}
+                offset = {"10"}
+            />
 
             <div className="centeredColumn">
 
