@@ -9,7 +9,9 @@ from datetime import datetime
 
 app = Flask(__name__)
 # Set up CORS control (tmp for localhost)
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+# CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+CORS(app)
+
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 # DB connection & collection

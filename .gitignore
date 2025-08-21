@@ -8,7 +8,7 @@
 # testing
 /coverage
 /venv
-/__pycache__
+backend/__pycache__
 /match_names
 
 # production
