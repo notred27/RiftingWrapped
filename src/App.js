@@ -71,10 +71,11 @@ function App() {
 
                         <input
                             type="text"
+                            name="username"
                             value={userSearchName}
                             onChange={(e) => setUserSearchName(e.target.value)}
                             placeholder="GAME NAME#TAG"
-                            autocomplete="on"
+                            autoComplete="on"
                         />
 
                         <br />

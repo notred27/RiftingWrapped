@@ -1,0 +1,30 @@
+name: Hourly Match Scraper
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  run-scraper:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run scraper
+        env:
+            REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
+            MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: python fetch-and-store.py

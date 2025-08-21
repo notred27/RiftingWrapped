@@ -5,6 +5,7 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 from pymongo.errors import DuplicateKeyError
+import time
 
 load_dotenv(".env")
 
@@ -13,23 +14,24 @@ MONGO_URI_SECRET = os.getenv("MONGO_URI")
 
 
 
-tracked_puuids = {
-    "i4E4IYdhi9-JXuF6hchhPdPC6clE8jOPwBrYBLG7xEKDRk3Y-Fqtw-tcSX0FGn_wo4RY3PZG3MUdlw",
-    "TDQjFdHq3qPgUtc1VNmpCOBwQpwAPEeRDuqws_7oYv3SVQqzAgNfXPtzjpSpmdptJMTyx6nwLzYutA",
-    "DtXnq3chwI7rBuqeyQJcCwmIyw12dVJwf-FqbaZiuU5X0JGjdjT1Y1Zt5sX3TgwPxJtCwBq__NeHLw",
-    "KT-IOAcBE30hmg2NjLILeuaqZR-KKtewV5eOPeXpioqot_yx4Qwlh8BKq4KkwQhxLJu45uiX3PkvRg",
-    "diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIPUZlPo9adlsdFYU6Sr8NzQJjiJXnPb6A",
-    "Wo7YQhhVUI-sHRN03UKEKFV3N5J7TpF3W1l_xos-gf45P8qKCKOaAgjzRL36Qb_XXq-3-d68Yz72mQ",
-    "XPCafNC_zNQCoppRjcKZWzk8JQ3zGjt6lDWqX3gQgDVoWhvjkbbT9DOrh9ZibvjJ_VVy0EzawQLTVw",
-    "BBPD4EiT1_2PSAvgQDct-_pYMqKrAuWa0cTTP5d8xOqbEuWWkqJ6fg9bfm98NKY4YxnrInvZrUhPOA",
-}
+
+
 
 # cutoffDate = 1735689600 # Jan 1st, 2025
-cutoffDate = 1754022272
+# cutoffDate = 1754022272
+
+# Current time minus 2 hours for batched jobs
+cutoffDate = int(time.time()) - (2 * 60 * 60)
+
+
 
 client = MongoClient(MONGO_URI_SECRET)
 db = client["rifting-wrapped-2024"]
 matches_collection = db["player-matches"]
+player_collection = db["tracked-players"]
+
+tracked_puuids = [doc['puuid'] for doc in player_collection.find({}, {'puuid': 1, '_id': 0})]
+
 
 
 def safe_request(url, params=None):
@@ -254,7 +256,7 @@ def store_match(match_data, timeline_data):
             "matchInfo": match_info
         }
 
-        # Upsert by player+match combo to avoid duplicates
+        # Upsert to avoid dupes
         matches_collection.update_one(
             {"matchId": match_id, "puuid": puuid},
             {"$set": doc},
@@ -265,7 +267,19 @@ def store_match(match_data, timeline_data):
 
 
 
-def main():
+
+if __name__ == "__main__":
+    try:
+        matches_collection.create_index(
+            [("puuid", ASCENDING), ("matchId", ASCENDING)],
+            unique=True,
+            name="unique_puuid_matchId"
+        )
+        print("Unique compound index created successfully.")
+    except DuplicateKeyError as e:
+        print("Duplicate keys found! Clean up duplicates before creating the index.")
+        print(e)
+        
     print("Starting Riot match sync...")
 
     for user_puuid in tracked_puuids:
@@ -273,7 +287,6 @@ def main():
         count = 100
 
         while True:
-
             match_ids = get_match_ids(user_puuid, start=offset, count=count)
             if not match_ids:
                 print("No more matches found.")
@@ -297,22 +310,6 @@ def main():
                     time.sleep(1)
 
             offset += count
-
-
-
-if __name__ == "__main__":
-    try:
-        matches_collection.create_index(
-            [("puuid", ASCENDING), ("matchId", ASCENDING)],
-            unique=True,
-            name="unique_puuid_matchId"
-        )
-        print("Unique compound index created successfully.")
-    except DuplicateKeyError as e:
-        print("Duplicate keys found! Clean up duplicates before creating the index.")
-        print(e)
-        
-    main()
     
     sanity_check(matches_collection)
 
