@@ -1,13 +1,10 @@
-// HorizontalBarChart.js
-import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
 
-// Register the necessary components
+
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 function HorizontalBarChart({ champs, values }) {
-  // Example data for the chart
   const data = {
     labels: champs,
     datasets: [

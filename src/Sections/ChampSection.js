@@ -57,6 +57,12 @@ export default function ChampSection({ puuid, year }) {
                 setAllChampions(champList);
                 setChampCount(champList.length);
 
+                // Preload 
+                champList.forEach(({ id }) => {
+                    const img = new Image();
+                    img.src = `https://ddragon.leagueoflegends.com/cdn/${latestVersion}/img/champion/${id}.png`;
+                });
+
             } catch (error) {
                 console.error('Failed to fetch champion data:', error);
             } finally {

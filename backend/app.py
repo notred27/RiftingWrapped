@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 from flask import jsonify
 from flask_cors import CORS, cross_origin
 import requests
@@ -6,6 +6,7 @@ import dotenv
 from pymongo import MongoClient
 import os
 from datetime import datetime
+from math import floor
 
 app = Flask(__name__)
 # Set up CORS control (tmp for localhost)
@@ -1282,3 +1283,71 @@ def get_player_info():
 
 
     return jsonify(results), 200
+
+
+
+@app.route('/share/<puuid>')
+def share_page(puuid):
+    # Optional: get year query parameter, default to current year or your logic
+    year_param = request.args.get('year', type=int)
+
+    # Query user info from player_collection (e.g. displayName)
+    user = player_collection.find_one({"puuid": puuid})
+    if not user:
+        return {"msg": "User not found"}, 404
+
+    # Aggregate matches to get top champion by count for given year (if any)
+    pipeline = [
+        {"$match": {"puuid": puuid}},
+        {"$addFields": {"gameDate": {"$toDate": "$matchInfo.gameCreated"}}}
+    ]
+
+    if year_param:
+        pipeline.append({
+            "$match": {
+                "$expr": {"$eq": [{"$year": "$gameDate"}, year_param]}
+            }
+        })
+
+    pipeline += [
+        {"$group": {
+            "_id": "$stats.champion",
+            "count": {"$sum": 1}
+        }},
+        {"$sort": {"count": -1}},
+        {"$limit": 1}
+    ]
+
+    champ = list(matches_collection.aggregate(pipeline))
+
+    if champ:
+        top_champ = champ[0]['_id']
+    else:
+        top_champ = "DefaultChampion"  # fallback champion
+
+
+    playtime = [
+        {"$match": {"puuid": puuid}},
+        {"$match": {
+                "$expr": {"$eq": [{"$year": "$gameDate"}, year_param]}
+            }},
+        {"$addFields": {"gameDate": {"$toDate": "$matchInfo.gameCreated"}}},
+        {"$group": {
+            "_id": puuid,
+            "totalPlaytime": {"$sum":"$matchInfo.gameDuration"},}}
+    ]
+
+    playtime = list(matches_collection.aggregate(playtime))
+    totalPlaytime = floor(playtime[0]["totalPlaytime"] / 3600)
+    # "totalPlaytime": {"$sum":"$matchInfo.gameDuration"},
+
+    # display_name = user.get("displayName", "Unknown Player")
+    # # Optionally calculate hours played or get from DB if available
+    # hours_played = user.get("hoursPlayed", 0)
+
+    return render_template('share.html',
+                           puuid=puuid,
+                           champ_name=champ[0]['_id'],
+                           username="MrwarwickWide",
+                           hours_played=totalPlaytime,
+                           year=year_param or "this year")
