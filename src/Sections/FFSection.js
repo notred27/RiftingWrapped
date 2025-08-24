@@ -30,8 +30,8 @@ export default function FFSection({ puuid, year }) {
 
     }, [puuid, year]);
 
-    if (loading) return <div>Loading...</div>;
-    if (!ffData) return <div>No match date data found</div>;
+    if (loading) return;
+    if (!ffData) return;
 
 
     const avgFullGameDuration = ffData["totalNonSurrenderTime"] / (ffData["numGames"] - ffData["numSurrenders"]);

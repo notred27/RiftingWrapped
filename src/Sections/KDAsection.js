@@ -74,8 +74,8 @@ export default function KDAsection({ puuid, year }) {
 
 
 
-    if (loading) return <div>Loading...</div>
-    if (!combatStats || combatStats.length === 0) return <div>No champion data found</div>
+    if (loading) return;
+    if (!combatStats || combatStats.length === 0) return;
 
     return (
         <>

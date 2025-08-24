@@ -42,10 +42,17 @@ function App() {
             setPuuid(result[0]["puuid"]);
             setSelectedPlayer(result[0]["displayName"]);
         } catch (error) {
-
             console.error(error);
-            setSelectedPlayer("User not found");
+
+            if(userSearchName.indexOf('#') == -1) {
+                setSelectedPlayer("Invalid Search Name");
+
+            } else {
+                setSelectedPlayer("User not found");
+            }
             setPuuid("");
+            
+            
         }
     };
 
@@ -61,13 +68,12 @@ function App() {
 
                     <h1>Rifting Wrapped {year}</h1>
 
-                    <h1 id='PlayerNameHeader'>{selectedPlayer}</h1>
 
                     <form onSubmit={fetchPlayer}>
-                        <select id="itemSelect" >
+                        {/* <select id="itemSelect" >
                             <option value="EUW">EUW</option>
                             <option value="NA" selected="selected">NA</option>
-                        </select>
+                        </select> */}
 
                         <input
                             type="text"
@@ -76,16 +82,23 @@ function App() {
                             onChange={(e) => setUserSearchName(e.target.value)}
                             placeholder="GAME NAME#TAG"
                             autoComplete="on"
+
+                            style={{backgroundColor:"#375b74ff", color:"white", border:"none", padding:"10px", width:"25ch", fontSize:"larger"}}
                         />
 
                         <br />
 
-                        <button type='submit'>Fetch My Stats!</button>
+                        <button type='submit'
+                        style={{backgroundColor:"#0a85d6ff", color:"white", fontSize:"large", padding:"10px 20px 10px 20px", marginTop:"20px", border:"none", fontWeight:"bold"}}
+                        >Fetch My Stats!</button>
                     </form>
 
                 </span>
 
             </div>
+
+            <h1 id='PlayerNameHeader'>{selectedPlayer}</h1>
+
 
             <DateSection puuid={puuid} year={year} />
 

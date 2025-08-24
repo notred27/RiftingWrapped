@@ -33,13 +33,13 @@ export default function DamageSection({ puuid, year }) {
 
     }, [puuid, year])
 
-    if (loading) return <div>Loading...</div>;
-    if (!damageStats || damageStats.length === 0) return <div>No match date data found</div>;
+    if (loading) return;
+    if (!damageStats || damageStats.length === 0) return;
 
 
     return (
         <>
-            <SectionImage imgUrl={`https://www.hotspawn.com/wp-content/uploads/2018/11/lol_teamfight-1.jpg`} offset = {"45"} />
+            <SectionImage imgUrl={`https://static1.dualshockersimages.com/wordpress/wp-content/uploads/2018/10/League-of-Legends.jpg`} offset = {"35"} />
 
             {/* <h2>This year, you were a<br /><span className='emphasize' style={{ fontSize: "60px" }}>[insert architype here]</span></h2> */}
 

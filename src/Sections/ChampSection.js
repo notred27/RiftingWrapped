@@ -69,7 +69,7 @@ export default function ChampSection({ puuid, year }) {
 
 
     if (loading) return <div>Loading...</div>
-    if (!champData || champData.length === 0) return <div>No champion data found</div>
+    if (!champData || champData.length === 0) return;
 
     // Extract champ counts and names
     const champDict = {}
@@ -102,7 +102,7 @@ export default function ChampSection({ puuid, year }) {
         <>
             <SectionImage
                 imgUrl={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${topChamp}_0.jpg`}
-                offset = {"35"}
+                offset = {"25"}
             />
 
             <div className='centeredRow'>

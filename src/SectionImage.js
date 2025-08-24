@@ -1,10 +1,10 @@
 
 
-export default function ({ imgUrl, offset }) {
+export default function SectionImage({ imgUrl, offset }) {
     return (
         <div
             style={{
-                height: '225px',
+                height: '300px',
                 width: 'fit-content',
                 overflow: 'hidden',
                 position: 'relative',

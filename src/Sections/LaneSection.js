@@ -88,8 +88,8 @@ export default function LaneSection({ puuid, year }) {
 
     }, [puuid, year]);
 
-    if (loading) return <div>Loading...</div>;
-    if (!roleArr || roleArr.length === 0 || !csArr || !objectiveArr) return <div>No match data found</div>;
+    if (loading) return;
+    if (!roleArr || roleArr.length === 0 || !csArr || !objectiveArr) return;
 
     // const labels = ["Get Back", "Push", "On My Way", "All In", "Assist Me", "Need Vision", "Missing?", "Enemy Vision"]
 

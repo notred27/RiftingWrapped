@@ -28,8 +28,8 @@ export default function DateSection({ puuid, year }) {
         }
     }, [puuid, year]);
 
-    if (loading) return <div>Loading...</div>;
-    if (!monthlyStats || monthlyStats.length === 0) return <div>No match date data found</div>;
+    if (loading) return;
+    if (!monthlyStats || monthlyStats.length === 0) return;
 
     const dates = Array(12).fill(0);
     let totalGames = 0;

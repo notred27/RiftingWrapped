@@ -29,8 +29,8 @@ export default function TotalTimeBreakdown({ puuid, year }) {
         }
     }, [puuid, year])
 
-    if (loading) return <div>Loading...</div>
-    if (!timeArr || timeArr.length === 0) return <div>No champion data found</div>
+    if (loading) return;
+    if (!timeArr || timeArr.length === 0) return;
   
     
     const totalTime = Math.floor(timeArr["totalPlaytime"] / 3600);

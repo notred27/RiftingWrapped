@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import h337 from 'heatmap.js';
 
 const CANVAS_SIZE = 300;
@@ -13,7 +13,7 @@ export default function DualHeatmapOverlay({ puuid }) {
 
   // Fetch match events
   useEffect(() => {
-    fetch(`/mapEvents/${puuid}`)
+    fetch(`${process.env.REACT_APP_API_ENDPOINT}/mapEvents/${puuid}`)
       .then(res => res.json())
       .then(data => setMapData(data));
   }, [puuid]);
