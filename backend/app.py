@@ -1288,15 +1288,12 @@ def get_player_info():
 
 @app.route('/share/<puuid>')
 def share_page(puuid):
-    # Optional: get year query parameter, default to current year or your logic
-    year_param = request.args.get('year', type=int)
+    year_param = 2025
 
-    # Query user info from player_collection (e.g. displayName)
     user = player_collection.find_one({"puuid": puuid})
     if not user:
         return {"msg": "User not found"}, 404
 
-    # Aggregate matches to get top champion by count for given year (if any)
     pipeline = [
         {"$match": {"puuid": puuid}},
         {"$addFields": {"gameDate": {"$toDate": "$matchInfo.gameCreated"}}}
@@ -1320,34 +1317,45 @@ def share_page(puuid):
 
     champ = list(matches_collection.aggregate(pipeline))
 
-    if champ:
-        top_champ = champ[0]['_id']
-    else:
-        top_champ = "DefaultChampion"  # fallback champion
-
-
-    playtime = [
-        {"$match": {"puuid": puuid}},
-        {"$match": {
-                "$expr": {"$eq": [{"$year": "$gameDate"}, year_param]}
-            }},
-        {"$addFields": {"gameDate": {"$toDate": "$matchInfo.gameCreated"}}},
-        {"$group": {
-            "_id": puuid,
-            "totalPlaytime": {"$sum":"$matchInfo.gameDuration"},}}
+    pipeline = [
+        { "$match": { "puuid": puuid } },
+        { "$addFields": { "gameDate": { "$toDate": "$matchInfo.gameCreated" } } }
     ]
 
-    playtime = list(matches_collection.aggregate(playtime))
-    totalPlaytime = floor(playtime[0]["totalPlaytime"] / 3600)
-    # "totalPlaytime": {"$sum":"$matchInfo.gameDuration"},
+    if year_param:
+        pipeline.append({
+            "$match": {
+                "$expr": { "$eq": [{ "$year": "$gameDate" }, year_param] }
+            }
+        })
 
-    # display_name = user.get("displayName", "Unknown Player")
-    # # Optionally calculate hours played or get from DB if available
-    # hours_played = user.get("hoursPlayed", 0)
+    pipeline += [
+        {
+            "$group": {
+                "_id": None,
+                "totalPlaytime": { "$sum": "$matchInfo.gameDuration" }
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "totalPlaytime": 1
+            }
+        }
+    ]
+
+    playtime = list(matches_collection.aggregate(pipeline))
+
+    totalPlaytime = floor(playtime[0]["totalPlaytime"] / 3600)
+
+    username = player_collection.find_one(
+        { "puuid": puuid },
+        { "_id": 0, "displayName": 1, "tag": 1 }
+    )
 
     return render_template('share.html',
                            puuid=puuid,
                            champ_name=champ[0]['_id'],
-                           username="MrwarwickWide",
+                           username=username['displayName'],
                            hours_played=totalPlaytime,
                            year=year_param or "this year")
