@@ -77,6 +77,8 @@ export default function DualHeatmapOverlay({ puuid }) {
 
       <div>
         <div
+          role="img"
+          aria-label="Heatmap of player's kill locations"
           ref={killContainerRef}
           style={{
             position: 'absolute',
@@ -103,6 +105,8 @@ export default function DualHeatmapOverlay({ puuid }) {
 
       <div>
         <div
+          role="img"
+          aria-label="Heatmap of player's death locations"
           ref={deathContainerRef}
           style={{
             position: 'absolute',

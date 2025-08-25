@@ -79,7 +79,7 @@ export default function TotalTimeBreakdown({ puuid, year }) {
 
                 <h2>You spent <span className="emphasize">{totalTime.toLocaleString()} hours</span> playing league this year.</h2>
 
-                <h4>This includes <span className="emphasize">{totalTimeInRanked} hours</span> in Ranked matches, <span className="emphasize">{totalTimeInRift} hours</span> in Summoner's Rift, and <span className="emphasize">{totalTime - totalTimeInRanked - totalTimeInRift} hours</span> in other gamemodes.</h4>
+                <h3>This includes <span className="emphasize">{totalTimeInRanked} hours</span> in Ranked matches, <span className="emphasize">{totalTimeInRift} hours</span> in Summoner's Rift, and <span className="emphasize">{totalTime - totalTimeInRanked - totalTimeInRift} hours</span> in other gamemodes.</h3>
 
                 <TotalTimeGraph times={timeBreakdown} labels={timeLabels}></TotalTimeGraph>
 
@@ -125,7 +125,7 @@ export default function TotalTimeBreakdown({ puuid, year }) {
                 }}
                 rel="noopener nofollow"
                 target="_blank"
-                style={{backgroundColor:"#3587e6ff", color:"white", width:"150px", textAlign:"center",  padding:"10px 30px 10px 30px", textDecoration:"none", fontWeight:"600"}}
+                style={{backgroundColor:"#186ac7ff", color:"white", width:"150px", textAlign:"center",  padding:"10px 30px 10px 30px", textDecoration:"none", fontWeight:"600"}}
             >
                 Share on Twitter
             </a>
@@ -160,7 +160,7 @@ export default function TotalTimeBreakdown({ puuid, year }) {
                 }}
                 rel="noopener nofollow"
                 target="_blank"
-                style={{backgroundColor:"#e64f35ff", color:"white",  width:"150px", textAlign:"center", padding:"10px 30px 10px 30px", textDecoration:"none", fontWeight:"600"}}
+                style={{backgroundColor:"#ce280aff", color:"white",  width:"150px", textAlign:"center", padding:"10px 30px 10px 30px", textDecoration:"none", fontWeight:"600"}}
             >
                 Share on Reddit
             </a>
@@ -170,7 +170,7 @@ export default function TotalTimeBreakdown({ puuid, year }) {
         </div>
 
 
-        <h2>Want to see your own recap? <a href="/">Try it now!</a></h2>
+        <h2>Want to see your own recap? <a href="/" style={{color:"whitesmoke", fontWeight:"bold"}}>Try it now!</a></h2>
         </>
     )
 }

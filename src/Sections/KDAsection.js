@@ -79,12 +79,12 @@ export default function KDAsection({ puuid, year }) {
 
     return (
         <>
-            <h2 className='emphasize'>Lets take a look at some of your highlights</h2>
+            <h1 className='emphasize'>Lets take a look at some of your highlights</h1>
 
             <div className='splitColumn'>
                 <div>
                     {highestKillGames.map((game, idx) => <TableEntry key = {`Highest_Kill_Entry_${idx}`} puuid={puuid} match={game}></TableEntry>)}
-                    <h4 className='tableLabel'>Your Games With The Most Kills</h4>
+                    <p className='tableLabel'>Your Games With The Most Kills</p>
                 </div>
 
                 <div className='verticalSpacing'>
@@ -145,7 +145,7 @@ export default function KDAsection({ puuid, year }) {
                 <div>
                     {highestDeathGames.map((game, idx) => <TableEntry key = {`Lowest_Kill_Entry_${idx}`} puuid={puuid} match={game} />)}
 
-                    <h4 className='tableLabel'>Your Games With The Most Deaths</h4>
+                    <p className='tableLabel'>Your Games With The Most Deaths</p>
                 </div>
             </div>
 

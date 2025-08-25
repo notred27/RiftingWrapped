@@ -92,15 +92,15 @@ export default function TableEntry({ puuid, match }) {
 
                 <div style={{ textAlign: "center" }}>
 
-                    <span style={{ fontWeight: "bold" }}>{stats.kills}<span style={{ color: "#9497b6" }}>&nbsp;/&nbsp;</span>{stats.deaths}<span style={{ color: "#9497b6" }}>&nbsp;/&nbsp;</span>{stats.assists}</span>
+                    <span style={{ fontWeight: "bold" }}>{stats.kills}<span style={{ color: "#bfc2e6ff" }}>&nbsp;/&nbsp;</span>{stats.deaths}<span style={{ color: "#bfc2e6ff" }}>&nbsp;/&nbsp;</span>{stats.assists}</span>
 
-                    <span style={{ fontSize: "0.8rem", fontWeight: "bold" }}>{match.stats.kda}<span style={{ color: "#9497b6" }}>&nbsp;KDA</span></span>
+                    <span style={{ fontSize: "0.8rem", fontWeight: "bold" }}>{match.stats.kda}<span style={{ color: "#bfc2e6ff" }}>&nbsp;KDA</span></span>
 
                 </div>
 
                 <div style={{ textAlign: "center" }}>
                     <span style={{ fontWeight: "bold" }}>{match.stats.cs + match.stats.jungleCs} CS</span>
-                    <span style={{ fontSize: "0.8rem", fontWeight: "bold" }}>{Math.floor(match.stats.cs / (match.matchInfo.gameDuration / 60) * 10) / 10}<span style={{ color: "#9497b6" }}>&nbsp;/min</span></span>
+                    <span style={{ fontSize: "0.8rem", fontWeight: "bold" }}>{Math.floor(match.stats.cs / (match.matchInfo.gameDuration / 60) * 10) / 10}<span style={{ color: "#bfc2e6ff" }}>&nbsp;/min</span></span>
                 </div>
 
 

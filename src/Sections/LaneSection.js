@@ -136,7 +136,7 @@ export default function LaneSection({ puuid, year }) {
                 <div>
                     {csArr.bestCs.map((game, idx) => <TableEntry key={`Highest_CS_Entry_${idx}`} puuid={puuid} match={game} />)}
 
-                    <h4 className='tableLabel'>Your Games With The Highest CS</h4>
+                    <p className='tableLabel'>Your Games With The Highest CS</p>
                 </div>
 
 
@@ -183,7 +183,7 @@ export default function LaneSection({ puuid, year }) {
                 <div>
                     {csArr.worstCs.map((game, idx) => <TableEntry key={`Lowest_CS_Entry_${idx}`} puuid={puuid} match={game} />)}
 
-                    <h4 className='tableLabel'>Your Games With The Lowest CS</h4>
+                    <p className='tableLabel'>Your Games With The Lowest CS</p>
                 </div>
             </div>
 

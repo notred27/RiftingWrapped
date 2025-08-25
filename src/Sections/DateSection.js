@@ -57,9 +57,9 @@ export default function DateSection({ puuid, year }) {
 
     return (
         <div style={{ textAlign: "center" }}>
-            <img src = {userInfo["icon"]} />
+            <img src = {userInfo["icon"]} alt = "user icon" style={{width:"200px"}}/>
             <h1 className='emphasize' style={{ fontSize: "60px", margin:"2px" }}>{userInfo["displayName"]}#{userInfo["tag"]}</h1>
-            <h3 style={{marginTop:"4px", color:"#aaa"}}>Level {userInfo["level"]}</h3>
+            <h2 style={{marginTop:"4px", color:"#aaa"}}>Level {userInfo["level"]}</h2>
 
             <h1 className='emphasize'>Let's dive in to your performance in <span className='emphasize' style={{fontSize:"40px"}}>{year}</span>!</h1>
 
@@ -70,12 +70,12 @@ export default function DateSection({ puuid, year }) {
                 <span className='emphasize' style={{fontSize:"40px"}}>{totalUniqueDays} different days!</span>
             </h2>
 
-            <h4>
+            <h3>
                 With this dedication, you were hitting the Rift every{" "}
                 <span className="emphasize">
                     1 in {(Math.floor(3650 / totalUniqueDays) / 10).toFixed(1)} days
                 </span>.
-            </h4>
+            </h3>
 
             <CalanderGraph dates={dates} />
         </div>

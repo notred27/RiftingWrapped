@@ -55,9 +55,9 @@ export default function DamageSection({ puuid, year }) {
                         to other champions.
                     </h2>
 
-                    <h4>
+                    <h3>
                         (With an average of {Math.floor(damageStats["avgDealt"]).toLocaleString()} damage dealt per game!)
-                    </h4>
+                    </h3>
 
                 </div>
 
@@ -72,9 +72,9 @@ export default function DamageSection({ puuid, year }) {
                         from other champions.
                     </h2>
 
-                    <h4 >
+                    <h3>
                         (With an average of {Math.floor(damageStats["avgTaken"]).toLocaleString()} damage taken per game!)
-                    </h4>
+                    </h3>
                 </div>
             </div>
 
@@ -95,9 +95,9 @@ export default function DamageSection({ puuid, year }) {
                 </span>
             </h2>
 
-            <h4 className='centeredText' >
+            <h3 className='centeredText' >
                 That's equivalent to roughly {Math.floor(damageStats["timeCC"] / 60 / 120)} movies, or {Math.floor(damageStats["timeCC"] / 60 / (60 * 8))} workdays worth of time!
-            </h4>
+            </h3>
 
         </>
     )

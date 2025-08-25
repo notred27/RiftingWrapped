@@ -1,13 +1,9 @@
-// HorizontalBarChart.js
-import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
 
-// Register the necessary components
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 function CalanderGraph({dates}) {
-  // Example data for the chart
   const data = {
     labels: [""],
     datasets: [
@@ -128,9 +124,9 @@ function CalanderGraph({dates}) {
   };
 
   const options = {
-    indexAxis: 'y', // Makes the bar chart horizontal
+    indexAxis: 'y',
     responsive: true,
-    aspectRatio: 7, // Control the aspect ratio
+    aspectRatio: 7,
     barThickness:100,
 
     scales: {
@@ -142,16 +138,16 @@ function CalanderGraph({dates}) {
 
       y: {
         grid: {
-            display: false, // Hide the grid lines
+            display: false,
           },
           ticks: {
             fontColor:"#71816D",
             fontSize:20,
 
-            display: true, // Keep the ticks visible
+            display: true,
           },
           border: {
-            display: false, // Hide the border (line)
+            display: false,
           },
           
 
@@ -168,18 +164,14 @@ function CalanderGraph({dates}) {
             },
           },
     },
-    // elements: {
-    //     bar: {
-    //       barThickness: 10, // Adjust the thickness of the bars (default is 'auto')
-    //       categoryPercentage: 0.5, // Adjust the space between bars in the same category
-    //       barPercentage: .50, // Controls the space between bars (increase to make bars thinner)
-    //     }
-    //   }
-    
   };
 
   return (
-    <div style={{width:"80vw", marginLeft:"50px"}}>
+    <div 
+      tabIndex={-1}
+      role="img"
+      aria-label="Bar chart showing playtime per month"
+      style={{width:"80vw", marginLeft:"50px"}}>
 
       <Bar data={data} options={options} />
 

@@ -113,14 +113,16 @@ export default function ChampSection({ puuid, year }) {
 
             <div className='centeredRow'>
                 <div>
-                    <h2 >
+                    <h1 >
                         <span className='emphasize' style={{ fontSize: "60px" }}>
                             {topChamp.toUpperCase()}
                         </span>
                         <br />
-                        was your go-to champ on the rift this year.
-                    </h2>
-                    <h4>
+                        was your go-to champ
+                        <br />
+                        on the rift this year.
+                    </h1>
+                    <h2>
                         You played as {topChamp} in
                         <span className='emphasize'>
                             &nbsp;{topCount}&nbsp;
@@ -132,7 +134,7 @@ export default function ChampSection({ puuid, year }) {
                             &nbsp;{Math.round((topCount / totalGames) * 100)}%&nbsp;
                         </span>
                         of your total games!
-                    </h4>
+                    </h2>
                 </div>
 
                 <div id='ChampHistogram'>

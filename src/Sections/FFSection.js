@@ -68,7 +68,7 @@ export default function FFSection({ puuid, year }) {
 
             <div id='SurrenderGrid'>
 
-                <h2>This year, your team forfeited <br /><span className='emphasize' style={{ color: "#741616" }}>{ffData["numSurrenders"] - ffData["numSurrendersWon"]} times</span>.</h2>
+                <h2>This year, your team forfeited <br /><span className='emphasize' style={{ color: "#d62525ff" }}>{ffData["numSurrenders"] - ffData["numSurrendersWon"]} times</span>.</h2>
 
                 <h2>Opponents forfeited against you <br /><span className='emphasize' style={{ color: "#008e25" }}>{ffData["numSurrendersWon"]} times</span>.</h2>
 
