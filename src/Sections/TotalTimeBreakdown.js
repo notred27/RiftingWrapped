@@ -123,7 +123,7 @@ export default function TotalTimeBreakdown({ puuid, year }) {
                         'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
                     );
                 }}
-                rel="noopener nofollow"
+                rel="noopener nofollow noreferrer"
                 target="_blank"
                 style={{backgroundColor:"#186ac7ff", color:"white", width:"150px", textAlign:"center",  padding:"10px 30px 10px 30px", textDecoration:"none", fontWeight:"600"}}
             >
@@ -140,7 +140,7 @@ export default function TotalTimeBreakdown({ puuid, year }) {
                         'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
                     );
                 }}
-                rel="noopener nofollow"
+                rel="noopener nofollow noreferrer"
                 target="_blank"
                 style={{backgroundColor:"#094a94ff", color:"white", width:"150px", textAlign:"center", padding:"10px 30px 10px 30px", textDecoration:"none", fontWeight:"600"}}
             >
@@ -158,7 +158,7 @@ export default function TotalTimeBreakdown({ puuid, year }) {
                         'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=800'
                     );
                 }}
-                rel="noopener nofollow"
+                rel="noopener nofollow noreferrer"
                 target="_blank"
                 style={{backgroundColor:"#ce280aff", color:"white",  width:"150px", textAlign:"center", padding:"10px 30px 10px 30px", textDecoration:"none", fontWeight:"600"}}
             >

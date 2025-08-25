@@ -1,11 +1,9 @@
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, CategoryScale } from 'chart.js';
 
-
 ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale);
 
 function PingGraph({ pings, labels }) {
-  // Example data for the pie chart
   const data = {
     labels: labels,
     datasets: [

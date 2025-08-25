@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Chart as ChartJS,
   Tooltip,
@@ -12,8 +11,6 @@ import { Bubble } from 'react-chartjs-2';
 ChartJS.register(PointElement, LinearScale, Title, Tooltip, Legend);
 
 const ObjectiveBubbleChart = ({ objectives }) => {
-  // Convert objective frequencies to bubble data
-
 
   const maxObjective = Math.max(
     objectives.barons || 0,

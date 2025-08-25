@@ -1,13 +1,10 @@
-// HorizontalBarChart.js
-import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
 
-// Register the necessary components
+
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 function TotalTimeGraph({times, labels}) {
-  // Example data for the chart
   const data = {
     labels: [""],
     datasets: [
@@ -96,16 +93,16 @@ function TotalTimeGraph({times, labels}) {
 
       y: {
         grid: {
-            display: false, // Hide the grid lines
+            display: false,
           },
           ticks: {
             fontColor:"#71816D",
             fontSize:20,
 
-            display: true, // Keep the ticks visible
+            display: true,
           },
           border: {
-            display: false, // Hide the border (line)
+            display: false,
           },
 
       }

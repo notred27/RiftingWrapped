@@ -1,20 +1,14 @@
-// HorizontalBarChart.js
-import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
 
-// Register the necessary components
+
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 
-
 function KDAgraph({kills, deaths}) {
-
     const largest = Math.max(kills.length, deaths.length) 
     const labels =  new Array(largest).fill(0).map((_, index) => index)
 
-
-  // Example data for the chart
   const data = {
     labels: labels,
     datasets: [
@@ -36,7 +30,7 @@ function KDAgraph({kills, deaths}) {
   };
 
   const options = {
-    indexAxis: 'x', // Makes the bar chart horizontal
+    indexAxis: 'x',
     responsive: true,
     scales: {
       x: {
@@ -45,35 +39,35 @@ function KDAgraph({kills, deaths}) {
 
         title: {
             display: true,
-            text: 'Frequency of Kills / Deaths',  // Set the label for the x-axis
+            text: 'Frequency of Kills / Deaths',
             font: {
               size: 16,
             },
-            color: '#FFFCE8',  // Axis label color
+            color: '#FFFCE8',
           },
       },
 
       y: {
         grid: {
-            display: false, // Hide the grid lines
+            display: false,
           },
           ticks: {
             fontColor:"#FFFCE8",
             fontSize:20,
 
-            display: true, // Keep the ticks visible
+            display: true,
           },
           border: {
-            display: false, // Hide the border (line)
+            display: false,
           },
 
           title: {
             display: true,
-            text: 'Number of Games',  // Set the label for the x-axis
+            text: 'Number of Games',
             font: {
               size: 16,
             },
-            color: '#FFFCE8',  // Axis label color
+            color: '#FFFCE8',
           },
 
       }

@@ -1,5 +1,3 @@
-// StackedBarChart.js
-import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -44,7 +42,7 @@ function StackedDamageChart({ damageDealt = [0, 0, 0], damageTaken = [0, 0, 0], 
   };
 
   const options = {
-  indexAxis: 'y',  // horizontal bars
+  indexAxis: 'y',
   responsive: true,
   plugins: {
     legend: {
@@ -71,7 +69,7 @@ function StackedDamageChart({ damageDealt = [0, 0, 0], damageTaken = [0, 0, 0], 
       callbacks: {
         label: (context) => {
           const label = context.dataset.label || '';
-          const value = context.parsed.x || 0;  // x axis for horizontal
+          const value = context.parsed.x || 0;
           const category = context.label || '';
           return `${category} - ${label}: ${value.toLocaleString()} damage`;
         },
@@ -111,7 +109,6 @@ function StackedDamageChart({ damageDealt = [0, 0, 0], damageTaken = [0, 0, 0], 
     },
   },
 };
-
 
   return <Bar data={data} options={options} />;
 }
