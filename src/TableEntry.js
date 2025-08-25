@@ -45,23 +45,23 @@ export default function TableEntry({ puuid, match }) {
     let img
     switch (stats.position) {
         case "TOP":
-            img = <img src={top} alt='top_icon' />
+            img = <img loading='lazy' src={top} alt='top_icon' style= {{width:"24px", height:"24px"}} />
             break;
 
         case "BOTTOM":
-            img = <img src={bot} alt='bot_icon' />
+            img = <img loading='lazy' src={bot} alt='bot_icon' style= {{width:"24px", height:"24px"}} />
             break;
 
         case "MIDDLE":
-            img = <img src={mid} alt='mid_icon' />
+            img = <img loading='lazy' src={mid} alt='mid_icon' style= {{width:"24px", height:"24px"}} />
             break;
 
         case "UTILITY":
-            img = <img src={sup} alt='sup_icon' />
+            img = <img loading='lazy' src={sup} alt='sup_icon' style= {{width:"24px", height:"24px"}} />
             break;
 
         case "JUNGLE":
-            img = <img src={jg} alt='jg_icon' />
+            img = <img loading='lazy' src={jg} alt='jg_icon' style= {{width:"24px", height:"24px"}} />
             break;
 
         default:
@@ -81,6 +81,7 @@ export default function TableEntry({ puuid, match }) {
                 <div style={{ position: "relative", width: "50px", marginLeft: "20px" }}>
 
                     <img
+                        loading='lazy'
                         src={`https://ddragon.leagueoflegends.com/cdn/14.14.1/img/champion/${stats.champion}.png`}
                         alt={stats.champion}
                         className='champion-icon'
@@ -106,20 +107,20 @@ export default function TableEntry({ puuid, match }) {
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gridTemplateRows: "1fr 1fr", justifyContent: "center", textAlign: "center", rowGap: "4px" }}>
                     <span>
-                        <img src="https://cdn.mobalytics.gg/assets/lol/images/ui/icons/dragons.svg" alt='dragon icon' />
+                        <img loading='lazy' src="https://cdn.mobalytics.gg/assets/lol/images/ui/icons/dragons.svg" alt='dragon icon' style= {{width:"16px", height:"16px"}} />
                     </span>
 
                     <span>
-                        <img src="https://cdn.mobalytics.gg/assets/lol/images/ui/icons/baron-nashor.svg" alt='baron icon' />
+                        <img loading='lazy' src="https://cdn.mobalytics.gg/assets/lol/images/ui/icons/baron-nashor.svg" alt='baron icon' style= {{width:"16px", height:"16px"}} />
 
                     </span>
 
                     <span>
-                        <img src="https://cdn.mobalytics.gg/assets/lol/images/ui/icons/towers.svg" alt='tower icon' />
+                        <img loading='lazy' src="https://cdn.mobalytics.gg/assets/lol/images/ui/icons/towers.svg" alt='tower icon' style= {{width:"16px", height:"16px"}} />
                     </span>
 
                     <span>
-                        <img src="https://cdn.mobalytics.gg/assets/common/icons/lol-game-objectives/inhibitor.svg" alt='inhibitor icon' />
+                        <img loading='lazy' src="https://cdn.mobalytics.gg/assets/common/icons/lol-game-objectives/inhibitor.svg" alt='inhibitor icon' style= {{width:"16px", height:"16px"}} />
                     </span>
 
                     <span>{stats.epicMonsters.dragons}</span>

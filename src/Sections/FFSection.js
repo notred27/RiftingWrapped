@@ -1,38 +1,6 @@
 
-import { useEffect, useState } from 'react'
-
-export default function FFSection({ puuid, year }) {
-    const [ffData, setFfData] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        async function fetchFFData() {
-
-            try {
-                const res = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/forfeit/${puuid}?year=${year}`);
-
-                if (!res.ok) {
-                    throw new Error("Error from database.")
-                }
-
-                const data = await res.json();
-                setFfData(data[0]);
-            } catch (err) {
-
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        if (puuid) {
-            fetchFFData();
-        }
-
-    }, [puuid, year]);
-
-    if (loading) return;
-    if (!ffData) return;
-
+export default function FFSection({ resource, puuid }) {
+    const ffData = resource.read()[0];
 
     const avgFullGameDuration = ffData["totalNonSurrenderTime"] / (ffData["numGames"] - ffData["numSurrenders"]);
     const estimatedFullDuration = avgFullGameDuration * (ffData["numSurrenders"]);

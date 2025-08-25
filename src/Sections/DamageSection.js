@@ -1,45 +1,15 @@
-import { useEffect, useState } from 'react';
-
-import StackedDamageChart from './../graphs/StackedDamageChart.js';
 import SectionImage from './../SectionImage.js';
 
-export default function DamageSection({ puuid, year }) {
-    const [damageStats, setDamageStats] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        async function fetchDamage() {
-            try {
-                const res = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/damage/${puuid}?year=${year}`);
-
-                if (!res.ok) {
-                    throw new Error('Error from database.')
-                }
-
-                const data = await res.json();
-                setDamageStats(data[0]);
+import { lazy, Suspense } from 'react';
+const StackedDamageChart = lazy(() => import('./../graphs/StackedDamageChart.js'));
 
 
-            } catch (err) {
-
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        if (puuid) {
-            fetchDamage();
-        }
-
-    }, [puuid, year])
-
-    if (loading) return;
-    if (!damageStats || damageStats.length === 0) return;
-
+export default function DamageSection({ resource }) {
+    const damageStats = resource.read()[0];
 
     return (
         <>
-            <SectionImage imgUrl={`https://static1.dualshockersimages.com/wordpress/wp-content/uploads/2018/10/League-of-Legends.jpg`} offset = {"35"} />
+            <SectionImage imgUrl={`https://static1.dualshockersimages.com/wordpress/wp-content/uploads/2018/10/League-of-Legends.jpg`} offset={"35"} />
 
             {/* <h2>This year, you were a<br /><span className='emphasize' style={{ fontSize: "60px" }}>[insert architype here]</span></h2> */}
 
@@ -78,18 +48,21 @@ export default function DamageSection({ puuid, year }) {
                 </div>
             </div>
 
+            <Suspense fallback={<div style={{ width: "600px", height: "300px" }}></div>}>
 
-            <div className='chartContainer'>
-                <StackedDamageChart
-                    damageDealt={[damageStats["physicalDamageDealt"], damageStats["trueDamageDealt"], damageStats["magicDamageDealt"]]}
-                    damageTaken={[damageStats["physicalDamageTaken"], damageStats["trueDamageTaken"], damageStats["magicDamageTaken"]]}
-                    chartTitle="Total Damage Dealt & Taken"
-                />
-            </div>
+                <div className='chartContainer'>
 
+
+                    <StackedDamageChart
+                        damageDealt={[damageStats["physicalDamageDealt"], damageStats["trueDamageDealt"], damageStats["magicDamageDealt"]]}
+                        damageTaken={[damageStats["physicalDamageTaken"], damageStats["trueDamageTaken"], damageStats["magicDamageTaken"]]}
+                        chartTitle="Total Damage Dealt & Taken"
+                    />
+                </div>
+            </Suspense>
 
             <h2 className='centeredText' >
-                During fights, you CC'd other players for a total of 
+                During fights, you CC'd other players for a total of
                 <span className='emphasize'>
                     &nbsp;{(Math.floor(damageStats["timeCC"] / 60)).toLocaleString()} minutes!
                 </span>

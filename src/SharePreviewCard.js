@@ -8,6 +8,7 @@ const SharePreviewCard = ({ username, hoursPlayed, champName, shareUrl }) => {
         style={{ textDecoration: "none", color: "inherit" }}
       >
         <img
+          loading='lazy'
           src={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champName}_0.jpg`}
           alt={`${champName} splash`}
           style={styles.image}

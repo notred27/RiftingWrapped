@@ -1,41 +1,9 @@
-import { useEffect, useState, Suspense, lazy} from 'react';
+import {  Suspense, lazy} from 'react';
 
 const CalanderGraph = lazy(() =>  import('../graphs/CalanderGraph.js'));
 
-export default function DateSection({ puuid, year }) {
-    const [monthlyStats, setMonthlyStats] = useState(null);
-
-
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        async function fetchMonthlyStats() {
-            try {
-                const monthEnd  = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/matchesByDate/${puuid}?year=${year}`);
-
-                
-                if (!monthEnd.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const monthData = await monthEnd.json();
-
-                setMonthlyStats(monthData);
-            } catch (error) {
-                console.error('Failed to fetch monthly stats:', error);
-                setMonthlyStats([]);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        if (puuid) {
-            fetchMonthlyStats();
-        }
-    }, [puuid, year]);
-
-    if (loading) return;
-    if (!monthlyStats || monthlyStats.length === 0) return;
-
+export default function DateSection({ resource }) {
+    const monthlyStats = resource.read();
 
     const dates = Array(12).fill(0);
     let totalGames = 0;
@@ -68,7 +36,7 @@ export default function DateSection({ puuid, year }) {
 
             
 
-            <Suspense fallback={<div>Loading Chart...</div>}>
+            <Suspense fallback={<div style={{width:"50vw", height:"200px"}}></div>}>
                 <CalanderGraph dates={dates} />
             </Suspense>
         </div>

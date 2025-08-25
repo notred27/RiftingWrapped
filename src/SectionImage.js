@@ -23,6 +23,7 @@ export default function SectionImage({ imgUrl, offset }) {
                     margin: 'auto',
                     maxWidth: '100vw',
                 }}
+                loading="lazy"
             />
 
             {/* Left gradient overlay */}

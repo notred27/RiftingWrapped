@@ -6,7 +6,7 @@ export default function UserIntro({ resource, year }) {
       <img
         src={`${userInfo.icon}`}
         alt="user icon"
-        style={{ width: "200px", borderRadius:"8px" }}
+        style={{ width: "200px", height:"200px", borderRadius:"8px" }}
       />
       <h1 className="emphasize" style={{ fontSize: "60px", margin: "2px" }}>
         {userInfo.displayName}#{userInfo.tag}

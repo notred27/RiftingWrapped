@@ -25,6 +25,7 @@ return (
         return (
           <div key={champ.id} className="champion-icon-wrapper">
             <img
+              loading="lazy"
               src={imgUrl}
               alt={champ.name}
               title={`${champ.name} - ${count} game${count === 1 ? '' : 's'}`}

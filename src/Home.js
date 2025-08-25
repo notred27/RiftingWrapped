@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import logo from './images/penguin.webp';
+import { Helmet } from 'react-helmet-async';
+
+import './styles/Home.css'
 
 function Home() {
     const [userSearchName, setUserSearchName] = useState('');
@@ -42,6 +45,10 @@ function Home() {
 
     return (
         <>
+            <Helmet>
+                <link rel="canonical" href={`https://master.d1t2tctgq2njxi.amplifyapp.com`} />
+            </Helmet>
+
             <div className="centeredColumn" style={{ gap: "20px" }}>
                 <div id='UserSelectRow' className='centeredRow'>
                     <img src={logo} id='logo-img' alt='tft_logo' />
@@ -55,12 +62,12 @@ function Home() {
                                 onChange={(e) => setUserSearchName(e.target.value)}
                                 placeholder="GAME NAME#TAG"
                                 autoComplete="on"
-                                style={{ backgroundColor: "#375b74ff", color: "white", border: "none", padding: "10px", width: "25ch", fontSize: "larger" }}
+                                id="nameInput"
                             />
                             <br />
                             <button
                                 type='submit'
-                                style={{ backgroundColor: "#0a85d6ff", color: "white", fontSize: "large", padding: "10px 20px", marginTop: "20px", border: "none", fontWeight: "bold" }}
+                                id='submitBtn'
                             >
                                 Fetch My Stats!
                             </button>
