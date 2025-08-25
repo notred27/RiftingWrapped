@@ -31,8 +31,8 @@ export default function TotalTimeBreakdown({ puuid, year }) {
 
     if (loading) return;
     if (!timeArr || timeArr.length === 0) return;
-  
-    
+
+
     const totalTime = Math.floor(timeArr["totalPlaytime"] / 3600);
     const totalTimeInRanked = Math.floor(timeArr["totalRankedTime"] / 3600);
     const totalTimeInRift = Math.floor(timeArr["totalSummonersRift"] / 3600);
@@ -52,11 +52,15 @@ export default function TotalTimeBreakdown({ puuid, year }) {
     const timeBreakdown = [otherTime, deadTime, ccTime, roamTime, baronTime, baronBuffTime, dragonTime]
 
 
+    const shareUrl = `https://riftingwrapped.onrender.com/share/${puuid}`;
+    const shareText = `I spent over ${totalTime} hours on League of Legends this year! #LeagueOfLegends #RiftingWrapped`;
+
+
     return (
         <>
-            <SectionImage 
+            <SectionImage
                 imgUrl={`https://cdn1.epicgames.com/offer/24b9b5e323bc40eea252a10cdd3b2f10/EGS_LeagueofLegends_RiotGames_S1_2560x1440-80471666c140f790f28dff68d72c384b`}
-                offset = {"10"}
+                offset={"10"}
             />
 
             <div className="centeredColumn">
@@ -68,9 +72,72 @@ export default function TotalTimeBreakdown({ puuid, year }) {
                 <h4>This includes <span className="emphasize">{totalTimeInRanked} hours</span> in Ranked matches, <span className="emphasize">{totalTimeInRift} hours</span> in Summoner's Rift, and <span className="emphasize">{totalTime - totalTimeInRanked - totalTimeInRift} hours</span> in other gamemodes.</h4>
 
                 <TotalTimeGraph times={timeBreakdown} labels={timeLabels}></TotalTimeGraph>
-                
+
                 <h2>That's equivalent to <span className="emphasize">{Math.floor(totalTime / 8)} workdays</span> or <span className="emphasize">{Math.floor(totalTime / 24)} full days</span>, for better or worse.</h2>
             </div>
+
+
+
+
+            <a
+                href={`https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
+                onClick={(e) => {
+                    e.preventDefault();
+                    window.open(
+                        `https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
+                        '',
+                        'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
+                    );
+                }}
+                rel="noopener nofollow"
+                target="_blank"
+            >
+                Share on Twitter
+            </a>
+
+            <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+                onClick={(e) => {
+                    e.preventDefault();
+                    window.open(
+                        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+                        '',
+                        'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
+                    );
+                }}
+                rel="noopener nofollow"
+                target="_blank"
+            >
+                Share on Facebook
+            </a>
+
+
+            <a
+                href={`https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`}
+                onClick={(e) => {
+                    e.preventDefault();
+                    window.open(
+                        `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`,
+                        '',
+                        'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=800'
+                    );
+                }}
+                rel="noopener nofollow"
+                target="_blank"
+            >
+                Share on Reddit
+            </a>
+
+
+            <button
+                onClick={() => {
+                    navigator.clipboard.writeText(shareUrl);
+                    alert("Copied share link!");
+                }}
+            >
+                Copy Share Link
+            </button>
+
         </>
     )
 }

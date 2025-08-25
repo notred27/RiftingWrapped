@@ -69,7 +69,7 @@ function Home() {
                 </div>
 
 
-
+                <h1 id='PlayerNameHeader'>{selectedPlayer}</h1>
             </div>
             <h6 id='FooterNote'>All data used in Rifting Wrapped comes from the public League of Legends matches a user has participated in. Rifting Wrapped isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</h6>
         </>

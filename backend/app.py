@@ -1359,3 +1359,22 @@ def share_page(puuid):
                            username=username['displayName'],
                            hours_played=totalPlaytime,
                            year=year_param or "this year")
+
+
+@app.route("/get_user/<puuid>", methods=['GET'])
+def get_user(puuid):
+
+    username = player_collection.find_one(
+        { "puuid": puuid },
+        { "_id": 0, "displayName": 1, "tag": 1 }
+    )
+
+    key = os.getenv("REACT_APP_API_KEY")
+    r = requests.get(f'https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}?api_key={key}')
+
+    if (r.status_code == 200):
+        data = r.json()
+
+        return jsonify({"username":username, "icon": data["profileIconId"], "level": data["summonerLevel"]}), 200
+    
+    return {"puuid":"Error: User not found"}, 400

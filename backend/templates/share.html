@@ -6,11 +6,12 @@
     <meta property="og:description" content="{{ username }} spent {{ hours_played }} hours on the Rift this year. Check out their top stats!" />
     <meta property="og:image" content="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{{ champ_name }}_0.jpg" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="{{ request.url }}" />
-
-
+    <meta property="og:url" content="https://master.d1t2tctgq2njxi.amplifyapp.com/player/{{ puuid }}" />
 
     <title>Rifting Wrapped - {{ username }}</title>
+
+    <link rel="canonical" href="https://master.d1t2tctgq2njxi.amplifyapp.com/player/{{ puuid }}" />
+
 </head>
 <body>
     <script>
@@ -20,5 +21,10 @@
     </script>
 
     <p>If you are not redirected, <a href="https://master.d1t2tctgq2njxi.amplifyapp.com/player/{{ puuid }}">click here</a>.</p>
+
+    <noscript>
+        <meta http-equiv="refresh" content="1; https://master.d1t2tctgq2njxi.amplifyapp.com/player/{{ puuid }}" />
+    </noscript>
+
 </body>
 </html>
