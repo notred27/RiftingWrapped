@@ -9,33 +9,12 @@ import TotalTimeBreakdown from './Sections/TotalTimeBreakdown.js';
 
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
-// import { useState, useEffect } from 'react';
+
 
 
 function PlayerStats() {
     const { puuid } = useParams();
     const year = "2025";
-    // const [userInfo, setUserInfo] = useState([]);
-
-    // useEffect(() => {
-    //     async function fetchData() {
-    //         try {
-    //             const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/get_user/${puuid}`);
-    //             if (!response.ok) {
-    //                 throw new Error('Network response was not ok');
-    //             }
-    //             const data = await response.json();
-    //             setUserInfo(data[0]);
-    //         } catch (error) {
-    //             console.error('Failed to fetch champ data:', error)
-    //             setUserInfo([]);
-    //         }
-    //     }
-
-    //     fetchData();
-
-    // }, [])
-
 
 
     return (

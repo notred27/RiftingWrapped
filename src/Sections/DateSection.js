@@ -4,20 +4,30 @@ import CalanderGraph from '../graphs/CalanderGraph';
 
 export default function DateSection({ puuid, year }) {
     const [monthlyStats, setMonthlyStats] = useState(null);
+    const [userInfo, setUserInfo] = useState(null);
+
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function fetchMonthlyStats() {
             try {
-                const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/matchesByDate/${puuid}?year=${year}`);
-                if (!response.ok) {
+                const [monthEnd, user] = await Promise.all([
+                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/matchesByDate/${puuid}?year=${year}`),
+                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/get_user/${puuid}`)
+                
+                ]);
+                
+                if (!monthEnd.ok || !user.ok) {
                     throw new Error('Network response was not ok');
                 }
-                const data = await response.json();
-                setMonthlyStats(data);
+                const [monthData, userData] = await Promise.all([ monthEnd.json(), user.json()]);
+
+                setMonthlyStats(monthData);
+                setUserInfo(userData);
             } catch (error) {
                 console.error('Failed to fetch monthly stats:', error);
                 setMonthlyStats([]);
+                setUserInfo([]);
             } finally {
                 setLoading(false);
             }
@@ -30,6 +40,8 @@ export default function DateSection({ puuid, year }) {
 
     if (loading) return;
     if (!monthlyStats || monthlyStats.length === 0) return;
+
+    console.log()
 
     const dates = Array(12).fill(0);
     let totalGames = 0;
@@ -45,6 +57,9 @@ export default function DateSection({ puuid, year }) {
 
     return (
         <div style={{ textAlign: "center" }}>
+            <img src = {userInfo["icon"]} />
+            <h1>{userInfo["displayName"]}#{userInfo["tag"]}</h1>
+
             <h1 className='emphasize'>Let's dive in to your performance in <span className='emphasize' style={{fontSize:"40px"}}>{year}</span>!</h1>
 
             <h2>

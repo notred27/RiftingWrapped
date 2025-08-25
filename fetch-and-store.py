@@ -282,9 +282,41 @@ if __name__ == "__main__":
         
     print("Starting Riot match sync...")
 
+    version = requests.get("https://ddragon.leagueoflegends.com/api/versions.json").json()[0]
+    
+
     for user_puuid in tracked_puuids:
         offset = 0
         count = 100
+
+        # Update icon and level
+        try:
+            r = requests.get(
+                f'https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{user_puuid}',
+                headers={"X-Riot-Token": API_KEY}
+            )
+            r.raise_for_status()
+            summoner_data = r.json()
+
+
+            level = summoner_data.get('summonerLevel')
+            profile_icon_id = summoner_data.get('profileIconId')
+
+            result = player_collection.update_one(
+                {"puuid": user_puuid},
+                {
+                    "$set": {
+                        "level": level,
+                        "icon": f'https://ddragon.leagueoflegends.com/cdn/{version}/img/profileicon/{profile_icon_id}.png',
+                    }
+                }
+            )
+
+            print(f"Updated {user_puuid}: level {level}, icon {profile_icon_id}")
+
+        except requests.exceptions.RequestException as e:
+            print(f"Failed to update {user_puuid}: {e}")
+
 
         while True:
             match_ids = get_match_ids(user_puuid, start=offset, count=count)
