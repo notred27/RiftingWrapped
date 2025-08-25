@@ -2,20 +2,30 @@ import { useState, useEffect } from "react";
 
 import TotalTimeGraph from "../graphs/TotalTimeGraph"
 import SectionImage from './../SectionImage.js';
+import SharePreviewCard from "../SharePreviewCard.js";
 
 export default function TotalTimeBreakdown({ puuid, year }) {
     const [loading, setLoading] = useState(true);
     const [timeArr, setTimeArr] = useState([]);
 
+    const [cardInfo, setCardInfo] = useState([]);
+
     useEffect(() => {
         async function fetchData() {
             try {
-                const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/totalStats/${puuid}?year=${year}`);
-                if (!response.ok) {
+                const [totalStats, cardPreview] = await Promise.all([
+                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/totalStats/${puuid}?year=${year}`),
+                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/get_card_preview/${puuid}?year=${year}`)
+
+                ]);
+
+                if (!totalStats.ok || !cardPreview.ok) {
                     throw new Error('Network response was not ok');
                 }
-                const data = await response.json();
-                setTimeArr(data[0]);
+
+                const [timeData, cardData] = await Promise.all([totalStats.json(), cardPreview.json()]);
+                setTimeArr(timeData[0]);
+                setCardInfo(cardData);
             } catch (error) {
                 console.error('Failed to fetch champ data:', error)
                 setTimeArr([]);
@@ -79,6 +89,30 @@ export default function TotalTimeBreakdown({ puuid, year }) {
 
 
 
+        <h2>Impressed with your stats? Share your Rifting Wrapped Recap with friends!</h2>
+        
+        <div>
+
+        <SharePreviewCard
+            username={cardInfo["username"]}
+            hoursPlayed={cardInfo["hoursPlayed"]}
+            champName={cardInfo["champName"]}
+            shareUrl={`https://riftingwrapped.onrender.com/share/${puuid}`}
+        />
+        </div>
+
+        <div style={{display:"flex", justifyContent:"center", flexDirection:"row", gap:"20px"}}>
+
+            <button
+                onClick={() => {
+                    navigator.clipboard.writeText(shareUrl);
+                    alert("Copied share link!");
+                }}
+                style={{backgroundColor:"#696c70ff", color:"white", width:"210px", textAlign:"center", padding:"10px 30px 10px 30px", textDecoration:"none", fontWeight:"600", border:"none", fontSize:"1rem", cursor:"pointer"}}
+            >
+                Copy Share Link
+            </button>
+
             <a
                 href={`https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
                 onClick={(e) => {
@@ -91,6 +125,7 @@ export default function TotalTimeBreakdown({ puuid, year }) {
                 }}
                 rel="noopener nofollow"
                 target="_blank"
+                style={{backgroundColor:"#3587e6ff", color:"white", width:"150px", textAlign:"center",  padding:"10px 30px 10px 30px", textDecoration:"none", fontWeight:"600"}}
             >
                 Share on Twitter
             </a>
@@ -107,6 +142,7 @@ export default function TotalTimeBreakdown({ puuid, year }) {
                 }}
                 rel="noopener nofollow"
                 target="_blank"
+                style={{backgroundColor:"#094a94ff", color:"white", width:"150px", textAlign:"center", padding:"10px 30px 10px 30px", textDecoration:"none", fontWeight:"600"}}
             >
                 Share on Facebook
             </a>
@@ -124,20 +160,17 @@ export default function TotalTimeBreakdown({ puuid, year }) {
                 }}
                 rel="noopener nofollow"
                 target="_blank"
+                style={{backgroundColor:"#e64f35ff", color:"white",  width:"150px", textAlign:"center", padding:"10px 30px 10px 30px", textDecoration:"none", fontWeight:"600"}}
             >
                 Share on Reddit
             </a>
 
 
-            <button
-                onClick={() => {
-                    navigator.clipboard.writeText(shareUrl);
-                    alert("Copied share link!");
-                }}
-            >
-                Copy Share Link
-            </button>
+            
+        </div>
 
+
+        <h2>Want to see your own recap? <a href="/">Try it now!</a></h2>
         </>
     )
 }

@@ -1370,3 +1370,76 @@ def get_user(puuid):
     )
 
     return user_info
+
+
+@app.route("/get_card_preview/<puuid>", methods=['GET'])
+def get_card_preview(puuid):
+    year_param = request.args.get('year', type=int)
+
+    user = player_collection.find_one({"puuid": puuid})
+    if not user:
+        return {"msg": "User not found"}, 404
+
+    pipeline = [
+        {"$match": {"puuid": puuid}},
+        {"$addFields": {"gameDate": {"$toDate": "$matchInfo.gameCreated"}}}
+    ]
+
+    if year_param:
+        pipeline.append({
+            "$match": {
+                "$expr": {"$eq": [{"$year": "$gameDate"}, year_param]}
+            }
+        })
+
+    pipeline += [
+        {"$group": {
+            "_id": "$stats.champion",
+            "count": {"$sum": 1}
+        }},
+        {"$sort": {"count": -1}},
+        {"$limit": 1}
+    ]
+
+    champ = list(matches_collection.aggregate(pipeline))
+
+    pipeline = [
+        { "$match": { "puuid": puuid } },
+        { "$addFields": { "gameDate": { "$toDate": "$matchInfo.gameCreated" } } }
+    ]
+
+    if year_param:
+        pipeline.append({
+            "$match": {
+                "$expr": { "$eq": [{ "$year": "$gameDate" }, year_param] }
+            }
+        })
+
+    pipeline += [
+        {
+            "$group": {
+                "_id": None,
+                "totalPlaytime": { "$sum": "$matchInfo.gameDuration" }
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "totalPlaytime": 1
+            }
+        }
+    ]
+
+    playtime = list(matches_collection.aggregate(pipeline))
+
+    totalPlaytime = floor(playtime[0]["totalPlaytime"] / 3600)
+
+    username = player_collection.find_one(
+        { "puuid": puuid },
+        { "_id": 0, "displayName": 1, "tag": 1 }
+    )
+
+
+    return jsonify({"champName":champ[0]['_id'],
+                    "username":username['displayName'],
+                    "hoursPlayed":totalPlaytime})
