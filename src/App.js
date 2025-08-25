@@ -13,6 +13,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/player/:puuid" element={<PlayerStats />} />
+        <Route path="/about" element={<Home />} />
+        <Route path="/faq" element={<Home />} />
       </Routes>
     </Router>
   );

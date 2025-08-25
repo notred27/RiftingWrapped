@@ -7,19 +7,20 @@ import KDAsection from './Sections/KDAsection.js';
 import LaneSection from './Sections/LaneSection.js';
 import TotalTimeBreakdown from './Sections/TotalTimeBreakdown.js';
 
+import { Link } from 'react-router-dom';
 
 import UserIntro from './Sections/UserIntro.js';
 import UserIntroFallback from './Sections/UserIntroFallback.js';
 
-import { Helmet } from 'react-helmet-async';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { Helmet } from 'react-helmet-async';
 
 
-import { Suspense, useState, useEffect, useMemo } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { createUserResource } from "./userResource.js";
 
 
-import { createDateStatsResource, createForfeitResource, createDamageResource } from './dataResource.js';
+import { createDamageResource, createDateStatsResource, createForfeitResource } from './dataResource.js';
 
 function PlayerStats() {
     const { puuid } = useParams();
@@ -77,6 +78,18 @@ function PlayerStats() {
 
             </Helmet>
 
+            <header className="siteHeader">
+                <div className="logo">
+                    Rifting Wrapped 2025
+                </div>
+                <nav className="navMenu">
+                    <Link to="/">Home</Link>
+                    <Link to="/faq">FAQ</Link>
+
+                </nav>
+            </header>
+
+            <span style={{padding:"30px"}} />
 
             <Suspense fallback={<UserIntroFallback year={year} />}>
                 <div className="fade-in">
@@ -105,7 +118,7 @@ function PlayerStats() {
                 <Suspense fallback={<span />}>
                     <>
                         <ChampSection puuid={puuid} year={year} />
-                        <DamageSection resource= {damageResource} />
+                        <DamageSection resource={damageResource} />
                         <KDAsection puuid={puuid} year={year} />
                         <LaneSection puuid={puuid} year={year} />
                         <TotalTimeBreakdown puuid={puuid} year={year} />

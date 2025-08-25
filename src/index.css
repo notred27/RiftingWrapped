@@ -9,7 +9,6 @@ body {
 #root {
   position: relative;
   min-height: 90vh;
-  padding-top: 10vh;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -17,8 +16,12 @@ body {
 }
 
 #FooterNote {
+ font-size: 12px;
+  color: #888;
+  max-width: 800px;
+  margin: 20px auto;
+  line-height: 1.6;
   text-align: center;
-  color:#dcdae0;
 }
 
 
@@ -168,4 +171,36 @@ h4 {
   to {
     opacity: 1;
   }
+}
+
+
+.siteHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background-color: #0f2331;
+  color: #fff;
+  /* position: sticky; */
+  top: 0;
+  z-index: 1000;
+
+}
+
+.siteHeader .logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+  text-decoration: none;
+}
+
+.navMenu a {
+  margin-left: 20px;
+  color: #ccc;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.navMenu a:hover {
+  color: #fff;
 }

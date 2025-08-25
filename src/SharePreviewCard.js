@@ -26,15 +26,17 @@ const SharePreviewCard = ({ username, hoursPlayed, champName, shareUrl }) => {
 
 const styles = {
   card: {
-    border: "1px solid #ddd",
+    border: "1px solid #0f2331",
+    backgroundColor:"#0f2331",
     borderRadius: 8,
-    width: 500,
     boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
     overflow: "hidden",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     cursor: "pointer",
     transition: "transform 0.2s ease",
-
+    minWidth:"400px",
+    display:"block",
+    textAlign:"left"
   },
   image: {
     width: "100%",
@@ -43,22 +45,22 @@ const styles = {
   },
   content: {
     padding: 12,
-    backgroundColor: "#fff",
+    backgroundColor: "#0f2331",
   },
   title: {
     fontSize: 18,
     margin: "0 0 8px",
-    color:"black",
+    color:"white",
     fontWeight:"bold"
   },
   description: {
     fontSize: 14,
     margin: "0 0 6px",
-    color: "#333",
+    color: "white",
   },
   note: {
     fontSize: 12,
-    color: "#666",
+    color: "#929292ff",
   },
 };
 
