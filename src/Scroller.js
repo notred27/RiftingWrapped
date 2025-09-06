@@ -12,10 +12,9 @@ export default function Scroller({ children }) {
     const scrollerInner = scroller.querySelector('.scrollContent');
     const scrollerContent = Array.from(scrollerInner.children);
 
-    // Add data attribute
+
     scroller.setAttribute('data-animated', 'true');
 
-    // Clone each child
     scrollerContent.forEach((item) => {
       const clone = item.cloneNode(true);
       clone.setAttribute('aria-hidden', 'true');

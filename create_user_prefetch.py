@@ -12,26 +12,14 @@ load_dotenv(".env")
 API_KEY = os.getenv("REACT_APP_API_KEY") 
 MONGO_URI_SECRET = os.getenv("MONGO_URI") 
 
-
-
-
-
-
-# cutoffDate = 1735689600 # Jan 1st, 2025
-# cutoffDate = 1754022272
-
-# Current time minus 2 hours for batched jobs
-cutoffDate = int(time.time()) - (2 * 60 * 60)
-
-
+cutoffDate = 1735689600 # Jan 1st, 2025
 
 client = MongoClient(MONGO_URI_SECRET)
 db = client["rifting-wrapped-2024"]
 matches_collection = db["player-matches"]
 player_collection = db["tracked-players"]
 
-tracked_puuids = [doc['puuid'] for doc in player_collection.find({}, {'puuid': 1, '_id': 0})]
-
+# tracked_puuids = [doc['puuid'] for doc in player_collection.find({}, {'puuid': 1, '_id': 0})]
 
 
 def safe_request(url, params=None):
@@ -94,6 +82,9 @@ def get_timeline_data(match_id):
     return safe_request(url)
 
 
+def get_user_puuid(display_name, tag):
+    url = f"https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{display_name}/{tag}"
+    return safe_request(url)
 
 
 # Get stats related to the user's gameplay in this match
@@ -212,7 +203,7 @@ def get_kill_death_positions(match_data, timeline_data, puuid, queue_id):
 
 
 
-def store_match(match_data, timeline_data):
+def store_match(match_data, timeline_data, new_puuid):
     match_id = match_data['metadata']['matchId']
     participants = match_data['info']['participants']
 
@@ -238,9 +229,6 @@ def store_match(match_data, timeline_data):
             continue 
 
 
-        if match_id_exists(match_id, puuid):
-            continue
-
         num_logged_players += 1
         
         stats = extract_match_stats(match_data, timeline_data, puuid)
@@ -256,19 +244,105 @@ def store_match(match_data, timeline_data):
             "matchInfo": match_info
         }
 
-        # Upsert to avoid dupes
-        matches_collection.update_one(
+        matches_collection.replace_one(
             {"matchId": match_id, "puuid": puuid},
-            {"$set": doc},
+            {**doc, "status": "done"},
             upsert=True
         )
 
-    print(f"Stored match {match_id} for {num_logged_players} players")
+    # print(f"Stored match {match_id} for {num_logged_players} players")
 
 
+
+
+def create_pending_matches(puuid):
+    offset = 0
+    count = 100
+    total_matches = 0
+
+    while True:
+        
+        match_ids = get_match_ids(puuid, start=offset, count=count)
+        if not match_ids:
+            print("No more matches found.")
+            break
+
+        for match_id in match_ids:
+            try:
+
+                matches_collection.update_one(
+                    {"matchId": match_id, "puuid": puuid},
+                    {"$setOnInsert": {"status":"pending"}},
+                    upsert=True
+                )
+                total_matches += 1
+                 
+
+            except Exception as e:
+                print(f"Error fetching match {match_id}: {e}")
+                time.sleep(1)
+
+        offset += count
+
+
+    player_collection.update_one(
+        {"puuid": puuid},
+        {
+            "$set": {"status": "pending", "totalMatches": total_matches},
+            "$setOnInsert": {"processedMatches": 0}
+        }
+    )
+
+
+
+
+def process_pending_matches(new_puuid):
+    while True:
+        pending = matches_collection.find_one_and_update(
+            {"status": "pending"},
+            {"$set": {"status": "processing"}},
+            sort=[("_id", ASCENDING)]
+        )
+
+        if not pending:
+            print("No more pending matches.")
+            break
+
+        match_id = pending["matchId"]
+        puuid = pending["puuid"]
+
+        try:
+            match_data = get_match_data(match_id)
+            timeline_data = get_timeline_data(match_id)
+            store_match(match_data, timeline_data, new_puuid)
+
+
+            print(f"Processed {match_id} for {puuid}")
+
+            player_collection.update_one(
+                {"puuid": puuid},
+                {"$inc": {"processedMatches": 1}}
+            )
+
+
+        except Exception as e:
+            print(f"Error processing {match_id}: {e}")
+            matches_collection.update_one(
+                {"_id": pending["_id"]},
+                {"$set": {"status": "failed", "error": str(e)}}
+            )
+            time.sleep(1)
+
+
+
+
+
+USERNAME = "SausageCadaver"
+TAG = "NA1"
 
 
 if __name__ == "__main__":
+
     try:
         matches_collection.create_index(
             [("puuid", ASCENDING), ("matchId", ASCENDING)],
@@ -280,69 +354,50 @@ if __name__ == "__main__":
         print("Duplicate keys found! Clean up duplicates before creating the index.")
         print(e)
         
-    print("Starting Riot match sync...")
+    print("Adding new user to Rifting Wrapped...")
 
+
+
+    user_info = get_user_puuid(USERNAME, TAG)
+    new_puuid = user_info['puuid']
+
+    print(new_puuid)
+
+    r = requests.get(
+        f'https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{new_puuid}',
+        headers={"X-Riot-Token": API_KEY}
+    )
+    r.raise_for_status()
+    summoner_data = r.json()
+
+
+    level = summoner_data.get('summonerLevel')
+    profile_icon_id = summoner_data.get('profileIconId')
     version = requests.get("https://ddragon.leagueoflegends.com/api/versions.json").json()[0]
-    
 
-    for user_puuid in tracked_puuids:
-        offset = 0
-        count = 100
-
-        # Update icon and level
-        try:
-            r = requests.get(
-                f'https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{user_puuid}',
-                headers={"X-Riot-Token": API_KEY}
-            )
-            r.raise_for_status()
-            summoner_data = r.json()
-
-
-            level = summoner_data.get('summonerLevel')
-            profile_icon_id = summoner_data.get('profileIconId')
-
-            result = player_collection.update_one(
-                {"puuid": user_puuid},
-                {
-                    "$set": {
-                        "level": level,
-                        "icon": f'https://ddragon.leagueoflegends.com/cdn/{version}/img/profileicon/{profile_icon_id}.png',
-                    }
-                }
+    player_collection.update_one(
+                {"displayName": USERNAME},
+                {"$set": {
+                    "displayName": USERNAME,
+                    "tag":TAG,
+                    "puuid": new_puuid,
+                    "level": level,
+                    "icon": f'https://ddragon.leagueoflegends.com/cdn/{version}/img/profileicon/{profile_icon_id}.png',
+                    "status":"counting"}},
+                upsert=True
             )
 
-            print(f"Updated {user_puuid}: level {level}, icon {profile_icon_id}")
+    tracked_puuids = [doc['puuid'] for doc in player_collection.find({}, {'puuid': 1, '_id': 0})]
 
-        except requests.exceptions.RequestException as e:
-            print(f"Failed to update {user_puuid}: {e}")
-
-
-        while True:
-            match_ids = get_match_ids(user_puuid, start=offset, count=count)
-            if not match_ids:
-                print("No more matches found.")
-                break
-
-            for match_id in match_ids:
-
-                if match_id_exists(match_id, user_puuid):
-                    print(f"  Match {match_id} already found from another query. Skipping.")
-                    continue
-
-                try:
-                    match_data = get_match_data(match_id)
-                    timeline_data = get_timeline_data(match_id)
-
-                    store_match(match_data, timeline_data)
-                    time.sleep(1) 
-
-                except Exception as e:
-                    print(f"Error fetching match {match_id}: {e}")
-                    time.sleep(1)
-
-            offset += count
+    create_pending_matches(new_puuid)
     
+
+    process_pending_matches(new_puuid)
+
+    player_collection.update_one(
+        {"puuid": new_puuid},
+        {"$set": {"status": "done"}}
+    )
+
+
     sanity_check(matches_collection)
-
-

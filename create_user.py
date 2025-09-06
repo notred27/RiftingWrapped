@@ -230,6 +230,8 @@ def store_match(match_data, timeline_data):
 
 
         if match_id_exists(match_id, puuid):
+            # print("match already stored")
+
             continue
 
         num_logged_players += 1
@@ -254,10 +256,10 @@ def store_match(match_data, timeline_data):
             upsert=True
         )
 
-        print(f"Stored match {match_id} for {num_logged_players} players")
+    # print(f"Stored match {match_id} for {num_logged_players} players")
 
 
-USERNAME = "gargantuanspider"
+USERNAME = "Teronodon"
 TAG = "NA1"
 
 
@@ -288,13 +290,14 @@ if __name__ == "__main__":
                 upsert=True
             )
 
+    tracked_puuids = [doc['puuid'] for doc in player_collection.find({}, {'puuid': 1, '_id': 0})]
+
     offset = 0
     count = 100
 
     while True:
         
         match_ids = get_match_ids(new_puuid, start=offset, count=count)
-
         if not match_ids:
             print("No more matches found.")
             break
@@ -305,7 +308,8 @@ if __name__ == "__main__":
                 timeline_data = get_timeline_data(match_id)
 
                 store_match(match_data, timeline_data)
-                # time.sleep(1) 
+
+                time.sleep(1) 
 
             except Exception as e:
                 print(f"Error fetching match {match_id}: {e}")

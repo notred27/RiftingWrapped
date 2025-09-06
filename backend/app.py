@@ -8,6 +8,7 @@ import os
 from datetime import datetime
 from math import floor
 
+
 app = Flask(__name__)
 # Set up CORS control (tmp for localhost)
 # CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
@@ -1232,7 +1233,7 @@ def add_by_display_name():
     if displayName is None or tag is None:
             return {"msg":"Payload is missing displayName or tag"}, 400
 
-    key = dotenv.dotenv_values(".env")["REACT_APP_API_KEY"]
+    key = os.getenv("REACT_APP_API_KEY")
     r = requests.get(f'https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{displayName}/{tag}?api_key={key}')
 
     if (r.status_code == 200):

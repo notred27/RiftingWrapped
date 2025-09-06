@@ -12,49 +12,84 @@ import Scroller from './Scroller';
 function Home() {
     const [userSearchName, setUserSearchName] = useState('');
     const [selectedPlayer, setSelectedPlayer] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
 
     const navigate = useNavigate();
 
     const fetchPlayer = async (e) => {
         const apiUrl = process.env.REACT_APP_API_ENDPOINT;
         e.preventDefault();
+        setIsLoading(true);
+        setSelectedPlayer("");
 
         try {
             const names = userSearchName.split("#");
-            const formData = new FormData();
-            formData.append('displayName', names[0]);
-            formData.append('tag', names[1]);
+            if (names.length !== 2) {
+                setSelectedPlayer("Invalid Search Name");
+                setIsLoading(false);
+                return;
+            }
 
-            const response = await fetch(`${apiUrl}/get_user`, {
-                method: 'POST',
-                body: formData
+            const displayName = names[0];
+            const tag = names[1];
+            setSelectedPlayer(displayName);
+
+            let response = await fetch(`${apiUrl}/get_user`, {
+                method: "POST",
+                body: new URLSearchParams({ displayName, tag }),
             });
 
-            if (!response.ok) throw new Error('API Error when fetching player data');
+
+            if (response.status === 404) {
+                console.log("User not found, trying to add...");
+
+                const addResponse = await fetch(`${apiUrl}/add_user`, {
+                    method: "POST",
+                    body: new URLSearchParams({ displayName, tag }),
+                });
+
+                if (!addResponse.ok) {
+                    throw new Error("Failed to add new user");
+                }
+
+
+                response = await fetch(`${apiUrl}/get_user`, {
+                    method: "POST",
+                    body: new URLSearchParams({ displayName, tag }),
+                });
+            }
+
+            if (!response.ok) {
+                throw new Error("API Error when fetching player data");
+            }
 
             const result = await response.json();
             const puuid = result[0]["puuid"];
-            navigate(`/player/${puuid}`);
+
+            if (result[0]["status"] === "done") {
+                navigate(`/player/${puuid}`);
+            } else {
+                navigate(`/addPlayer/${puuid}`);
+            }
+
+            setIsLoading(false);
         } catch (error) {
             console.error(error);
-
-            if (userSearchName.indexOf('#') === -1) {
-                setSelectedPlayer("Invalid Search Name");
-            } else {
-                setSelectedPlayer("User not found");
-            }
+            setSelectedPlayer("Error fetching or adding user");
+            setIsLoading(false);
         }
     };
 
 
-    const cards = [
+    const demoCards = [
         {
             username: "MrWarwickWide",
             hoursPlayed: "110",
             champName: "Warwick",
             shareUrl: "/player/diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIPUZlPo9adlsdFYU6Sr8NzQJjiJXnPb6A"
         },
-        
+
         {
             username: "bigleagueplayer",
             hoursPlayed: "463",
@@ -101,44 +136,56 @@ function Home() {
 
             <div className="heroContainer">
                 <div className="heroOverlay" />
-                    <div className="heroText">
-                        <h1>Your Year on the Rift, <span style={{fontWeight:"bolder", fontStyle:"italic"}}>Unwrapped.</span></h1>
-                        <p>
-                            Discover your top champions, match stats, and trends for 2025 with a personalized, shareable recap of your League of Legends journey.
-                        </p>
+                <div className="heroText">
+                    <h1>Your Year on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
+                    <p>
+                        Discover your top champions, match stats, and trends for 2025 with a personalized, shareable recap of your League of Legends journey.
+                    </p>
 
-                        <form onSubmit={fetchPlayer} className="searchForm">
-                            <input
-                                type="text"
-                                name="username"
-                                value={userSearchName}
-                                onChange={(e) => setUserSearchName(e.target.value)}
-                                placeholder="GAME NAME#TAG"
-                                autoComplete="on"
-                                id="nameInput"
-                            />
-                            <button type="submit" id="submitBtn">
-                                Fetch My Stats!
-                            </button>
-                        </form>
+                    <form onSubmit={fetchPlayer} className="searchForm">
+                        <input
+                            type="text"
+                            name="username"
+                            value={userSearchName}
+                            onChange={(e) => setUserSearchName(e.target.value)}
+                            placeholder="GAME NAME#TAG"
+                            autoComplete="on"
+                            id="nameInput"
+                        />
+                        <button type="submit" id="submitBtn">
+                            Fetch My Stats!
+                        </button>
+                    </form>
 
-                        {selectedPlayer && <p className="search-error">{selectedPlayer}</p>}
-                    </div>
+                    {selectedPlayer && !isLoading && <p className="search-error">{selectedPlayer}</p>}
+                    {isLoading &&
 
-    
- 
+                        <h2 className="loading-text">
+                            Loading {selectedPlayer}'s stats<span className="dots">
+                                <span>.</span>
+                                <span>.</span>
+                                <span>.</span>
+                            </span>
+                        </h2>
 
-                <h2 style={{marginTop:"80px"}}>Join over <span className='emphasize'>20</span> other users in tracking your yearly LOL metrics!</h2>
+                    }
+
+                </div>
+
+
+
+
+                <h2 style={{ marginTop: "80px" }}>Join over <span className='emphasize'>20</span> other users in tracking your yearly LOL metrics!</h2>
                 <Scroller>
-                    {cards.map(card => (
-                            <SharePreviewCard key={card.id} {...card} />
-                        ))}
+                    {demoCards.map(card => (
+                        <SharePreviewCard key={card.id} {...card} />
+                    ))}
                 </Scroller>
 
             </div>
 
 
-            
+
             <p id='FooterNote'>All data used in Rifting Wrapped comes from the public League of Legends matches a user has participated in. Rifting Wrapped isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
         </>
     );
