@@ -5,7 +5,8 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 from pymongo.errors import DuplicateKeyError
-import time
+import sys
+
 
 load_dotenv(".env")
 
@@ -337,8 +338,8 @@ def process_pending_matches(new_puuid):
 
 
 
-USERNAME = "SausageCadaver"
-TAG = "NA1"
+USERNAME = sys.argv[1]
+TAG = sys.argv[2]
 
 
 if __name__ == "__main__":

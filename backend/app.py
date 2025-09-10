@@ -1218,6 +1218,25 @@ def delete_by_puuid():
 
 
 
+def trigger_github_action(displayName, tag):
+    GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+    url = f"https://api.github.com/repos/notred27/RiftingWrapped/actions/workflows/player_init.yaml/dispatches"
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"Bearer {GITHUB_TOKEN}"
+    }
+    payload = {
+        "ref": "main",
+        "inputs": {
+            "displayName": displayName,
+            "tag": tag
+        }
+    }
+    r = requests.post(url, headers=headers, json=payload)
+    if r.status_code == 204:
+        print(f"GitHub Action triggered for {displayName}#{tag}")
+    else:
+        print(f"Failed to trigger workflow: {r.status_code} {r.text}")
 
 
 @app.route('/add_user', methods=['POST'])
@@ -1240,9 +1259,16 @@ def add_by_display_name():
         data = r.json()
         result = player_collection.update_one(
             {"displayName": displayName},
-            {"$set": {"displayName": displayName, "tag":tag, "puuid": data["puuid"]}},
+            {"$set": {
+                "displayName": displayName,
+                "tag":tag,
+                "puuid": data["puuid"],
+                "status":"counting"}},
             upsert=True
         )
+
+        trigger_github_action(displayName, tag)
+
 
         return {"matched_count": result.matched_count, "modified_count": result.modified_count, "msg":"User added successfully."}, 200
 
@@ -1250,6 +1276,8 @@ def add_by_display_name():
         return {"msg":"User not found"}, 404
 
     return {"msg":"Error fetching data from riot API"}, 400
+
+
 
 
 
