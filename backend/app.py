@@ -1242,7 +1242,7 @@ def add_by_display_name():
                 "displayName": displayName,
                 "tag":tag,
                 "puuid": data["puuid"],
-                "status":"counting"}},
+                "status":"starting"}},
             upsert=True
         )
 
@@ -1253,7 +1253,7 @@ def add_by_display_name():
             "Authorization": f"Bearer {GITHUB_TOKEN}"
         }
         payload = {
-            "ref": "main",
+            "ref": "master",
             "inputs": {
                 "displayName": displayName,
                 "tag": tag
