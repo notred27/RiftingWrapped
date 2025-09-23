@@ -84,11 +84,27 @@ export default function PlayerStats() {
         </Suspense>
 
 
-
-        <div>
-            <h2>User Status: {userData["status"]}</h2>
-            {userData["status"] === "counting" && <p>Gathering your match history...</p>}
-            {userData["status"] === "pending" && <p> {userData.processedMatches} / {userData.totalMatches} Matches Processed...</p>}
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+        }}>
+            {userData["status"] === "starting" && <p className="loading-text">Searching for user<span className="dots">
+                <span>.</span>
+                <span>.</span>
+                <span>.</span>
+            </span></p>}
+            {userData["status"] === "counting" && <p className="loading-text">Gathering your match history<span className="dots">
+                <span>.</span>
+                <span>.</span>
+                <span>.</span>
+            </span></p>}
+            {userData["status"] === "pending" && <div style={{ textAlign: "center" }}><h2 className="loading-text">Processing your matches<span className="dots">
+                <span>.</span>
+                <span>.</span>
+                <span>.</span>
+            </span></h2><h3>{userData.processedMatches} / {userData.totalMatches} Matches Processed</h3></div>}
         </div>
 
 

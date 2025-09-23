@@ -7,6 +7,7 @@ import {
 import Home from './Home';
 import PlayerStats from './PlayerStats';
 import AddingPlayer from './AddingPlayer.js';
+import FAQAccordion from './FAQAccordion.js';
 
 function App() {
   return (
@@ -16,7 +17,7 @@ function App() {
         <Route path="/player/:puuid" element={<PlayerStats />} />
         <Route path="/addPlayer/:puuid" element={<AddingPlayer />} />
         <Route path="/about" element={<Home />} />
-        <Route path="/faq" element={<Home />} />
+        <Route path="/faq" element={<FAQAccordion />} />
       </Routes>
     </Router>
   );
