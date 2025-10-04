@@ -8,13 +8,13 @@ import './../SectionImage.js'
 
 export default function ChampSection({ puuid, year }) {
     const [loading, setLoading] = useState(true)
-    
+
     const [champCount, setChampCount] = useState(null);
     const [champData, setChampData] = useState(null)
     const [allChampions, setAllChampions] = useState([]);
     const [version, setVersion] = useState('');
 
-    
+
     useEffect(() => {
         async function fetchChampData() {
             try {
@@ -58,11 +58,11 @@ export default function ChampSection({ puuid, year }) {
                 setChampCount(champList.length);
 
                 // Preload 
-                // champList.forEach(({ id }) => {
-                //     const img = new Image();
-                //     img.src = `https://ddragon.leagueoflegends.com/cdn/${latestVersion}/img/champion/${id}.png`;
-                
-                // });
+                champList.forEach(({ id }) => {
+                    const img = new Image();
+                    img.src = `https://ddragon.leagueoflegends.com/cdn/${latestVersion}/img/champion/${id}.png`;
+
+                });
 
             } catch (error) {
                 console.error('Failed to fetch champion data:', error);
@@ -94,7 +94,7 @@ export default function ChampSection({ puuid, year }) {
     const sorted = champNames
         .map((name, i) => ({ name, count: champVals[i] }))
         .sort((a, b) => b.count - a.count)
-        .slice(0, 10) // top 10
+        .slice(0, 10)
 
     const sortedNames = sorted.map(item => item.name)
     const sortedCounts = sorted.map(item => item.count)
@@ -109,15 +109,13 @@ export default function ChampSection({ puuid, year }) {
         <>
             <SectionImage
                 imgUrl={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${topChamp}_0.jpg`}
-                offset = {"25"}
+                offset={"25"}
             />
 
-            <div className='centeredRow'>
-                <div>
-                    <h1 >
-                        <span className='emphasize' style={{ fontSize: "60px" }}>
-                            {topChamp.toUpperCase()}
-                        </span>
+            <div className="champSectionWrapper">
+                <div className="champText">
+                    <h1>
+                        <span className='emphasize' style={{fontSize:"60px"}}>{topChamp.toUpperCase()}</span>
                         <br />
                         was your go-to champ
                         <br />
@@ -144,8 +142,8 @@ export default function ChampSection({ puuid, year }) {
                         values={sortedCounts}
                     />
                 </div>
-
             </div>
+
 
             <div>
                 You also played as {champNames.length} of {champCount} unique champions

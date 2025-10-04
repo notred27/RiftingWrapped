@@ -57,12 +57,12 @@ function PlayerStats() {
                     <>
                         <title>{playerData["username"]}'s 2025 Rifting Wrapped</title>
                         <meta name="description" content={`See how ${playerData["username"]} performed on the Rift in 2025`} />
-                        <link rel="preload" as="image" href={`https://example.com/share-images/${playerData["champName"]}'s.jpg`} />
+                        <link rel="preload" as="image" href={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${playerData["champName"]}_0.jpg`} />
 
                         <meta property="og:title" content={`${playerData["username"]}'s 2025 Rifting Wrapped | Your League of Legends Year in Review`} />
                         <meta property="og:description" content={`See ${playerData["username"]}'s total hours, most played champion, and more on League of Legends this year!`} />
-                        <meta property="og:image" content={`https://example.com/share-images/${playerData["champName"]}'s.jpg`} />
-                        <meta property="og:url" content={`https://master.d1t2tctgq2njxi.amplifyapp.com/player/${puuid}`} />
+                        <meta property="og:image" content={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${playerData["champName"]}_0.jpg`} />
+                        <meta property="og:url" content={`https://www.riftingwrapped.com//player/${puuid}`} />
                         <meta name="twitter:card" content="summary_large_image" />
 
                     </>}
@@ -79,9 +79,12 @@ function PlayerStats() {
             </Helmet>
 
             <header className="siteHeader">
-                <div className="logo">
-                    Rifting Wrapped 2025
-                </div>
+                <span style={{ display: "flex", gap: "5px" }}>
+                    <img src='/favicon-32x32.png' alt='rifting wrapped logo'></img>
+                    <div className="logo">
+                        Rifting Wrapped 2025
+                    </div>
+                </span>
                 <nav className="navMenu">
                     <Link to="/">Home</Link>
                     <Link to="/faq">FAQ</Link>
@@ -89,7 +92,7 @@ function PlayerStats() {
                 </nav>
             </header>
 
-            <span style={{padding:"30px"}} />
+            <span style={{ padding: "30px" }} />
 
             <Suspense fallback={<UserIntroFallback year={year} />}>
                 <div className="fade-in">

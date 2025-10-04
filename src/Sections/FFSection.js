@@ -1,4 +1,3 @@
-
 export default function FFSection({ resource, puuid }) {
     const ffData = resource.read()[0];
 
@@ -17,35 +16,63 @@ export default function FFSection({ resource, puuid }) {
                 className="fa-solid fa-clock"
                 style={{
                     color: "#ffffff",
-                    fontSize: "40px",
-                    overflow: "hidden",
+                    fontSize: "clamp(20px, 5vw, 40px)",
                     display: "inline-block",
+                    margin: "2px",
                     width: isLast ? "0.5em" : "auto",
                     clipPath: isLast ? "inset(0 30% 0 0)" : "none",
                 }}
-            >&nbsp;</i>);
-
-        if ((i + 1) % 10 === 0) {
-            icons.push(<br />)
-        }
+            ></i>
+        );
     }
 
-
     return (
-        <div className='centeredColumn' >
+        <div className="centeredColumn" style={{ padding: "10px", gap: "20px" }}>
+            <div
+                id="SurrenderGrid"
+                style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gap: "10px",
+                    width: "100%",
+                    justifyItems: "center",
+                    alignItems: "center",
+                    textAlign: "center",
+                    marginBottom: "20px",
+                }}
+            >
+                <h2>
+                    This year, your team forfeited <br />
+                    <span className="emphasize" style={{ color: "#d62525ff" }}>
+                        {ffData["numSurrenders"] - ffData["numSurrendersWon"]} times
+                    </span>.
+                </h2>
 
-            <div id='SurrenderGrid'>
+                <h2>
+                    Opponents forfeited against you <br />
+                    <span className="emphasize" style={{ color: "#008e25" }}>
+                        {ffData["numSurrendersWon"]} times
+                    </span>.
+                </h2>
 
-                <h2>This year, your team forfeited <br /><span className='emphasize' style={{ color: "#d62525ff" }}>{ffData["numSurrenders"] - ffData["numSurrendersWon"]} times</span>.</h2>
-
-                <h2>Opponents forfeited against you <br /><span className='emphasize' style={{ color: "#008e25" }}>{ffData["numSurrendersWon"]} times</span>.</h2>
-
-                <h2><span className='emphasize' style={{ color: "#9c9c9cff" }}>{ffData["gamesEndingBefore16"]} of these games</span><br />ended before 16 minutes!</h2>
+                <h2>
+                    <span className="emphasize" style={{ color: "#9c9c9cff" }}>
+                        {ffData["gamesEndingBefore16"]} of these games
+                    </span>
+                    <br />ended before 16 minutes!
+                </h2>
             </div>
 
-            <br />
-
-            <h2 style={{ textAlign: "center" }}>{icons} <br /><br />It's estimated that you saved at least<br /> <span className='emphasize' style={{ fontSize: "40px" }}>{hoursSaved} hours of playtime</span><br /> from these early surrenders.</h2>
+            <div style={{ textAlign: "center", wordWrap: "break-word" }}>
+                {icons}
+                <h2 style={{ marginTop: "20px", fontSize: "clamp(16px, 4vw, 20px)" }}>
+                    It's estimated that you saved at least<br />
+                    <span className="emphasize" style={{ fontSize: "clamp(24px, 5vw, 40px)" }}>
+                        {hoursSaved} hours of playtime
+                    </span>
+                    <br />from these early surrenders.
+                </h2>
+            </div>
         </div>
-    )
+    );
 }

@@ -2,14 +2,7 @@
 
 export default function SectionImage({ imgUrl, offset }) {
     return (
-        <div
-            style={{
-                height: '300px',
-                width: 'fit-content',
-                overflow: 'hidden',
-                position: 'relative',
-            }}
-        >
+        <div className="sectionImageContainer">
             <img
                 src={imgUrl}
                 alt={`Banner Splash`}

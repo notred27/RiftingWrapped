@@ -119,12 +119,12 @@ function Home() {
     return (
         <>
             <Helmet>
-                <link rel="canonical" href={`https://master.d1t2tctgq2njxi.amplifyapp.com`} />
+                <link rel="canonical" href={`https://www.riftingwrapped.com/`} />
             </Helmet>
 
             <header className="siteHeader">
-                <span style={{display:"flex", gap:"5px"}}>
-                    <img src='favicon-32x32.png' alt='rifting wrapped logo'></img>
+                <span style={{ display: "flex", gap: "5px" }}>
+                    <img src='/favicon-32x32.png' alt='rifting wrapped logo'></img>
                     <div className="logo">
                         Rifting Wrapped 2025
                     </div>

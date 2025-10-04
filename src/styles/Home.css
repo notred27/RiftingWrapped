@@ -1,23 +1,32 @@
-#UserSelectRow {
-  width: 80vw;
-  padding: 20px 0px 20px 0px;
+/* ---------- Reset / Layout helpers ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
 
+/* ---------- Hero / Header / Search ---------- */
+#UserSelectRow {
+  width: 80vw;
+  padding: 20px 0;
+}
 
 #PlayerNameHeader {
   margin-bottom: 10px;
   font-weight: 900;
 }
 
-
-
-
-
 .heroContainer {
   position: relative;
   width: 100%;
-  background: linear-gradient(120deg, #0f1923 0%, #000000 100%);
+  background: linear-gradient(120deg, #0f1923 0%, #000 100%);
   color: #fff;
   padding: 80px 20px;
   display: flex;
@@ -25,16 +34,19 @@
   align-items: center;
   flex-direction: column;
   text-align: center;
+  /* min-height: 90vh; */
 }
 
 .heroOverlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
+  inset: 0;
   background: url('https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Jax_0.jpg') center/cover no-repeat;
   opacity: 0.07;
+  background-position: center;
+  background-size: cover;
+  pointer-events: none;
+  box-sizing: border-box;
+  /* min-height: 90vh; */
 }
 
 
@@ -57,12 +69,16 @@
   margin-bottom: 30px;
 }
 
+/* ---------- Search form controls ---------- */
 .searchForm {
   display: flex;
   flex-direction: column;
   gap: 10px;
   align-items: center;
+  max-width: 420px;
+  margin: 0 auto;
 }
+
 
 
 #nameInput {
@@ -73,41 +89,45 @@
   border: 1px solid #444;
   background: #1c2a38;
   color: #fff;
-  max-width: 80vw;
+   width: 100%;
+  max-width: 100%;
 }
 
 #submitBtn {
   padding: 12px;
   font-size: 1rem;
-  background-color: rgb(0, 112, 187);
-  color: white;
+  background: rgb(0, 112, 187);
+  color: #fff;
   border: none;
   cursor: pointer;
   border-radius: 6px;
-  transition: background 0.2s ease;
+  transition: background .2s ease;
   min-width: 300px;
   margin-top: 20px;
-  font-size: large;
-  font-weight: bold;
-
+  font-weight: 700;
+   width: 100%;
+  max-width: 100%;
 }
-
 
 #submitBtn:hover {
-  background-color: #1e4470;
+  background: #1e4470;
 }
 
+/* touch target hint */
+#submitBtn,
+#nameInput {
+  touch-action: manipulation;
+}
 
-
-
-
+/* ---------- Scroller ---------- */
 .scrollContainer {
   max-width: 80vw;
   overflow: hidden;
   --scroll-speed: 60s;
-
   mask: linear-gradient(90deg, transparent, white 20%, white 80%, transparent);
   -webkit-mask: linear-gradient(90deg, transparent, white 20%, white 80%, transparent);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .scrollContent {
@@ -116,15 +136,13 @@
   gap: 1rem;
   padding-block: 1rem;
   width: fit-content;
-
   animation: scroll var(--scroll-speed) linear infinite;
-
+  flex-wrap: nowrap;
 }
 
 .scrollContainer[data-animated] .scrollContent {
   animation-play-state: running;
 }
-
 
 @keyframes scroll {
   to {
@@ -132,23 +150,10 @@
   }
 }
 
-
-
-
-
-@media (max-width: 768px) {
-  .hero-text h1 {
-    font-size: 2.2rem;
-  }
-}
-
-
-
-
+/* ---------- Loading dots & animations ---------- */
 .loading-text {
   font-weight: bold;
   animation: fadeInOut 2s infinite;
-
 }
 
 .dots span {
@@ -159,19 +164,192 @@
 .dots span:nth-child(1) {
   animation-delay: 0s;
 }
+
 .dots span:nth-child(2) {
-  animation-delay: 0.2s;
+  animation-delay: .2s;
 }
+
 .dots span:nth-child(3) {
-  animation-delay: 0.4s;
+  animation-delay: .4s;
 }
 
 @keyframes fadeInOut {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
+
+  0%,
+  100% {
+    opacity: .5
+  }
+
+  50% {
+    opacity: 1
+  }
 }
 
 @keyframes bounce {
-  0%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-6px); }
+
+  0%,
+  80%,
+  100% {
+    transform: translateY(0)
+  }
+
+  40% {
+    transform: translateY(-6px)
+  }
+}
+
+/* ---------- Prevent overflow for common elements ---------- */
+input,
+textarea,
+button,
+img,
+svg,
+iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+.full-viewport,
+.some-100vw-element,
+.heroContainer,
+.heroText,
+.scrollContainer {
+  width: 100%;
+  max-width: 100%;
+}
+
+#submitBtn,
+#nameInput,
+.share-card,
+.sharePreviewCard {
+  min-width: 0 !important;
+  width: 100%;
+}
+
+/* Optional responsive card sizing (tweak to match SharePreviewCard) */
+.share-card,
+.sharePreviewCard {
+  width: auto;
+  min-width: 160px;
+  max-width: 260px;
+  flex: 0 0 auto;
+}
+
+/* Debug helper (use in console: document.documentElement.classList.add('debug-overflow')) */
+html.debug-overflow * {
+  outline: 1px solid rgba(255, 0, 0, 0.12);
+}
+
+/* ---------- Responsive rules ---------- */
+@media (max-width:1024px) {
+  .heroContainer {
+    padding: 48px 16px;
+  }
+
+  .heroText {
+    max-width: 560px;
+    padding: 0 8px;
+  }
+
+  .heroText h1 {
+    font-size: 2.4rem;
+    line-height: 1.05;
+  }
+
+  .heroText p {
+    font-size: 1.05rem;
+    margin-bottom: 18px;
+  }
+}
+
+@media (max-width:768px) {
+
+  /* header stack if needed (siteHeader rules kept minimal here; add specifics if you have header styles elsewhere) */
+  .siteHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+  }
+
+  .siteHeader .logo {
+    font-size: 1.1rem;
+    font-weight: 800;
+  }
+
+  .navMenu {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .heroContainer {
+    padding: 36px 12px;
+    text-align: center;
+  }
+
+  .heroText h1 {
+    font-size: 2rem;
+  }
+
+  .heroText p {
+    font-size: .98rem;
+    color: #d0d7de;
+  }
+
+  .searchForm {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  #nameInput {
+    font-size: 1rem;
+    padding: 10px 12px;
+    border-radius: 8px;
+    max-width: 100%;
+  }
+
+  #submitBtn {
+    min-width: 0;
+    padding: 12px;
+    font-size: 1rem;
+    border-radius: 8px;
+    margin-top: 0;
+    width: 100%;
+  }
+
+  .loading-text {
+    font-size: 1.05rem;
+  }
+
+  .scrollContainer {
+    max-width: 100%;
+    margin: 16px 0;
+    --scroll-speed: 40s;
+    mask: linear-gradient(90deg, transparent, white 10%, white 90%, transparent);
+    -webkit-mask: linear-gradient(90deg, transparent, white 10%, white 90%, transparent);
+  }
+
+  .scrollContent {
+    gap: .75rem;
+    padding-block: .5rem;
+    width: max-content;
+  }
+
+  #FooterNote {
+    font-size: .8rem;
+    padding: 12px 16px;
+  }
+
+  .heroContainer {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .heroText {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
 }

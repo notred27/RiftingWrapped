@@ -1,9 +1,5 @@
-// src/FAQAccordionCSS.jsx
-import React, { useState, useMemo } from "react";
-// import { ChevronDown } from "lucide-react";
-
-import { Link, useNavigate } from 'react-router-dom';
-
+import { useState } from "react";
+import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
 import "./styles/FAQ.css"
@@ -66,13 +62,7 @@ const DEFAULT_FAQ = [
 
 export default function FAQAccordionCSS({ items = DEFAULT_FAQ }) {
   const [openIndex, setOpenIndex] = useState(null);
-  const [query, setQuery] = useState("");
 
-  const filtered = useMemo(() => {
-    const q = query.toLowerCase().trim();
-    if (!q) return items;
-    return items.filter((it) => it.q.toLowerCase().includes(q) || it.a.toLowerCase().includes(q));
-  }, [items, query]);
 
   return (
 
@@ -99,22 +89,11 @@ export default function FAQAccordionCSS({ items = DEFAULT_FAQ }) {
           <h1>FAQ</h1>
           <p className="faqSubtitle">Quick answers to common Rifting Wrapped questions.</p>
         </header>
-{/* 
-        <div className="faqSearchWrap">
-          <input
-            type="search"
-            className="faqSearchInput"
-            placeholder="Search FAQs..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            aria-label="Search FAQs"
-          />
-        </div> */}
 
         <section className="faqList" aria-live="polite">
-          {filtered.length === 0 && <div className="faqNoResults">No results for “{query}”</div>}
 
-          {filtered.map((it, i) => {
+
+          {items.map((it, i) => {
             const isOpen = openIndex === i;
             return (
               <article key={i} className={`faqItem ${isOpen ? "open" : ""}`}>
@@ -127,7 +106,6 @@ export default function FAQAccordionCSS({ items = DEFAULT_FAQ }) {
                 >
                   <span className="faqQText">{it.q}</span>
                   <span className="faqChevron" aria-hidden>
-                    {/* <ChevronDown size={18} /> */}
                   </span>
                 </button>
 
@@ -146,9 +124,6 @@ export default function FAQAccordionCSS({ items = DEFAULT_FAQ }) {
           })}
         </section>
 
-        {/* <footer className="faqFooter">
-          Can't find an answer? <a href="/contact" className="faqContactLink">Contact support</a>.
-        </footer> */}
       </main>
 
 

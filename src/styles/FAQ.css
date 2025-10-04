@@ -1,216 +1,146 @@
-/* ===== FAQ styles matching Rifting Wrapped theme ===== */
+/* FAQ.css — Mobile-first, responsive FAQ styles */
 
-.faqContainer {
-  width: 2000px;
-  margin: 40px auto;
-  padding: 28px;
+:root{
+  --bg-1: rgba(15,25,35,0.92);
+  --bg-2: rgba(0,0,0,0.86);
+  --muted: #cbd5e1;
+  --accent: rgba(0,112,187,0.9);
+  --faq-duration: 300ms;
+  --faq-ease: cubic-bezier(.2,.9,.2,1);
+  --faq-max-mobile: 800px;
+  --faq-max-desktop: 600px;
+  --card-gap: 12px;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html,body,#root { width:100%; }
+
+/* Container: responsive and centered */
+.faqContainer{
+  width: calc(100% - 32px);
+  max-width: 1100px;   /* desktop cap */
+  margin: 20px auto;
+  padding: 18px;
   color: #fff;
-  /* background: linear-gradient(180deg, rgba(15,25,35,0.92), rgba(0,0,0,0.86)); */
-  border-radius: 16px;
-  /* box-shadow: 0 8px 30px rgba(0,0,0,0.6); */
+  border-radius: 12px;
   text-align: left;
-  /* height: calc(fit-content + 300px); */
+  background: linear-gradient(180deg, rgba(15,25,35,0.92), rgba(0,0,0,0.85));
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
 }
 
-.faqHeader {
-  text-align: center;
-  margin-bottom: 18px;
-}
+/* Header */
+.faqHeader { text-align: center; margin-bottom: 12px; }
+.faqHeader h1 { font-size: 1.6rem; margin:0; font-weight:900; }
+.faqSubtitle { margin-top:6px; color:var(--muted); font-size:0.95rem; }
 
-.faqHeader h1 {
-  font-size: 2rem;
-  margin: 0;
-  font-weight: 900;
+/* Search (full-width mobile) */
+.faqSearchWrap{ display:flex; justify-content:center; margin: 12px 0 16px; }
+.faqSearchInput{
+  width:100%;
+  max-width:680px;
+  padding:10px 14px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,0.06);
+  background:#0b1317;
+  color:#fff;
+  font-size:1rem;
+  outline:none;
 }
-
-.faqSubtitle {
-  margin-top: 6px;
-  color: #cbd5e1;
-  font-size: 0.95rem;
-}
-
-/* Search input (styled to sit with your theme) */
-.faqSearchWrap {
-  display: flex;
-  justify-content: center;
-  margin: 16px 0 20px;
-}
-
-.faqSearchInput {
-  width: 100%;
-  max-width: 680px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid #333;
-  background: #111820;
-  color: #fff;
-  font-size: 1rem;
-  outline: none;
-  box-shadow: none;
-}
-
-.faqSearchInput:focus {
+.faqSearchInput:focus{
   box-shadow: 0 0 0 3px rgba(0,112,187,0.12);
-  border-color: rgba(0,112,187,0.9);
+  border-color: var(--accent);
 }
 
-/* FAQ items */
+/* FAQ list — single column by default (mobile) */
 .faqList {
   display: grid;
+  grid-template-columns: 1fr;
   gap: 12px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.faqItem {
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.05);
+
+/* FAQ card / item */
+.faqItem{
+  border-radius:12px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,0.04);
   background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
+.faqItem:hover{ transform: translateY(-3px); box-shadow: 0 10px 30px rgba(2,6,23,0.6); }
 
-.faqItem:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+/* Question row button — make touch-friendly */
+.faqQBtn{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 16px;
+  background:transparent;
+  border:0;
+  cursor:pointer;
+  color:#fff;
+  text-align:left;
+  gap:12px;
+  font-size:1rem;
 }
+.faqQText{ font-weight:800; }
 
-/* Question button */
-.faqQBtn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  color: #fff;
-  text-align: left;
-  gap: 12px;
-}
+/* Chevron */
+.faqChevron{ display:inline-flex; align-items:center; justify-content:center; transition: transform var(--faq-duration) var(--faq-ease); color:#bcdffd; }
+.faqItem.open .faqChevron{ transform: rotate(180deg); }
 
-.faqQText {
-  font-weight: 800;
-  font-size: 1rem;
-}
-
-/* Chevron - rotate when open */
-.faqChevron {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 220ms cubic-bezier(.2,.9,.2,1);
-  color: #bcdffd;
-}
-
-/* When the parent has .open, rotate the chevron */
-.faqItem.open .faqChevron {
-  transform: rotate(180deg);
-}
-
-/* Panel (answer) */
-.faqPanel {
-  padding: 12px 16px 18px;
+/* Panel — CSS-only smooth accordion */
+.faqPanel{
+  max-height:0;
+  opacity:0;
+  overflow:hidden;
+  transition: max-height var(--faq-duration) var(--faq-ease), opacity calc(var(--faq-duration) * 0.85) var(--faq-ease);
   border-top: 1px solid rgba(255,255,255,0.03);
   background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0));
 }
+.faqPanelInner{ padding:12px 16px 18px; }
+.faqA{ color:var(--muted); margin:0; line-height:1.5; font-size:0.97rem; }
 
-.faqA {
-  color: #cbd5e1;
-  margin: 0;
-  line-height: 1.5;
-  font-size: 0.97rem;
+/* when open allow content up to mobile max */
+.faqItem.open .faqPanel{ max-height: var(--faq-max-mobile); opacity:1; }
+
+/* No results + footer */
+.faqNoResults{ padding:20px; color:#e6edf3; text-align:center; background:rgba(255,255,255,0.01); border-radius:8px; }
+.faqFooter{ margin-top:18px; text-align:center; color:#9fb7d8; font-size:0.94rem; }
+.faqContactLink{ color:#dbefff; text-decoration:underline; }
+
+/* Responsive step-up: tablets and desktops */
+@media (min-width: 700px){
+
+  .faqContainer{ padding:24px; margin:28px auto; }
+  .faqHeader h1{ font-size:1.9rem; }
+  /* allow longer panels but smaller than mobile limit */
+  :root{ --faq-max-mobile: 700px; /* re-use as general max on larger screens */ }
 }
 
-/* No results */
-.faqNoResults {
-  padding: 20px;
-  color: #e6edf3;
-  text-align: center;
-  background: rgba(255,255,255,0.01);
-  border-radius: 8px;
+/* Desktop wide */
+@media (min-width: 1100px){
+  .faqContainer{ max-width:1200px; padding:28px; }
+  /* make cards breathe more on desktop */
+  .faqQBtn{ padding:16px 18px; font-size:1.02rem; }
+  .faqPanelInner{ padding:14px 18px 20px; }
+  :root{ --faq-max-mobile: 600px; } /* reduce max-height if desired on huge screens */
 }
 
-/* Footer link style */
-.faqFooter {
-  margin-top: 18px;
-  text-align: center;
-  color: #9fb7d8;
-  font-size: 0.94rem;
-}
+/* Accessibility focus style for keyboard users */
+.faqQBtn:focus{ outline: none; box-shadow: 0 0 0 3px rgba(0,112,187,0.14); border-radius:8px; }
 
-.faqContactLink {
-  color: #dbefff;
-  text-decoration: underline;
-}
 
-/* Responsive tweaks */
-@media (max-width: 768px) {
-  .faqContainer { padding: 18px; margin: 20px; }
-  .faqHeader h1 { font-size: 1.6rem; }
+/* .faqList will accept an animated inline height */
+.faqList {
+  transition: height 300ms cubic-bezier(.2,.9,.2,1);
+  overflow: visible; /* allow items to show */
 }
 
 
-
-/* CSS-only smooth accordion */
-/* tweak --faq-duration and --faq-max as needed */
-:root {
-  --faq-duration: 300ms;
-  --faq-ease: cubic-bezier(.2,.9,.2,1);
-  --faq-max: 600px; /* max height for the content; make it large enough */
-}
-
-.faqItem {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.04);
-}
-
-/* question row */
-.faqQBtn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  color: #fff;
-}
-
-/* chevron rotation */
-.faqChevron {
-  transition: transform var(--faq-duration) var(--faq-ease);
-  color: #bcdffd;
-}
-.faqItem.open .faqChevron {
-  transform: rotate(180deg);
-}
-
-/* panel container: animates max-height & opacity */
-.faqPanel {
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition: max-height var(--faq-duration) var(--faq-ease),
-              opacity calc(var(--faq-duration) * 0.9) var(--faq-ease);
-  border-top: 1px solid rgba(255,255,255,0.03);
-  background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0));
-}
-
-/* inner padding preserved so height calc works cleanly */
-.faqPanelInner {
-  padding: 12px 16px 18px;
-}
-
-/* when open, allow content up to --faq-max height */
-.faqItem.open .faqPanel {
-  max-height: var(--faq-max);
-  opacity: 1;
-}
-
-/* small-screen tweaks if needed */
-@media (max-width: 768px) {
-  :root { --faq-max: 800px; } /* mobile might need more space */
-}

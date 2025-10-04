@@ -1,3 +1,26 @@
+@media (max-width: 768px) {
+  .siteHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 16px;
+  }
+
+  .navMenu {
+    margin-top: 8px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+  }
+
+  .navMenu a {
+    font-size: 14px;
+    margin-left: 0;
+  }
+}
+
+
+
 body {
   margin: 0;
   font-family: 'Jakarta Sans', sans-serif;
@@ -17,7 +40,7 @@ body {
 }
 
 #FooterNote {
- font-size: 12px;
+  font-size: 12px;
   color: #888;
   max-width: 800px;
   margin: 20px auto;
@@ -25,6 +48,20 @@ body {
   text-align: center;
   padding-bottom: 40px;
 }
+
+@media (max-width: 768px) {
+  #FooterNote {
+    font-size: 11px;
+    padding: 20px 10px 30px 10px;
+    max-width: 90vw;
+  }
+
+  #root {
+    min-height: auto;
+    height: auto;
+  }
+}
+
 
 
 #PositionBreakdownContainer {
@@ -37,6 +74,17 @@ body {
   gap: 50px;
 }
 
+@media (max-width: 768px) {
+  #PositionBreakdownContainer {
+    flex-direction: column;
+    gap: 15px;
+    width: 95vw;
+    height: auto;
+  }
+}
+
+
+
 #DamageSectionContainer {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -47,11 +95,30 @@ body {
   gap: 50px;
 }
 
+@media (max-width: 768px) {
+  #DamageSectionContainer {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    min-width: auto;
+    width: 95vw;
+  }
+}
+
+
 #ChampHistogram {
   width: 400px;
   margin-left: 50px;
   margin-top: 30px;
 }
+
+@media (max-width: 768px) {
+  #ChampHistogram {
+    width: 90vw;
+    margin-left: 0;
+    margin-top: 20px;
+  }
+}
+
 
 #SurrenderGrid {
   display: grid;
@@ -138,30 +205,50 @@ h4 {
   margin-right: 50px;
 }
 
+@media (max-width: 768px) {
+  .chartContainer {
+    width: 90vw;
+    height: auto;
+    margin-right: 0;
+  }
+}
+
+
+
 .tableEntry {
-    padding: 5px 0px 5px 0px;
-    display: grid;
-    grid-template-columns: 20% 20% 20% 20% 20%;
-    min-width: 600px;
-    justify-content: center;
-    align-items: center;
+  padding: 5px 0px 5px 0px;
+  display: grid;
+  grid-template-columns: 20% 20% 20% 20% 20%;
+  min-width: 600px;
+  justify-content: center;
+  align-items: center;
 }
 
 
 .tableEntry p {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    margin: 4px 0px 4px 0px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin: 4px 0px 4px 0px;
 }
 
 .tableEntry span {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 }
+
+@media (max-width: 768px) {
+  .tableEntry {
+    grid-template-columns: 1fr 1fr;
+    min-width: auto;
+    gap: 5px;
+  }
+}
+
+
 
 
 .fade-in {
@@ -183,8 +270,7 @@ h4 {
   padding: 20px 40px;
   background-color: #0f2331;
   color: #fff;
-  /* position: sticky; */
-  top: 0;
+    top: 0;
   z-index: 1000;
 
 }
@@ -205,4 +291,88 @@ h4 {
 
 .navMenu a:hover {
   color: #fff;
+}
+
+
+@media (max-width: 600px) {
+  #SurrenderGrid h2 {
+    font-size: 14px;
+        line-height: 1.3;
+      }
+
+  #SurrenderGrid .emphasize {
+    font-size: 18px;
+      }
+
+    #SurrenderGrid+h2 {
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  #SurrenderGrid+h2 .emphasize {
+    font-size: 20px;
+  }
+}
+
+
+
+.champSectionWrapper {
+  display: flex;
+  flex-direction: row;
+    justify-content: center;
+  align-items: flex-start;
+  gap: 50px;
+  flex-wrap: wrap;
+}
+
+.champText h1,
+.champText h2 {
+  text-align: left;
+  }
+
+@media (max-width: 800px) {
+  .champSectionWrapper {
+    flex-direction: column;
+        align-items: center;
+        gap: 20px;
+  }
+
+  .champText {
+    text-align: center;
+        max-width: 90vw;
+      }
+
+  .champText h1 .emphasize {
+    font-size: 40px;
+      }
+
+  .champText h2 {
+    font-size: 16px;
+      }
+
+  #ChampHistogram {
+    width: 90vw;
+        margin-left: 0;
+      }
+}
+
+
+
+.sectionImageContainer {
+  height: 300px;
+  width: fit-content;
+  overflow: hidden;
+  position: relative;
+}
+
+@media (max-width: 600px) {
+  .sectionImageContainer {
+    height: 200px;
+      }
+}
+
+@media (max-width: 400px) {
+  .sectionImageContainer {
+    height: 150px;
+  }
 }
