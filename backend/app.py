@@ -1468,3 +1468,13 @@ def get_card_preview(puuid):
     return jsonify({"champName":champ[0]['_id'],
                     "username":username['displayName'],
                     "hoursPlayed":totalPlaytime})
+
+
+
+@app.route('/health', methods=['GET'])
+def health():
+
+    return jsonify({
+        "status": "ok",
+        "message": "Server is up"
+    }), 200

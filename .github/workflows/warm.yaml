@@ -1,0 +1,34 @@
+name: Render Health
+
+on:
+  schedule:
+    - cron: '*/20 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  randomized-ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Random health ping EST
+        env:
+          URL: ${{ secrets.REACT_APP_API_ENDPOINT }}
+          START_HOUR: 9      
+          END_HOUR: 23       
+          MAX_JITTER: 600    
+        run: |
+
+          if [ "$HOUR" -lt "$START_HOUR" ] || [ "$HOUR" -gt "$END_HOUR" ]; then
+            echo "Outside target hours ($START_HOUR-$END_HOUR) EST. Skipping ping."
+            exit 0
+          fi
+
+          PRE_DELAY=$((RANDOM % 300))
+          sleep "$PRE_DELAY"
+
+          FULL_URL="${URL%/}/health"
+
+          curl -fsS "$FULL_URL" || {
+            echo "Ping failed (curl exit $?)."
+            exit 0
+          }
+
