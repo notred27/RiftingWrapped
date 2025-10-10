@@ -81,6 +81,17 @@
     'floating-chat.donateButton.text-color': '#323842',
 
   });
+
+
+  const addIframeTitle = () => {
+    const iframe = document.querySelector("iframe[id^='kofi-wo-container']");
+    if (iframe && !iframe.getAttribute('title')) {
+      iframe.setAttribute('title', 'Ko-fi floating chat widget');
+    }
+  };
+
+  addIframeTitle();
+  setTimeout(addIframeTitle, 1000);
 </script>
 
 </html>

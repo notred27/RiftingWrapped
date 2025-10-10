@@ -73,7 +73,7 @@ export default function TotalTimeBreakdown({ puuid, year }) {
                 offset={"10"}
             />
 
-            <div className="centeredColumn">
+            <div className="centeredColumn" style={{ textAlign: "center" }}>
 
                 <h2 className="emphasize">In Conclusion</h2>
 
@@ -89,88 +89,87 @@ export default function TotalTimeBreakdown({ puuid, year }) {
 
 
 
-        <h2>Impressed with your stats? Share your Rifting Wrapped Recap with friends!</h2>
-        
-        <div>
+            <h2>Impressed with your stats? Share your Rifting Wrapped Recap with friends!</h2>
 
-        <SharePreviewCard
-            username={cardInfo["username"]}
-            hoursPlayed={cardInfo["hoursPlayed"]}
-            champName={cardInfo["champName"]}
-            shareUrl={`https://riftingwrapped.onrender.com/share/${puuid}`}
-        />
-        </div>
+            <div>
 
-        <div style={{display:"flex", justifyContent:"center", flexDirection:"row", gap:"20px"}}>
+                <SharePreviewCard
+                    username={cardInfo["username"]}
+                    hoursPlayed={cardInfo["hoursPlayed"]}
+                    champName={cardInfo["champName"]}
+                    shareUrl={`https://riftingwrapped.onrender.com/share/${puuid}`}
+                />
+            </div>
 
-            <button
-                onClick={() => {
-                    navigator.clipboard.writeText(shareUrl);
-                    alert("Copied share link!");
-                }}
-                style={{backgroundColor:"#696c70ff", color:"white", width:"210px", textAlign:"center", padding:"10px 30px 10px 30px", textDecoration:"none", fontWeight:"600", border:"none", fontSize:"1rem", cursor:"pointer"}}
-            >
-                Copy Share Link
-            </button>
+            <div className="shareButtonRow" >
 
-            <a
-                href={`https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
-                onClick={(e) => {
-                    e.preventDefault();
-                    window.open(
-                        `https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
-                        '',
-                        'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
-                    );
-                }}
-                rel="noopener nofollow noreferrer"
-                target="_blank"
-                style={{backgroundColor:"#186ac7ff", color:"white", width:"150px", textAlign:"center",  padding:"10px 30px 10px 30px", textDecoration:"none", fontWeight:"600"}}
-            >
-                Share on Twitter
-            </a>
+                <button
+                    className="shareButton"
+                    onClick={() => {
+                        navigator.clipboard.writeText(shareUrl);
+                        alert("Copied share link!");
+                    }}
+                >
+                    Copy Link
+                </button>
 
-            <a
-                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
-                onClick={(e) => {
-                    e.preventDefault();
-                    window.open(
-                        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-                        '',
-                        'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
-                    );
-                }}
-                rel="noopener nofollow noreferrer"
-                target="_blank"
-                style={{backgroundColor:"#094a94ff", color:"white", width:"150px", textAlign:"center", padding:"10px 30px 10px 30px", textDecoration:"none", fontWeight:"600"}}
-            >
-                Share on Facebook
-            </a>
+                <a
+                    href={`https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        window.open(
+                            `https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
+                            '',
+                            'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
+                        );
+                    }}
+                    className="shareButton twitter"
+                    target="_blank"
+                    rel="noopener nofollow noreferrer"
+                >
+                    Share on Twitter
+                </a>
 
+                <a
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        window.open(
+                            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+                            '',
+                            'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
+                        );
+                    }}
+                    className="shareButton facebook"
+                    target="_blank"
+                    rel="noopener nofollow noreferrer"
+                >
+                    Share on Facebook
+                </a>
 
-            <a
-                href={`https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`}
-                onClick={(e) => {
-                    e.preventDefault();
-                    window.open(
-                        `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`,
-                        '',
-                        'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=800'
-                    );
-                }}
-                rel="noopener nofollow noreferrer"
-                target="_blank"
-                style={{backgroundColor:"#ce280aff", color:"white",  width:"150px", textAlign:"center", padding:"10px 30px 10px 30px", textDecoration:"none", fontWeight:"600"}}
-            >
-                Share on Reddit
-            </a>
-
-
-            
-        </div>
+                <a
+                    href={`https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        window.open(
+                            `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`,
+                            '',
+                            'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=800'
+                        );
+                    }}
+                    className="shareButton reddit"
+                    target="_blank"
+                    rel="noopener nofollow noreferrer"
+                >
+                    Share on Reddit
+                </a>
 
 
-        <h2>Want to see your own recap? <a href="/" style={{color:"whitesmoke", fontWeight:"bold"}}>Try it now!</a></h2>
+
+            </div>
+
+
+            <h2>Want to see your own recap? <a href="/" style={{ color: "whitesmoke", fontWeight: "bold" }}>Try it now!</a></h2>
         </>
     )
 }

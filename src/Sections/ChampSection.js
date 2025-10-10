@@ -145,7 +145,7 @@ export default function ChampSection({ puuid, year }) {
             </div>
 
 
-            <div>
+            <div style={{textAlign:"center"}}>
                 You also played as {champNames.length} of {champCount} unique champions
                 ({Math.round(champNames.length / champCount * 1000) / 10}% of the total roster)
             </div>

@@ -71,14 +71,14 @@ export default function TableEntry({ puuid, match }) {
     const date = new Date(match.matchInfo.gameCreated)
 
     return (
-        <div onClick={() => window.open(`https://mobalytics.gg/lol/match/na/${match.stats.riotIdGameName}-${match.stats.riotIdTagline}/${match.stats.matchId.split("_")[1]}`, "_blank")} style={{ background: `${stats.win ? "linear-gradient(90deg, #18bd9b80 0%, rgba(49, 41, 85, 0.5) 100%)" : "linear-gradient(90deg, #c9678f80 0%, rgba(49, 41, 85, 0.5) 100%)"}`, borderRadius: "4px", marginBottom: "5px", cursor: "pointer" }}>
+        <div className="table-entry-container" onClick={() => window.open(`https://mobalytics.gg/lol/match/na/${match.stats.riotIdGameName}-${match.stats.riotIdTagline}/${match.stats.matchId.split("_")[1]}`, "_blank")} style={{ background: `${stats.win ? "linear-gradient(90deg, #18bd9b80 0%, rgba(49, 41, 85, 0.5) 100%)" : "linear-gradient(90deg, #c9678f80 0%, rgba(49, 41, 85, 0.5) 100%)"}`, borderRadius: "4px", marginBottom: "5px", cursor: "pointer" }}>
 
 
-            <span style={{ color: "#e2e2e2ff", fontSize: "0.8rem", fontWeight: "600", marginLeft: "10px", paddingTop: "5px" }}>{monthInt2String(date.getMonth())} {date.getDate()} ∙ {Math.floor(match.matchInfo.gameDuration / 60)} minutes</span>
+            <span style={{ color: "#e2e2e2ff", fontSize: "0.8rem", fontWeight: "600", marginLeft: "10px", paddingTop: "5px" }}>{QUEUE_ID_MAP[match.queueId]} ∙ {monthInt2String(date.getMonth())} {date.getDate()} ∙ {Math.floor(match.matchInfo.gameDuration / 60)} minutes</span>
 
             <div className='tableEntry' >
 
-                <div style={{ position: "relative", width: "50px", marginLeft: "20px" }}>
+                <div className="champTableGrid" style={{ }}>
 
                     <img
                         loading='lazy'
@@ -91,7 +91,7 @@ export default function TableEntry({ puuid, match }) {
                     <span style={{ position: "absolute", bottom: "0px", right: "-10px", backgroundColor: "#0d1317", borderRadius: "25px" }}>{img}</span>
                 </div>
 
-                <div style={{ textAlign: "center" }}>
+                <div className="kdaGrid" style={{ textAlign: "center" }}>
 
                     <span style={{ fontWeight: "bold" }}>{stats.kills}<span style={{ color: "#bfc2e6ff" }}>&nbsp;/&nbsp;</span>{stats.deaths}<span style={{ color: "#bfc2e6ff" }}>&nbsp;/&nbsp;</span>{stats.assists}</span>
 
@@ -99,13 +99,13 @@ export default function TableEntry({ puuid, match }) {
 
                 </div>
 
-                <div style={{ textAlign: "center" }}>
+                <div className="csGrid" style={{ textAlign: "center" }}>
                     <span style={{ fontWeight: "bold" }}>{match.stats.cs + match.stats.jungleCs} CS</span>
                     <span style={{ fontSize: "0.8rem", fontWeight: "bold" }}>{Math.floor(match.stats.cs / (match.matchInfo.gameDuration / 60) * 10) / 10}<span style={{ color: "#bfc2e6ff" }}>&nbsp;/min</span></span>
                 </div>
 
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gridTemplateRows: "1fr 1fr", justifyContent: "center", textAlign: "center", rowGap: "4px" }}>
+                <div className="objectivesGrid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gridTemplateRows: "1fr 1fr", justifyContent: "center", textAlign: "center", rowGap: "4px" }}>
                     <span>
                         <img loading='lazy' src="https://cdn.mobalytics.gg/assets/lol/images/ui/icons/dragons.svg" alt='dragon icon' style= {{width:"16px", height:"16px"}} />
                     </span>
@@ -131,9 +131,10 @@ export default function TableEntry({ puuid, match }) {
 
                 </div>
 
-                <p>{QUEUE_ID_MAP[match.queueId]}</p>
+                
 
             </div>
+
 
         </div>
     );
