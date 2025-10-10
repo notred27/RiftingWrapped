@@ -13,12 +13,14 @@ jobs:
         env:
           URL: ${{ secrets.REACT_APP_API_ENDPOINT }}
           START_HOUR: 9      
-          END_HOUR: 23       
-          MAX_JITTER: 600    
+          END_HOUR: 23         
         run: |
+          # EST from UTC
+          HOUR=$(date -u +"%H")
+          HOUR=$(( (HOUR - 5 + 24) % 24 ))
 
           if [ "$HOUR" -lt "$START_HOUR" ] || [ "$HOUR" -gt "$END_HOUR" ]; then
-            echo "Outside target hours ($START_HOUR-$END_HOUR) EST. Skipping ping."
+            echo "Outside target hours ($START_HOUR-$END_HOUR) EST."
             exit 0
           fi
 
@@ -26,9 +28,8 @@ jobs:
           sleep "$PRE_DELAY"
 
           FULL_URL="${URL%/}/health"
-
+          echo "Pinging $FULL_URL..."
           curl -fsS "$FULL_URL" || {
             echo "Ping failed (curl exit $?)."
-            exit 0
+            exit 1
           }
-
