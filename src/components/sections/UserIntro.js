@@ -1,8 +1,11 @@
-export default function UserIntro({ resource, year }) {
-  const userInfo = resource.read();
+import { useStatsResources } from "./../../resources/UserResourceContext.js";
+
+export default function UserIntro({year }) {
+  const { user } = useStatsResources();
+  const userInfo = user.read();
 
   return (
-    <div style={{ textAlign: "center", padding: "10px" }}>
+    <div style={{ textAlign: "center", padding: "10px", paddingTop: "30px"  }}>
       <img
         src={`${userInfo.icon}`}
         alt="user icon"

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import TableEntry from './../TableEntry.js';
+import TableEntry from './../common/TableEntry.js';
 import KDAgraph from './../graphs/KDAgraph.js'
 import MapOverlay from './../graphs/MapOverlay.js';
 

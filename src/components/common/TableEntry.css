@@ -1,0 +1,145 @@
+.table-entry-container {
+  border-radius: 4px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  padding: 8px;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+  outline: none;
+}
+.table-entry-container:focus,
+.table-entry-container:focus-visible {
+  box-shadow: 0 0 0 3px rgba(24, 106, 199, 0.18);
+}
+
+.table-entry-win {
+  background: linear-gradient(90deg, #18bd9b80 0%, rgba(49,41,85,0.5) 100%);
+}
+.table-entry-lose {
+  background: linear-gradient(90deg, #c9678f80 0%, rgba(49,41,85,0.5) 100%);
+}
+
+.table-entry-meta {
+  color: #e2e2e2;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-left: 8px;
+  display: block;
+}
+
+
+.tableEntry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 4px 6px 4px;
+  justify-content: flex-start;
+}
+
+.champTableGrid {
+  position: relative;
+  width: 56px;
+  min-width: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+}
+
+
+.champion-icon-table {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.roleIcon {
+  position: absolute;
+  bottom: 0;
+  right: -8px;
+  background-color: #0d1317;
+  border-radius: 20px;
+  padding: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.45);
+}
+.roleIcon img {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.kdaGrid {
+  text-align: center;
+  min-width: 90px;
+  width: 110px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+}
+.kdaNums {
+  font-weight: 700;
+  color: #ffffff;
+}
+.kdaLabel {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #bfc2e6;
+}
+
+.csGrid {
+  text-align: center;
+  min-width: 80px;
+  width: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+}
+.csNums {
+  font-weight: 700;
+  color: #ffffff;
+}
+.csLabel {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #bfc2e6;
+}
+
+.objectivesGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto auto;
+  gap: 6px 8px;
+  justify-items: center;
+  align-items: center;
+  min-width: 160px;
+  color: #e6e8ff;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.objectivesGrid img {
+  width: 16px;
+  height: 16px;
+  display: block;
+  opacity: 0.95;
+}
+
+
+.table-entry-container:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+
+.tableEntry img,
+.tableEntry span,
+.tableEntry p {
+  max-width: 100%;
+  word-break: break-word;
+}

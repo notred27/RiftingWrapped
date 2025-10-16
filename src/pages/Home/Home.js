@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { Helmet } from 'react-helmet-async';
 
-import './styles/Home.css';
+import './Home.css';
 
-import SharePreviewCard from './SharePreviewCard';
+import SharePreviewCard from '../../components/common/SharePreviewCard';
 
-import Scroller from './Scroller';
+import AutoScroller from '../../components/common/AutoScroller';
 
 function Home() {
     const [userSearchName, setUserSearchName] = useState('');
@@ -122,21 +122,6 @@ function Home() {
                 <link rel="canonical" href={`https://www.riftingwrapped.com/`} />
             </Helmet>
 
-            <header className="siteHeader">
-                <span style={{ display: "flex", gap: "5px" }}>
-                    <img src='/favicon-32x32.png' alt='rifting wrapped logo'></img>
-                    <div className="logo">
-                        Rifting Wrapped 2025
-                    </div>
-                </span>
-                <nav className="navMenu">
-                    <Link to="/">Home</Link>
-                    <Link to="/faq">FAQ</Link>
-
-                </nav>
-            </header>
-
-
             <div className="heroContainer">
                 <div className="heroOverlay" />
                 <div className="heroText">
@@ -175,25 +160,14 @@ function Home() {
 
                 </div>
 
-
-
-
                 <h2 style={{ marginTop: "80px" }}>Join over <span className='emphasize'>20</span> other users in tracking your yearly LOL metrics!</h2>
-                <Scroller>
+                <AutoScroller>
                     {demoCards.map(card => (
-                        <SharePreviewCard key={card.id} {...card} />
+                        <SharePreviewCard key={card.username} {...card} />
                     ))}
-                </Scroller>
+                </AutoScroller>
 
             </div>
-
-
-
-            <p id='FooterNote'>All data used in Rifting Wrapped comes from the public League of Legends matches a user has participated in. Rifting Wrapped isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
-
-
-
-
         </>
     );
 }

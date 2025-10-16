@@ -1,31 +1,29 @@
 
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
-import { createUserResource } from "./userResource.js";
 
-import { Suspense, useEffect, useState, useMemo } from "react";
+import { Suspense, useEffect, useState } from "react";
 
-import UserIntro from './Sections/UserIntro.js';
-import UserIntroFallback from './Sections/UserIntroFallback.js';
+import UserIntro from '../../components/sections/UserIntro.js';
+import UserIntroFallback from '../../components/sections/UserIntroFallback.js';
 
+import { UserResourceProvider } from "../../resources/UserResourceContext.js";
 
 export default function PlayerStats() {
 
     const { puuid } = useParams();
 
-    const year = 2025
+    const year = 2025;
+    
     const [polling, setPolling] = useState(true);
     const [userData, setUserData] = useState([]);
 
     const nav = useNavigate();
 
 
-    const resource = useMemo(() => createUserResource(puuid, year), [puuid]);
-
 
     useEffect(() => {
         let intervalId;
-        let timerId;
 
         const fetchStatus = async () => {
             try {
@@ -60,29 +58,18 @@ export default function PlayerStats() {
 
         return () => {
             clearInterval(intervalId);
-            clearInterval(timerId);
         };
     }, [polling]);
 
 
     return (<>
-        <header className="siteHeader">
-            <div className="logo">
-                Rifting Wrapped 2025
-            </div>
-            <nav className="navMenu">
-                <Link to="/">Home</Link>
-                <Link to="/faq">FAQ</Link>
-
-            </nav>
-        </header>
-
-        <Suspense fallback={<UserIntroFallback year={year} />}>
-            <div className="fade-in">
-                <UserIntro resource={resource} year={year} />
-            </div>
-        </Suspense>
-
+        <UserResourceProvider puuid={puuid} year={year}>
+            <Suspense fallback={<UserIntroFallback year={year} />}>
+                <div className="fade-in">
+                    <UserIntro year={year} />
+                </div>
+            </Suspense>
+        </UserResourceProvider>
 
         <div style={{
             display: 'flex',
@@ -107,7 +94,5 @@ export default function PlayerStats() {
             </span></h2><h3>{userData.processedMatches} / {userData.totalMatches} Matches Processed</h3></div>}
         </div>
 
-
-        <p id='FooterNote'>All data used in Rifting Wrapped comes from the public League of Legends matches a user has participated in. Rifting Wrapped isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
     </>)
 }

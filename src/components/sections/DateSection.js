@@ -1,9 +1,11 @@
-import {  Suspense, lazy} from 'react';
+import { Suspense, lazy} from 'react';
+import { useStatsResources } from "./../../resources/UserResourceContext.js";
 
-const CalanderGraph = lazy(() =>  import('../graphs/CalanderGraph.js'));
+const CalanderGraph = lazy(() =>  import('./../graphs/CalanderGraph.js'));
 
-export default function DateSection({ resource }) {
-    const monthlyStats = resource.read();
+export default function DateSection() {
+    const {date} = useStatsResources();
+    const monthlyStats = date.read();
 
     const dates = Array(12).fill(0);
     let totalGames = 0;
@@ -33,8 +35,6 @@ export default function DateSection({ resource }) {
                     1 in {(Math.floor(3650 / totalUniqueDays) / 10).toFixed(1)} days
                 </span>.
             </h3>
-
-            
 
             <Suspense fallback={<div style={{width:"50vw", height:"200px"}}></div>}>
                 <CalanderGraph dates={dates} />

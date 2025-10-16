@@ -1,6 +1,6 @@
 export default function UserIntroFallback({ year }) {
   return (
-    <div style={{ textAlign: "center", opacity: "0.1" }}>
+    <div style={{ textAlign: "center", opacity: "0.1", paddingTop: "30px" }}>
       <div
         style={{
           width: "200px",

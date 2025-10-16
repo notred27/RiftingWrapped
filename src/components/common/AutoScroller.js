@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export default function Scroller({ children }) {
+export default function AutoScroller({ children }) {
   const scrollerRef = useRef(null);
 
   useEffect(() => {

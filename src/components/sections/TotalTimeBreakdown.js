@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 
-import TotalTimeGraph from "../graphs/TotalTimeGraph"
-import SectionImage from './../SectionImage.js';
-import SharePreviewCard from "../SharePreviewCard.js";
+import TotalTimeGraph from "../graphs/TotalTimeGraph.js"
+import SectionImage from '../common/SectionImage.js';
+import SharePreviewCard from "../common/SharePreviewCard.js";
 
 export default function TotalTimeBreakdown({ puuid, year }) {
     const [loading, setLoading] = useState(true);

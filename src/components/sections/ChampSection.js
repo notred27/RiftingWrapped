@@ -2,40 +2,18 @@ import { useEffect, useState } from 'react'
 
 import HorizontalBarChart from '../graphs/ChampGraph.js'
 import ChampGrid from '../graphs/ChampGrid.js'
-import SectionImage from '../SectionImage.js'
+import SectionImage from '../common/SectionImage.js'
+import { useStatsResources } from "../../resources/UserResourceContext.js";
+import '../common/SectionImage.js'
 
-import './../SectionImage.js'
+export default function ChampSection() {
+    const { champ } = useStatsResources();
 
-export default function ChampSection({ puuid, year }) {
-    const [loading, setLoading] = useState(true)
-
-    const [champCount, setChampCount] = useState(null);
-    const [champData, setChampData] = useState(null)
-    const [allChampions, setAllChampions] = useState([]);
+    const champData = champ.read();
+    const [loading, setLoading] = useState(true);
     const [version, setVersion] = useState('');
+    const [allChampions, setAllChampions] = useState([]);
 
-
-    useEffect(() => {
-        async function fetchChampData() {
-            try {
-                const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/champs/${puuid}?year=${year}`)
-                if (!response.ok) {
-                    throw new Error('Network response was not ok')
-                }
-                const data = await response.json()
-                setChampData(data)
-            } catch (error) {
-                console.error('Failed to fetch champ data:', error)
-                setChampData([])
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        if (puuid) {
-            fetchChampData()
-        }
-    }, [puuid, year])
 
 
     useEffect(() => {
@@ -55,7 +33,6 @@ export default function ChampSection({ puuid, year }) {
                 }));
 
                 setAllChampions(champList);
-                setChampCount(champList.length);
 
                 // Preload 
                 champList.forEach(({ id }) => {
@@ -146,8 +123,8 @@ export default function ChampSection({ puuid, year }) {
 
 
             <div style={{textAlign:"center"}}>
-                You also played as {champNames.length} of {champCount} unique champions
-                ({Math.round(champNames.length / champCount * 1000) / 10}% of the total roster)
+                You also played as {champNames.length} of {allChampions.length} unique champions
+                ({Math.round(champNames.length / (allChampions.length) * 1000) / 10}% of the total roster)
             </div>
 
             <ChampGrid

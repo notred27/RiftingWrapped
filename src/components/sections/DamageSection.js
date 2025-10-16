@@ -1,11 +1,16 @@
-import SectionImage from './../SectionImage.js';
+import SectionImage from './../common/SectionImage.js';
 
 import { lazy, Suspense } from 'react';
+
+
+import { useStatsResources } from "./../../resources/UserResourceContext.js";
+
 const StackedDamageChart = lazy(() => import('./../graphs/StackedDamageChart.js'));
 
 
 export default function DamageSection({ resource }) {
-    const damageStats = resource.read()[0];
+    const {damage} = useStatsResources();
+    const damageStats = damage.read()[0];
 
     return (
         <>

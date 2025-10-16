@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 
-import TableEntry from '../TableEntry.js';
-import RoleGraph from '../graphs/RoleGraph.js';
-import ObjectiveBubbleChart from '../graphs/ObjectiveBubbleChart.js';
-import PingGraph from '../graphs/PingGraph.js';
-import SectionImage from './../SectionImage.js';
+import TableEntry from './../common/TableEntry.js';
+import RoleGraph from './../graphs/RoleGraph.js';
+import ObjectiveBubbleChart from './../graphs/ObjectiveBubbleChart.js';
+import PingGraph from './../graphs/PingGraph.js';
+import SectionImage from './../common/SectionImage.js';
 
 export default function LaneSection({ puuid, year }) {
     const [roleArr, setRoleArr] = useState([]);

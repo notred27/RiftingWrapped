@@ -1,4 +1,4 @@
-export async function fetchCached(url, key, ttl = 5 * 60 * 1000) { // 5 min TTL
+export async function fetchCached(url, key, ttl = 30 * 60 * 1000) { // 30 min TTL
 const cached = JSON.parse(localStorage.getItem(key) || '{}');
   const now = Date.now();
 

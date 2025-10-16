@@ -1,5 +1,9 @@
-export default function FFSection({ resource, puuid }) {
-    const ffData = resource.read()[0];
+import { useStatsResources } from "./../../resources/UserResourceContext.js";
+
+export default function FFSection() {
+
+    const {forfeit} = useStatsResources();
+    const ffData = forfeit.read()[0];
 
     const avgFullGameDuration = ffData["totalNonSurrenderTime"] / (ffData["numGames"] - ffData["numSurrenders"]);
     const estimatedFullDuration = avgFullGameDuration * (ffData["numSurrenders"]);
