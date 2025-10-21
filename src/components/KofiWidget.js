@@ -8,26 +8,33 @@ function KofiWidget() {
     const allowedPaths = ["/", "/about", "/faq"];
     const isAllowed = allowedPaths.includes(location.pathname);
 
-    const iframe = document.querySelector("iframe[id^='kofi-wo-container']");
+    if (isAllowed && window.kofiWidgetOverlay) {
+      window.kofiWidgetOverlay.draw("notred27", {
+        type: "floating-chat",
+        "floating-chat.donateButton.position": "right",
+        "floating-chat.donateButton.text": "Support Us",
+        "floating-chat.donateButton.background-color": "#ffffff",
+        "floating-chat.donateButton.text-color": "#323842",
+      });
 
-    if (isAllowed) {
-      if (window.kofiWidgetOverlay) {
-        window.kofiWidgetOverlay.draw("notred27", {
-          type: "floating-chat",
-          "floating-chat.donateButton.position": "right",
-          "floating-chat.donateButton.text": "Support Us",
-          "floating-chat.donateButton.background-color": "#ffffff",
-          "floating-chat.donateButton.text-color": "#323842",
-        });
-      }
- 
-      if (iframe && !iframe.getAttribute("title")) {
-        iframe.setAttribute("title", "Ko-fi floating chat widget");
-      }
-    } else {
-      // Remove iframe if leaving allowed page
-      if (iframe) iframe.remove();
+      // Wait for iframe
+      const observer = new MutationObserver(() => {
+        const iframe = document.querySelector("iframe[id^='kofi-wo-container']");
+        if (iframe && !iframe.getAttribute("title")) {
+          iframe.setAttribute("title", "Ko-fi floating support widget");
+          observer.disconnect();
+        }
+      });
+
+      observer.observe(document.body, { childList: true, subtree: true });
     }
+
+    return () => {
+      if (!isAllowed) {
+        const iframe = document.querySelector("iframe[id^='kofi-wo-container']");
+        if (iframe) iframe.remove();
+      }
+    };
   }, [location.pathname]);
 
   return null;

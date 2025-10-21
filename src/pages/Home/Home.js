@@ -127,7 +127,8 @@ function Home() {
             </Helmet>
 
             <div className="heroContainer">
-                <div className="heroOverlay" />
+
+                <img class="heroOverlay" src="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Jax_0.jpg" alt="Hero Overlay" fetchPriority='high' />
                 <div className="heroText">
                     <h1>Your Year on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
                     <p>
@@ -136,8 +137,8 @@ function Home() {
 
                     <form onSubmit={fetchPlayer} className="searchForm">
 
-                        <span style={{ display: "flex", gap: "10px", alignItems: "center" }}> 
-                            <select defaultValue="NA1" id="regionSelect" ref= {regionRef}>
+                        <span style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                            <select defaultValue="NA1" aria-label="region select" id="regionSelect" ref={regionRef}>
                                 <option value="BR1">BR1</option>
                                 <option value="EUN1">EUN1</option>
                                 <option value="EUW1">EUW1</option>
