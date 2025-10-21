@@ -10,11 +10,11 @@ import SharePreviewCard from '../../components/common/SharePreviewCard';
 import AutoScroller from '../../components/common/AutoScroller';
 
 function Home() {
-    const [userSearchName, setUserSearchName] = useState('');
     const [selectedPlayer, setSelectedPlayer] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     const regionRef = useRef("NA1");
+    const usernameRef = useRef("");
 
     const navigate = useNavigate();
 
@@ -28,7 +28,7 @@ function Home() {
 
 
         try {
-            const names = userSearchName.split("#");
+            const names = usernameRef.current.value.split("#");
             if (names.length !== 2) {
                 setSelectedPlayer("Invalid Search Name");
                 setIsLoading(false);
@@ -131,7 +131,7 @@ function Home() {
                 <div className="heroText">
                     <h1>Your Year on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
                     <p>
-                        Discover your top champions, match stats, and trends for 2025 with a personalized, shareable recap of your League of Legends journey.
+                        Discover your top champions, match stats, and trends for 2025 with a personalized recap of your League of Legends journey.
                     </p>
 
                     <form onSubmit={fetchPlayer} className="searchForm">
@@ -157,8 +157,7 @@ function Home() {
                             <input
                                 type="text"
                                 name="username"
-                                value={userSearchName}
-                                onChange={(e) => setUserSearchName(e.target.value)}
+                                ref={usernameRef}
                                 placeholder="GAME NAME#TAG"
                                 autoComplete="on"
                                 id="nameInput"

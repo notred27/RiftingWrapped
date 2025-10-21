@@ -27,6 +27,7 @@ body {
   background-color: #0D1317;
   color: #FFFCE8;
   overflow-x: hidden;
+  overscroll-behavior: none;
 }
 
 #root {
@@ -37,6 +38,7 @@ body {
   flex-grow: 1;
   justify-content: space-between;
   height: 100vh;
+  overscroll-behavior: none;
 }
 
 #FooterNote {
