@@ -23,6 +23,24 @@ player_collection = db["tracked-players"]
 # tracked_puuids = [doc['puuid'] for doc in player_collection.find({}, {'puuid': 1, '_id': 0})]
 
 
+# Helper translation for regions
+def get_routing_region(region: str) -> str:
+    region = region.upper()
+
+    americas = {"NA1", "BR1", "LA1", "LA2", "OC1"}
+    europe = {"EUN1", "EUW1", "TR1", "RU", "ME1"}
+    asia = {"KR", "JP1", "SG2", "TW2", "VN2"}
+
+    if region in americas:
+        return "americas"
+    elif region in europe:
+        return "europe"
+    elif region in asia:
+        return "asia"
+    else:
+        return "unknown"
+
+
 def safe_request(url, params=None):
     while True:
         try:
@@ -69,22 +87,22 @@ def sanity_check(collection):
 def match_id_exists(match_id, puuid):
     return matches_collection.count_documents({"matchId": match_id, "puuid":puuid}, limit=1) > 0
 
-def get_match_ids(puuid, start=0, count=20):
-    url = f"https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids"
+def get_match_ids(puuid,region, start=0, count=20):
+    url = f"https://{get_routing_region(region)}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids"
     params = {"start": start, "count": count, "startTime": cutoffDate}
     return safe_request(url, params=params)
 
-def get_match_data(match_id):
-    url = f"https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}"
+def get_match_data(match_id, region):
+    url = f"https://{get_routing_region(region)}.api.riotgames.com/lol/match/v5/matches/{match_id}"
     return safe_request(url)
 
-def get_timeline_data(match_id):
-    url = f"https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline"
+def get_timeline_data(match_id, region):
+    url = f"https://{get_routing_region(region)}.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline"
     return safe_request(url)
 
 
-def get_user_puuid(display_name, tag):
-    url = f"https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{display_name}/{tag}"
+def get_user_puuid(display_name, tag, region):
+    url = f"https://{get_routing_region(region)}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{display_name}/{tag}"
     return safe_request(url)
 
 
@@ -256,14 +274,14 @@ def store_match(match_data, timeline_data, new_puuid):
 
 
 
-def create_pending_matches(puuid):
+def create_pending_matches(puuid, region):
     offset = 0
     count = 100
     total_matches = 0
 
     while True:
         
-        match_ids = get_match_ids(puuid, start=offset, count=count)
+        match_ids = get_match_ids(puuid, region, start=offset, count=count)
         if not match_ids:
             print("No more matches found.")
             break
@@ -297,7 +315,7 @@ def create_pending_matches(puuid):
 
 
 
-def process_pending_matches(new_puuid):
+def process_pending_matches(new_puuid, region):
     while True:
         pending = matches_collection.find_one_and_update(
             {"status": "pending"},
@@ -313,8 +331,8 @@ def process_pending_matches(new_puuid):
         puuid = pending["puuid"]
 
         try:
-            match_data = get_match_data(match_id)
-            timeline_data = get_timeline_data(match_id)
+            match_data = get_match_data(match_id, region)
+            timeline_data = get_timeline_data(match_id, region)
             store_match(match_data, timeline_data, new_puuid)
 
 
@@ -335,70 +353,81 @@ def process_pending_matches(new_puuid):
             time.sleep(1)
 
 
-
+def mark_player_failed(puuid, err_msg):
+    try:
+        player_collection.update_one(
+            {"puuid": puuid},
+            {"$set": {"status": "failed", "error": err_msg}}
+        )
+    except Exception as e:
+        print("Failed to mark player failed in DB:", e)
 
 
 USERNAME = sys.argv[1]
 TAG = sys.argv[2]
-
+REGION = sys.argv[3]
 
 if __name__ == "__main__":
-
     try:
-        matches_collection.create_index(
-            [("puuid", ASCENDING), ("matchId", ASCENDING)],
-            unique=True,
-            name="unique_puuid_matchId"
-        )
-        print("Unique compound index created successfully.")
-    except DuplicateKeyError as e:
-        print("Duplicate keys found! Clean up duplicates before creating the index.")
-        print(e)
-        
-    print("Adding new user to Rifting Wrapped...")
-
-
-
-    user_info = get_user_puuid(USERNAME, TAG)
-    new_puuid = user_info['puuid']
-
-    print(new_puuid)
-
-    r = requests.get(
-        f'https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{new_puuid}',
-        headers={"X-Riot-Token": API_KEY}
-    )
-    r.raise_for_status()
-    summoner_data = r.json()
-
-
-    level = summoner_data.get('summonerLevel')
-    profile_icon_id = summoner_data.get('profileIconId')
-    version = requests.get("https://ddragon.leagueoflegends.com/api/versions.json").json()[0]
-
-    player_collection.update_one(
-                {"displayName": USERNAME},
-                {"$set": {
-                    "displayName": USERNAME,
-                    "tag":TAG,
-                    "puuid": new_puuid,
-                    "level": level,
-                    "icon": f'https://ddragon.leagueoflegends.com/cdn/{version}/img/profileicon/{profile_icon_id}.png',
-                    "status":"counting"}},
-                upsert=True
+        try:
+            matches_collection.create_index(
+                [("puuid", ASCENDING), ("matchId", ASCENDING)],
+                unique=True,
+                name="unique_puuid_matchId"
             )
-
-    tracked_puuids = [doc['puuid'] for doc in player_collection.find({}, {'puuid': 1, '_id': 0})]
-
-    create_pending_matches(new_puuid)
-    
-
-    process_pending_matches(new_puuid)
-
-    player_collection.update_one(
-        {"puuid": new_puuid},
-        {"$set": {"status": "done"}}
-    )
+            print("Unique compound index created successfully.")
+        except DuplicateKeyError as e:
+            print("Duplicate keys found! Clean up duplicates before creating the index.")
+            print(e)
+            
+        print("Adding new user to Rifting Wrapped...")
 
 
-    sanity_check(matches_collection)
+
+        user_info = get_user_puuid(USERNAME, TAG, REGION)
+        new_puuid = user_info['puuid']
+
+        print(new_puuid)
+
+        r = requests.get(
+            f'https://{REGION}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{new_puuid}',
+            headers={"X-Riot-Token": API_KEY}
+        )
+        r.raise_for_status()
+        summoner_data = r.json()
+
+
+        level = summoner_data.get('summonerLevel')
+        profile_icon_id = summoner_data.get('profileIconId')
+        version = requests.get("https://ddragon.leagueoflegends.com/api/versions.json").json()[0]
+
+        player_collection.update_one(
+                    {"displayName": USERNAME},
+                    {"$set": {
+                        "displayName": USERNAME,
+                        "tag":TAG,
+                        "puuid": new_puuid,
+                        "level": level,
+                        "icon": f'https://ddragon.leagueoflegends.com/cdn/{version}/img/profileicon/{profile_icon_id}.png',
+                        "status":"counting"}},
+                    upsert=True
+                )
+
+        tracked_puuids = [doc['puuid'] for doc in player_collection.find({}, {'puuid': 1, '_id': 0})]
+
+        create_pending_matches(new_puuid, REGION)
+        
+
+        process_pending_matches(new_puuid, REGION)
+
+        player_collection.update_one(
+            {"puuid": new_puuid},
+            {"$set": {"status": "done"}}
+        )
+
+
+        sanity_check(matches_collection)
+    except Exception as e:
+        print(f"Error adding user: {e}")
+        mark_player_failed(new_puuid, str(e))
+        sys.exit(1)

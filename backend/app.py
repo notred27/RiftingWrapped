@@ -24,6 +24,25 @@ matches_collection = db['player-matches']
 
 player_collection = db['tracked-players']
 
+
+# Helper translation for regions
+def get_routing_region(region: str) -> str:
+    region = region.upper()
+
+    americas = {"NA1", "BR1", "LA1", "LA2", "OC1"}
+    europe = {"EUN1", "EUW1", "TR1", "RU", "ME1"}
+    asia = {"KR", "JP1", "SG2", "TW2", "VN2"}
+
+    if region in americas:
+        return "americas"
+    elif region in europe:
+        return "europe"
+    elif region in asia:
+        return "asia"
+    else:
+        return "unknown"
+
+
 # Test endpoint for GET requests
 @app.route('/ping', methods=['GET'])
 @cross_origin(origin='*',headers=['Content-Type','Authorization'])  # Account for CORS
@@ -1226,22 +1245,31 @@ def add_by_display_name():
     
     displayName = request.form.get('displayName')
     tag = request.form.get('tag')
-    ## region = request.form.get('region')
+    region = request.form.get('region')
+
 
     if displayName is None or tag is None:
             return {"msg":"Payload is missing displayName or tag"}, 400
 
     key = os.getenv("REACT_APP_API_KEY")
-    r = requests.get(f'https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{displayName}/{tag}?api_key={key}')
+
+
+
+
+    print(f'https://{get_routing_region(region)}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{displayName}/{tag}?api_key={key}')
+    r = requests.get(f'https://{get_routing_region(region)}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{displayName}/{tag}?api_key={key}')
 
     if (r.status_code == 200):
         data = r.json()
+
+        print(data)
         result = player_collection.update_one(
             {"displayName": displayName},
             {"$set": {
                 "displayName": displayName,
                 "tag":tag,
                 "puuid": data["puuid"],
+                "region": region,
                 "status":"starting"}},
             upsert=True
         )
@@ -1256,12 +1284,13 @@ def add_by_display_name():
             "ref": "master",
             "inputs": {
                 "displayName": displayName,
-                "tag": tag
+                "tag": tag,
+                "region": region
             }
         }
         r = requests.post(url, headers=headers, json=payload)
         if r.status_code == 204:
-            print(f"GitHub Action triggered for {displayName}#{tag}")
+            print(f"GitHub Action triggered for {displayName}#{tag} in {region}")
         else:
             print(f"Failed to trigger workflow: {r.status_code} {r.text}")
 

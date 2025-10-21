@@ -11,6 +11,10 @@ on:
         description: 'The tag of the player'
         required: true
         default: ''
+      region:
+        description: 'The region of the player'
+        required: true
+        default: ''
 
 jobs:
   init_player:
@@ -35,4 +39,4 @@ jobs:
         env:
             REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
             MONGO_URI: ${{ secrets.MONGO_URI }}
-        run: python create_user_prefetch.py "${{ github.event.inputs.displayName }}" "${{ github.event.inputs.tag }}"
+        run: python create_user_prefetch.py "${{ github.event.inputs.displayName }}" "${{ github.event.inputs.tag }}" "${{ github.event.inputs.region }}"
