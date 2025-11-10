@@ -16,14 +16,17 @@ REACT_APP_API_ENDPOINT = "URL for hosted backend API"
 # Endpoints
 All endpoints extend the URL stored in `REACT_APP_API_ENDPOINT` unless noted otherwise.
 
-## POST
+## Account
 
 
 <!-- - [`/get_user`]() : Return identifying information for a specific user. -->
 
 <details>
-<summary><code>POST</code> <code style="color:orange"><b>/get_user</b></code>: Return identifying information for a specific user. </summary>
+<summary><code>GET</code> <code style="color:orange"><b>/getUser</b></code>: Return identifying information for a specific user.</summary>
 
+<br>
+
+> Can identify a user by using either `puuid` or `displayName` and `tag`.
 
 ##### Parameters
 
@@ -33,14 +36,33 @@ All endpoints extend the URL stored in `REACT_APP_API_ENDPOINT` unless noted oth
 > | tag      |  required | String   | user's RIOT tagline (e.g., `NA1`, `2327`)  |
 
 
+##### Example Request
+
+```shell
+curl "<API_DOMAIN>/getUser?displayName=mrwarwickwide&tag=2725"
+```
+
+
+##### Parameters
+
+> | name | type | data type | description |
+> |---|---|---|---|
+> | puuid      |  required | String   | user's RIOT puuid  |
+
+##### Example Request
+
+```shell
+curl "<API_DOMAIN>/getUser?puuid=diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIPUZlPo9adlsdFYU6Sr8NzQJjiJXnPb6A"
+```
+
 
 ##### Responses
 
 > | http code | content-type | response |
 > |---|---|---|
-> | `200` | `application/json`   |  |
-> | `400` | `application/json`   | `{"code":"400","message":"Bad Request"}` |
-> | `404` | `application/json`   | `{"code":"404","message":"User not found."}` |
+> | `200` | `application/json`   | User Object |
+> | `400` | `application/json`   | `{"code":"400","message":"Must provide either puuid or displayName AND tag"}` |
+> | `404` | `application/json`   | `{"code":"404","message":"No user found with puuid '[puuid]'"}` |
 
 <hr>
 </details>
@@ -72,6 +94,13 @@ All endpoints extend the URL stored in `REACT_APP_API_ENDPOINT` unless noted oth
 
 <hr>
 </details>
+
+
+
+<br>
+
+
+- [`/delete_by_puuid`](): Delete a stored account. 
 
 
 ## GET
@@ -121,6 +150,49 @@ All endpoints extend the URL stored in `REACT_APP_API_ENDPOINT` unless noted oth
 
 ### Combat
 
+
+
+
+<details>
+<summary><code>POST</code> <code style="color:orange"><b>/highestStatGames</b></code>: Return games where player had highest total. </summary>
+
+
+##### Arguments
+
+> | Name | Data Type | Default | Description |
+> |---|---|---|---|
+> | year      |  int | None   | Filter by year |
+> | stat      |  String | `kills`   | Stat to filter by (Options: `kills`, `deaths`, `assists`)  |
+> | limit     |  int | 5   | Number of returned matches (1-10) |
+
+
+
+
+##### Example Request
+
+```shell
+curl "<API_DOMAIN>/highestStatGames/<PUUID>?stats=deaths&year=2025"
+```
+
+
+##### Responses
+
+> | HTTP Code | Content-Type | Response |
+> |---|---|---|
+> | `200` | `application/json`   |  List of JSON objects containing match data. |
+> | `400` | `application/json`   | `{"code":"400","message":"Invalid stat. Allowed: kills, deaths, assists"}` |
+> | `404` | `application/json`   | `{"code":"404","message":"No user found with puuid '[puuid]'"}` |
+> | `422` | `application/json`   | `{"code":"422","message":"No data available for this stat"}` |
+<!-- > | `400` | `application/json`   | `{"code":"400","message":"Bad Request"}` | -->
+
+
+
+<hr>
+</details>
+
+
+
+
 - [`/highestDeathGames/<puuid>`](): Return games where player had the most deaths.
 
 - [`/highestKillGames/<puuid>`](): Return games where player had the most kills.
@@ -154,6 +226,3 @@ All endpoints extend the URL stored in `REACT_APP_API_ENDPOINT` unless noted oth
 - [`/mapEvents/<puuid>](): Positions of player's kills and deaths on Summoner's Rift
 
 
-## DELETE
-
-- [`/delete_by_puuid`](): Delete a stored account. 

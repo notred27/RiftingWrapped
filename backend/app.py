@@ -1,9 +1,9 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, abort
 from flask import jsonify
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 import requests
-import dotenv
 from pymongo import MongoClient
+from pymongo.errors import PyMongoError
 import os
 from datetime import datetime
 from math import floor
@@ -68,39 +68,36 @@ def get_user(puuid):
 
 ### ======================= ACCOUNT ======================= ###
 
+@app.route('/getUser', methods=['GET'])
+def get_user_info():
+    puuid = request.args.get('puuid')
+    displayName = request.args.get('displayName')
+    tag = request.args.get('tag')
 
-@app.route('/get_user', methods=['POST'])
-def get_player_info():
-    if 'displayName' not in request.form or 'tag' not in request.form:
-        return {"msg":"Payload is missing displayName or tag"}, 400
+    # Validate 
+    if not puuid and not (displayName and tag):
+        return jsonify({"error": "Bad Request", "message": "Must provide either puuid or displayName AND tag"}), 400
+
+    query = {}
+    if puuid:
+        query["puuid"] = puuid
+    else:
+        query["displayName"] = {"$regex": f"^{displayName}$", "$options": "i"}
+        query["tag"] = {"$regex": f"^{tag}$", "$options": "i"}
+
+
+    try:
+        result = player_collection.find_one(query, {"_id": 0})
+
+        if not result:
+            abort(404, description=f"No user found with puuid `{puuid}`")
+
+        return jsonify(result), 200
+
+    except PyMongoError as e:
+        return abort(500, description=f"Database error occurred: {str(e)}")
+
     
-    displayName = request.form.get('displayName')
-    tag = request.form.get('tag')
-    ## region = request.form.get('region')
-
-    if displayName is None or tag is None:
-            return {"msg":"Payload is missing displayName or tag"}, 400
-    
-    pipeline = [
-    {
-        "$match": {
-            "displayName": { "$regex": f"^{displayName}$", "$options": "i" },
-            "tag": { "$regex": f"^{tag}$", "$options": "i" }
-        }
-    },
-    {
-        "$project": { "_id": 0 }
-    }
-]
-
-    results = list(player_collection.aggregate(pipeline))
-
-    if(len(results) < 1):
-        return jsonify({"msg":"User not found"}), 404
-
-    return jsonify(results), 200
-
-
 
 
 
@@ -559,6 +556,81 @@ def get_matchTotals(puuid):
     results = list(matches_collection.aggregate(pipeline))
 
     return jsonify(results)
+
+
+
+
+
+
+ALLOWED_GAME_STATS = {
+    'kills': 'stats.kills',
+    'deaths': 'stats.deaths',
+    'assists': 'stats.assists'
+}
+
+MAX_GAMES_LIMIT = 10
+
+@app.route('/highestStatGames/<puuid>', methods=['GET'])
+def get_highest_games(puuid):
+    stat = request.args.get('stat', default='kills', type=str).lower()
+    year_param = request.args.get('year', type=int)
+    limit = request.args.get('limit', default=5, type=int)
+
+    # validate params
+    if stat not in ALLOWED_GAME_STATS:
+        return abort(400, description=f"Invalid stat. Allowed: {', '.join(ALLOWED_GAME_STATS.keys())}")
+
+    if limit < 1:
+        limit = 1
+    if limit > MAX_GAMES_LIMIT:
+        limit = MAX_GAMES_LIMIT
+
+    sort_field = ALLOWED_GAME_STATS[stat]
+
+    pipeline = [
+        { "$match": { "puuid": puuid } },
+        {
+            "$addFields": {
+                "gameDate": { "$toDate": "$matchInfo.gameCreated" }
+            }
+        }
+    ]
+
+    # Year
+    if year_param:
+        pipeline.append({
+            "$match": {
+                "$expr": { "$eq": [ { "$year": "$gameDate" }, year_param ] }
+            }
+        })
+
+    # Sort and limit (duration for ties)
+    pipeline.extend([
+        { "$sort": { sort_field: -1, "matchInfo.gameDuration": -1 } },
+        { "$limit": limit }
+    ])
+
+    results = list(matches_collection.aggregate(pipeline))
+
+
+    if not results:
+        # Check for user
+        exists = matches_collection.find_one({ "puuid": puuid })
+        if not exists:
+            abort(404, description=f"No user found with puuid `{puuid}`")
+
+        abort(422, description="No data available for this stat")
+
+    # Stringify ObjectId
+    for doc in results:
+        if '_id' in doc:
+            doc['_id'] = str(doc['_id'])
+
+    return jsonify(results)
+
+
+
+
 
 @app.route('/highestKillGames/<puuid>', methods=['GET'])
 def get_highestKillGames(puuid):

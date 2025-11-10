@@ -28,24 +28,17 @@ export default function PlayerStats() {
         const fetchStatus = async () => {
             try {
                 const apiUrl = process.env.REACT_APP_API_ENDPOINT;
-                const r1 = await fetch(`${apiUrl}/get_user/${puuid}`);
-                const d1 = await r1.json();
-
-                const formData = new FormData();
-                formData.append('displayName', d1["displayName"]);
-                formData.append('tag', d1["tag"]);
-                const response = await fetch(`${apiUrl}/get_user`, {
-                    method: 'POST',
-                    body: formData
-                });
-
+                const response = await fetch(`${apiUrl}/getUser?puuid=${puuid}`);
                 const data = await response.json();
-                setUserData(data[0]);
 
-                if (data[0].status === "done") {
+
+                if (data.status === "done") {
                     setPolling(false);
                     nav(`/player/${puuid}`)
                 }
+
+                setUserData(data);
+
             } catch (err) {
                 console.error("Error fetching user:", err);
             }
