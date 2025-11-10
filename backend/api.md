@@ -16,13 +16,98 @@ REACT_APP_API_ENDPOINT = "URL for hosted backend API"
 # Endpoints
 All endpoints extend the URL stored in `REACT_APP_API_ENDPOINT` unless noted otherwise.
 
+## POST
+
+
+<!-- - [`/get_user`]() : Return identifying information for a specific user. -->
+
+<details>
+<summary><code>POST</code> <code style="color:orange"><b>/get_user</b></code>: Return identifying information for a specific user. </summary>
+
+
+##### Parameters
+
+> | name | type | data type | description |
+> |---|---|---|---|
+> | displayName      |  required | String   | user's RIOT display name  |
+> | tag      |  required | String   | user's RIOT tagline (e.g., `NA1`, `2327`)  |
+
+
+
+##### Responses
+
+> | http code | content-type | response |
+> |---|---|---|
+> | `200` | `application/json`   |  |
+> | `400` | `application/json`   | `{"code":"400","message":"Bad Request"}` |
+> | `404` | `application/json`   | `{"code":"404","message":"User not found."}` |
+
+<hr>
+</details>
+
+<br>
+
+<!-- - [`/add_user`](): Creates a user object if no such user exists. Must be a valid RIOT account. -->
+
+<details>
+<summary><code>POST</code> <code style="color:orange"><b>/add_user</b></code>: Creates a user object if no such user exists. Must be a valid RIOT account. </summary>
+
+!Add more verbose error codes
+
+##### Parameters
+
+> | name | type | data type | description |
+> |---|---|---|---|
+> | displayName      |  required | String   | user's RIOT display name  |
+> | tag      |  required | String   | user's RIOT tagline (e.g., `NA1`, `2327`)  |
+> | region      |  required | String   | user's RIOT server region (e.g., `NA1`, `EUW1`)  |
+
+##### Responses
+
+> | http code | content-type | response |
+> |---|---|---|
+> | `200` | `application/json`   |  |
+> | `400` | `application/json`   | `{"code":"400","message":"Bad Request"}` |
+> | `404` | `application/json`   | `{"code":"404","message":"User not found."}` |
+
+<hr>
+</details>
+
 
 ## GET
 
 
 ### General 
 
-- [`/matchesByDate/<puuid>`](): Statistics relating to number of matches played.
+<!-- - [`/matchesByDate/<puuid>`](): Statistics relating to number of matches played. -->
+
+
+<details>
+<summary><code>GET</code> <code style="color:orange"><b>/matchesByDate/{puuid}</b></code>: Statistics relating to number of matches played. </summary>
+
+
+##### Parameters
+
+> | name | type | data type | description |
+> |---|---|---|---|
+> | puuid      |  required | String   | user's RIOT puuid  |
+> | year       |  optional | int      | year for target stats |
+
+##### Responses
+
+> | http code | content-type | response |
+> |---|---|---|
+> | `200` | `application/json`   |  |
+> | `400` | `application/json`   | `{"code":"400","message":"Bad Request"}` |
+
+
+<hr>
+</details>
+
+<br>
+
+
+- [`/get_user/<puuid>`](): Get basic display stats for user. Change this to combine w/ POST or change name
 
 - [`/forfeit/<puuid>`](): Statistics relating to number of surrendered games.
 
@@ -66,14 +151,7 @@ All endpoints extend the URL stored in `REACT_APP_API_ENDPOINT` unless noted oth
 
 - [`/get_card_preview/<puuid>`](): Data used to generate a preview card for a player.
 
-
-
-## POST
-
-
-- [`/get_user`]() : Return identifying information for a specific user.
-
-- [`/add_user`](): Creates a user object if no such user exists. Must be a valid RIOT account.
+- [`/mapEvents/<puuid>](): Positions of player's kills and deaths on Summoner's Rift
 
 
 ## DELETE
