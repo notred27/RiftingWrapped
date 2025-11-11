@@ -26,8 +26,8 @@ export default function KDAsection({ puuid, year }) {
             setLoading(true);
             try {
                 const [deathsRes, killsRes, totalsRes, killFreq, deathFreq, kdaRes] = await Promise.all([
-                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/highestDeathGames/${puuid}?year=${year}`),
-                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/highestKillGames/${puuid}?year=${year}`),
+                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/highestStatGames/${puuid}?year=${year}&stat=deaths`),
+                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/highestStatGames/${puuid}?year=${year}&stat=kills`),
                     fetch(`${process.env.REACT_APP_API_ENDPOINT}/matchTotals/${puuid}?year=${year}`),
                     fetch(`${process.env.REACT_APP_API_ENDPOINT}/killFrequency/${puuid}?year=${year}`),
                     fetch(`${process.env.REACT_APP_API_ENDPOINT}/deathFrequency/${puuid}?year=${year}`),
@@ -143,7 +143,7 @@ export default function KDAsection({ puuid, year }) {
                 </div>
 
                 <div>
-                    {highestDeathGames.map((game, idx) => <TableEntry key = {`Lowest_Kill_Entry_${idx}`} puuid={puuid} match={game} />)}
+                    {highestDeathGames.map((game, idx) => <TableEntry key = {`Highest_Death_Entry_${idx}`} puuid={puuid} match={game} />)}
 
                     <p className='tableLabel'>Your Games With The Most Deaths</p>
                 </div>

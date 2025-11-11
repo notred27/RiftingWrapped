@@ -72,9 +72,20 @@ curl "<API_DOMAIN>/getUser?puuid=diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIP
 <!-- - [`/add_user`](): Creates a user object if no such user exists. Must be a valid RIOT account. -->
 
 <details>
-<summary><code>POST</code> <code style="color:orange"><b>/add_user</b></code>: Creates a user object if no such user exists. Must be a valid RIOT account. </summary>
+<summary><code>POST</code> <code style="color:orange"><b>/addUser</b></code>: Creates a user object if no such user exists. Must be a valid RIOT account. </summary>
 
-!Add more verbose error codes
+
+```powershell
+curl `
+  -X POST `
+  -H "Content-Type: application/x-www-form-urlencoded" `
+  -d "displayName=<DISPLAY_NAME>" `
+  -d "tag=<TAGLINE>" `
+  -d "region=<REGION_CODE>" `
+  "<API_DOMAIN>/add_user" 
+```
+
+
 
 ##### Parameters
 
@@ -100,8 +111,13 @@ curl "<API_DOMAIN>/getUser?puuid=diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIP
 <br>
 
 
+! ADD VERIFICATION TO THIS!!! (DISABLED FOR NOW)
 - [`/delete_by_puuid`](): Delete a stored account. 
 
+
+```shell
+curl -X DELETE "<API_DOMAIN>/delete_by_puuid?puuid=<PUUID>"
+```
 
 ## GET
 
@@ -154,7 +170,7 @@ curl "<API_DOMAIN>/getUser?puuid=diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIP
 
 
 <details>
-<summary><code>POST</code> <code style="color:orange"><b>/highestStatGames</b></code>: Return games where player had highest total. </summary>
+<summary><code>GET</code> <code style="color:orange"><b>/highestStatGames</b></code>: Return games where player had highest total. </summary>
 
 
 ##### Arguments
@@ -171,7 +187,7 @@ curl "<API_DOMAIN>/getUser?puuid=diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIP
 ##### Example Request
 
 ```shell
-curl "<API_DOMAIN>/highestStatGames/<PUUID>?stats=deaths&year=2025"
+curl "<API_DOMAIN>/highestStatGames/<PUUID>?stat=deaths&year=2025"
 ```
 
 
@@ -193,9 +209,6 @@ curl "<API_DOMAIN>/highestStatGames/<PUUID>?stats=deaths&year=2025"
 
 
 
-- [`/highestDeathGames/<puuid>`](): Return games where player had the most deaths.
-
-- [`/highestKillGames/<puuid>`](): Return games where player had the most kills.
 
 - [`/matchTotals/<puuid>`](): Statistics relating to combat stats.
 

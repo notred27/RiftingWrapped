@@ -40,12 +40,11 @@ function Home() {
             setSelectedPlayer(displayName);
 
             let response = await fetch(`${apiUrl}/getUser?displayName=${displayName}&tag=${tag}`);
-            console.log("Initial fetch response:", response);
 
             if (response.status === 404) {
                 console.log("User not found, trying to add...");
 
-                const addResponse = await fetch(`${apiUrl}/add_user`, {
+                const addResponse = await fetch(`${apiUrl}/addUser`, {
                     method: "POST",
                     body: new URLSearchParams({ displayName, tag, region }),
                 });
@@ -55,10 +54,8 @@ function Home() {
                 }
 
 
-                response = await fetch(`${apiUrl}/getUser`, {
-                    method: "POST",
-                    body: new URLSearchParams({ displayName, tag, region }),
-                });
+                // Fetch again to get puuid
+                response = await fetch(`${apiUrl}/getUser?displayName=${displayName}&tag=${tag}`);
             }
 
             if (!response.ok) {

@@ -23,6 +23,10 @@ matches_collection = db['player-matches']
 player_collection = db['tracked-players']
 
 
+
+LOL_VERSION = requests.get("https://ddragon.leagueoflegends.com/api/versions.json").json()[0]
+print(f"Using LoL version: {LOL_VERSION}")
+
 # Helper translation for regions
 def get_routing_region(region: str) -> str:
     region = region.upper()
@@ -52,17 +56,6 @@ def health():
     }), 200
 
 
-
-
-@app.route("/get_user/<puuid>", methods=['GET'])
-def get_user(puuid):
-
-    user_info = player_collection.find_one(
-        { "puuid": puuid },
-        { "_id": 0, "displayName": 1, "tag": 1 , "level":1 , "icon":1}
-    )
-
-    return user_info
 
 
 
@@ -99,9 +92,11 @@ def get_user_info():
 
     
 
+MAX_DISPLAYNAME_LEN = 20
+MAX_TAG_LEN = 6
+RIOT_TIMEOUT = 5  # seconds
 
-
-@app.route('/add_user', methods=['POST'])
+@app.route('/addUser', methods=['POST'])
 def add_by_display_name():
 
     if 'displayName' not in request.form or 'tag' not in request.form:
@@ -112,30 +107,81 @@ def add_by_display_name():
     region = request.form.get('region')
 
 
-    if displayName is None or tag is None:
-        return {"msg":"Payload is missing displayName or tag"}, 400
+    if not (displayName and tag):
+        return jsonify({"error": "Bad Request", "message": "Must provide a valid RIOT account displayName AND tag"}), 400
 
-    key = os.getenv("REACT_APP_API_KEY")
+    if len(displayName) > MAX_DISPLAYNAME_LEN or len(tag) > MAX_TAG_LEN:
+            return jsonify({"error": "Bad Request", "message": "displayName or tag too long"}), 400
+
+    displayName = displayName.strip()
+    tag = tag.strip()
+
+    riot_key = os.getenv("REACT_APP_API_KEY")
+    if not riot_key:
+        print("Missing Riot API key in environment (add logger)")
+        return jsonify({"error": "Server Misconfiguration", "message": "Riot API key missing"}), 500
 
 
-    print(f'https://{get_routing_region(region)}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{displayName}/{tag}?api_key={key}')
-    r = requests.get(f'https://{get_routing_region(region)}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{displayName}/{tag}?api_key={key}')
+    riot_url = f'https://{get_routing_region(region)}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{displayName}/{tag}?api_key={riot_key}'
+   
+    try:
+        r = requests.get(riot_url, timeout=RIOT_TIMEOUT)
+    except requests.RequestException as e:
+        print("Riot API request failed")
+        return jsonify({"error": "Bad Gateway", "message": "Failed to contact Riot API"}), 502
 
-    if (r.status_code == 200):
-        data = r.json()
 
-        print(data)
-        result = player_collection.update_one(
-            {"displayName": displayName},
-            {"$set": {
+    if (r.status_code == 404):
+        return jsonify({"error": "Not Found", "message": "User not found on Riot's servers"}), 404
+
+
+    if (r.status_code != 200):
+        return jsonify({"error": "Bad Gateway", "message": "Riot API encountered an error"}), 502
+
+
+    try:
+        riot_data = r.json()
+
+        # summoner_url = f'https://{get_routing_region(region)}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{riot_data["puuid"]}'
+        # summoner_info = requests.get(summoner_url, params={"api_key": riot_key}, timeout=RIOT_TIMEOUT)
+        
+        # summoner_info = requests.get(
+        #         f'https://{get_routing_region(region)}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{riot_data["puuid"]}',
+        #         headers={"X-Riot-Token": riot_key},
+        #         timeout=RIOT_TIMEOUT
+        #     )
+        # summoner_data = summoner_info.json()
+
+        # level = summoner_data.get('summonerLevel')
+        # profile_icon_id = summoner_data.get('profileIconId')
+
+        user_doc = {
+            "$set": {
                 "displayName": displayName,
-                "tag":tag,
-                "puuid": data["puuid"],
-                "region": region,
-                "status":"starting"}},
-            upsert=True
-        )
+                "tag": tag,
+                "puuid": riot_data["puuid"],
+                # "level": level,
+                # "icon": f'https://ddragon.leagueoflegends.com/cdn/{LOL_VERSION}/img/profileicon/{profile_icon_id}.png',
+                "region": region.upper(),
+                "status": "starting",
+                # "lastUpdated": datetime.now(datetime.timezone.utc)
+            },
+            # "$setOnInsert": {"createdAt": datetime.now(datetime.timezone.utc)}
+        }
 
+        result = player_collection.update_one({"puuid": riot_data["puuid"]}, user_doc, upsert=True)
+
+    except (ValueError, KeyError) as e:
+        # logger.exception("Error parsing Riot response")
+        return jsonify({"error": "Bad Gateway", "message": f"Invalid Riot response format {str(e)}"}), 502
+    except PyMongoError:
+        # logger.exception("Database error while upserting user")
+        return jsonify({"error": "Internal Server Error", "message": "Database error"}), 500
+    
+
+
+
+    try:
         GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
         url = f"https://api.github.com/repos/notred27/RiftingWrapped/actions/workflows/player_init.yaml/dispatches"
         headers = {
@@ -159,10 +205,25 @@ def add_by_display_name():
 
         return {"matched_count": result.matched_count, "modified_count": result.modified_count, "msg":"User added successfully."}, 200
 
-    if (r.status_code == 404):
-        return {"msg":"User not found"}, 404
+    except Exception as e:
 
-    return {"msg":"Error fetching data from riot API"}, 400
+        pass
+
+
+
+    if result.upserted_id:
+        status_code = 201
+        message = "User created successfully."
+    else:
+        status_code = 200
+        message = "User updated successfully."
+
+    return jsonify({
+        "matched_count": result.matched_count,
+        "modified_count": result.modified_count,
+        "upserted_id": str(result.upserted_id) if result.upserted_id else None,
+        "message": message
+    }), status_code
 
 
 
@@ -173,9 +234,13 @@ def delete_by_puuid():
         return jsonify({"error": "Missing 'puuid' parameter"}), 400
 
     result = matches_collection.delete_many({"puuid": puuid})
+
+    user = player_collection.delete_one({"puuid": puuid})
+
     return jsonify({
         "puuid": puuid,
-        "deletedCount": result.deleted_count,
+        "numUserDeleted": user.deleted_count,
+        "numMatchesDeleted": result.deleted_count,
         "status": "success" if result.deleted_count > 0 else "no matches found"
     }), 200
 
@@ -631,73 +696,6 @@ def get_highest_games(puuid):
 
 
 
-
-@app.route('/highestKillGames/<puuid>', methods=['GET'])
-def get_highestKillGames(puuid):
-    year_param = request.args.get('year', type=int)
-
-    pipeline = [
-        { "$match": { "puuid": puuid } },
-        {
-            "$addFields": {
-                "gameDate": { "$toDate": "$matchInfo.gameCreated" }
-            }
-        }
-    ]
-
-    if year_param:
-        pipeline.append({
-            "$match": {
-                "$expr": { "$eq": [ { "$year": "$gameDate" }, year_param ] }
-            }
-        })
-
-    pipeline.extend([
-        { "$sort": { "stats.kills": -1 } },
-        { "$limit": 5 }
-    ])
-
-    results = list(matches_collection.aggregate(pipeline))
-
-    for doc in results:
-        if '_id' in doc:
-            doc['_id'] = str(doc['_id'])
-
-    return jsonify(results)
-
-@app.route('/highestDeathGames/<puuid>', methods=['GET'])
-def get_highestDeathGames(puuid):
-    year_param = request.args.get('year', type=int)
-
-    pipeline = [
-        { "$match": { "puuid": puuid } },
-        {
-            "$addFields": {
-                "gameDate": { "$toDate": "$matchInfo.gameCreated" }
-            }
-        }
-    ]
-
-    if year_param:
-        pipeline.append({
-            "$match": {
-                "$expr": { "$eq": [ { "$year": "$gameDate" }, year_param ] }
-            }
-        })
-
-    pipeline.extend([
-        { "$sort": { "stats.deaths": -1 } },
-        { "$limit": 5 }
-    ])
-
-    results = list(matches_collection.aggregate(pipeline))
-
-    for doc in results:
-        if '_id' in doc:
-            doc['_id'] = str(doc['_id'])
-
-    return jsonify(results)
-
 @app.route('/killFrequency/<puuid>', methods=['GET'])
 def get_kill_frequency(puuid):
     year_param = request.args.get('year', type=int)
@@ -803,12 +801,12 @@ def get_kda_extremes(puuid):
 
     # Pipelines for best and worst KDA
     best_kda_pipeline = pipeline + [
-        { "$sort": { "stats.kda": -1 } },
+        { "$sort": { "stats.kda": -1, "matchInfo.gameDuration": -1} },
         { "$limit": 1 }
     ]
 
     worst_kda_pipeline = pipeline + [
-        { "$sort": { "stats.kda": 1 } },
+        { "$sort": { "stats.kda": 1, "matchInfo.gameDuration": -1 } },
         { "$limit": 1 }
     ]
 
