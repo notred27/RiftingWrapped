@@ -4,7 +4,7 @@ This document outlines the backend endpoints that were implemented to provide da
 
 
 Example .env file to provide secrets/tokens:
-```json
+```.env
 REACT_APP_API_ENDPOINT = "URL for hosted backend API"
 
 // REACT_APP_API_KEY = "RIOT App API key for this project"
@@ -19,8 +19,7 @@ All endpoints extend the URL stored in `REACT_APP_API_ENDPOINT` unless noted oth
 
 ## General
 
-
-### <code>GET</code> <code style="color:orange"><b>/health</b></code>
+### <code>GET</code> <code style="color:orange"><b>[/health](/backend/api.md)</b></code>
 <details>
   <summary>Check if the server is up.</summary>
 
