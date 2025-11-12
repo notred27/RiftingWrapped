@@ -7,7 +7,8 @@ import './Home.css';
 
 import SharePreviewCard from '../../components/common/SharePreviewCard';
 
-import AutoScroller from '../../components/common/AutoScroller';
+import Marquee from 'react-fast-marquee';
+
 
 function Home() {
     const [selectedPlayer, setSelectedPlayer] = useState('');
@@ -39,12 +40,12 @@ function Home() {
             const tag = names[1];
             setSelectedPlayer(displayName);
 
-            let response = await fetch(`${apiUrl}/getUser?displayName=${displayName}&tag=${tag}`);
+            let response = await fetch(`${apiUrl}/users/by-riot-id/${displayName}/${tag}`);
 
             if (response.status === 404) {
                 console.log("User not found, trying to add...");
 
-                const addResponse = await fetch(`${apiUrl}/addUser`, {
+                const addResponse = await fetch(`${apiUrl}/users`, {
                     method: "POST",
                     body: new URLSearchParams({ displayName, tag, region }),
                 });
@@ -55,7 +56,7 @@ function Home() {
 
 
                 // Fetch again to get puuid
-                response = await fetch(`${apiUrl}/getUser?displayName=${displayName}&tag=${tag}`);
+                response = await fetch(`${apiUrl}/users/by-riot-id/${displayName}/${tag}`);
             }
 
             if (!response.ok) {
@@ -63,7 +64,7 @@ function Home() {
             }
 
             const result = await response.json();
- 
+
             const puuid = result["puuid"];
             const status = result["status"];
 
@@ -89,7 +90,6 @@ function Home() {
             champName: "Warwick",
             shareUrl: "/player/diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIPUZlPo9adlsdFYU6Sr8NzQJjiJXnPb6A"
         },
-
         {
             username: "bigleagueplayer",
             hoursPlayed: "463",
@@ -114,6 +114,7 @@ function Home() {
             champName: "Jhin",
             shareUrl: "/player/i4E4IYdhi9-JXuF6hchhPdPC6clE8jOPwBrYBLG7xEKDRk3Y-Fqtw-tcSX0FGn_wo4RY3PZG3MUdlw"
         },
+
     ]
 
     return (
@@ -182,11 +183,20 @@ function Home() {
                 </div>
 
                 <h2 style={{ marginTop: "80px" }}>Join over <span className='emphasize'>20</span> other users in tracking your yearly LOL metrics!</h2>
-                <AutoScroller>
-                    {demoCards.map(card => (
-                        <SharePreviewCard key={card.username} {...card} />
-                    ))}
-                </AutoScroller>
+
+                <div className='marqueeContainer' >
+
+                    <Marquee
+                        speed={30}
+                        gradient={false}
+                        pauseOnHover={true}
+                        autoFill={true} >
+
+                        {demoCards.map(card => (
+                            <SharePreviewCard key={card.username} {...card} style={{ marginRight: "1rem", maxWidth: "300px", minHeight: "100%", width:"20vw" }} />
+                        ))}
+                    </Marquee>
+                </div>
 
             </div>
         </>

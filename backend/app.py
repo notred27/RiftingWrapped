@@ -61,26 +61,10 @@ def health():
 
 ### ======================= ACCOUNT ======================= ###
 
-@app.route('/getUser', methods=['GET'])
-def get_user_info():
-    puuid = request.args.get('puuid')
-    displayName = request.args.get('displayName')
-    tag = request.args.get('tag')
-
-    # Validate 
-    if not puuid and not (displayName and tag):
-        return jsonify({"error": "Bad Request", "message": "Must provide either puuid or displayName AND tag"}), 400
-
-    query = {}
-    if puuid:
-        query["puuid"] = puuid
-    else:
-        query["displayName"] = {"$regex": f"^{displayName}$", "$options": "i"}
-        query["tag"] = {"$regex": f"^{tag}$", "$options": "i"}
-
-
+@app.route('/users/<puuid>', methods=['GET'])
+def get_user_info(puuid):
     try:
-        result = player_collection.find_one(query, {"_id": 0})
+        result = player_collection.find_one({"puuid":puuid}, {"_id": 0})
 
         if not result:
             abort(404, description=f"No user found with puuid `{puuid}`")
@@ -90,13 +74,29 @@ def get_user_info():
     except PyMongoError as e:
         return abort(500, description=f"Database error occurred: {str(e)}")
 
-    
+
+@app.route('/users/by-riot-id/<displayName>/<tag>', methods=['GET'])
+def get_user_info_by_name(displayName, tag):
+    query = {}
+    query["displayName"] = {"$regex": f"^{displayName}$", "$options": "i"}
+    query["tag"] = {"$regex": f"^{tag}$", "$options": "i"}
+
+    try:
+        result = player_collection.find_one(query, {"_id": 0})
+
+        if not result:
+            abort(404, description=f"No user found with displayName `{displayName}` and tag `{tag}`")
+
+        return jsonify(result), 200
+
+    except PyMongoError as e:
+        return abort(500, description=f"Database error occurred: {str(e)}")
 
 MAX_DISPLAYNAME_LEN = 20
 MAX_TAG_LEN = 6
 RIOT_TIMEOUT = 5  # seconds
 
-@app.route('/addUser', methods=['POST'])
+@app.route('/users', methods=['POST'])
 def add_by_display_name():
 
     if 'displayName' not in request.form or 'tag' not in request.form:
@@ -142,31 +142,19 @@ def add_by_display_name():
     try:
         riot_data = r.json()
 
-        # summoner_url = f'https://{get_routing_region(region)}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{riot_data["puuid"]}'
-        # summoner_info = requests.get(summoner_url, params={"api_key": riot_key}, timeout=RIOT_TIMEOUT)
-        
-        # summoner_info = requests.get(
-        #         f'https://{get_routing_region(region)}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{riot_data["puuid"]}',
-        #         headers={"X-Riot-Token": riot_key},
-        #         timeout=RIOT_TIMEOUT
-        #     )
-        # summoner_data = summoner_info.json()
+        existing = player_collection.find_one({"puuid": riot_data["puuid"]}, {"_id":0})
+        if existing:
+            return jsonify({"error":"Conflict","message":"User exists","user": existing}), 409
 
-        # level = summoner_data.get('summonerLevel')
-        # profile_icon_id = summoner_data.get('profileIconId')
 
         user_doc = {
             "$set": {
                 "displayName": displayName,
                 "tag": tag,
                 "puuid": riot_data["puuid"],
-                # "level": level,
-                # "icon": f'https://ddragon.leagueoflegends.com/cdn/{LOL_VERSION}/img/profileicon/{profile_icon_id}.png',
                 "region": region.upper(),
                 "status": "starting",
-                # "lastUpdated": datetime.now(datetime.timezone.utc)
             },
-            # "$setOnInsert": {"createdAt": datetime.now(datetime.timezone.utc)}
         }
 
         result = player_collection.update_one({"puuid": riot_data["puuid"]}, user_doc, upsert=True)
@@ -206,17 +194,14 @@ def add_by_display_name():
         return {"matched_count": result.matched_count, "modified_count": result.modified_count, "msg":"User added successfully."}, 200
 
     except Exception as e:
-
         pass
-
-
 
     if result.upserted_id:
         status_code = 201
-        message = "User created successfully."
+        message = "User created successfully"
     else:
         status_code = 200
-        message = "User updated successfully."
+        message = "User updated successfully"
 
     return jsonify({
         "matched_count": result.matched_count,
@@ -226,23 +211,62 @@ def add_by_display_name():
     }), status_code
 
 
+ADMIN_API_KEY = os.getenv("RIFTING_WRAPPED_ADMIN_KEY")
 
-@app.route('/delete_by_puuid', methods=['DELETE'])
+def require_admin_key():
+    api_key = request.headers.get("X-API-Key") or request.args.get("api_key")
+    if not api_key or api_key != ADMIN_API_KEY:
+        abort(401, description="Unauthorized")
+
+
+@app.route('/deleteUser', methods=['DELETE'])
 def delete_by_puuid():
+
+    try:
+        require_admin_key()
+    except Exception:
+        return jsonify({"error": "Unauthorized"}), 401
+
+
     puuid = request.args.get('puuid')
     if not puuid:
-        return jsonify({"error": "Missing 'puuid' parameter"}), 400
+        return jsonify({"error": "Missing puuid"}), 400
 
-    result = matches_collection.delete_many({"puuid": puuid})
+    try:
+        match_count = matches_collection.count_documents({"puuid": puuid})
+        user_doc = player_collection.find_one({"puuid": puuid}, {"_id": 1, "displayName": 1, "tag": 1})
 
-    user = player_collection.delete_one({"puuid": puuid})
+        if not user_doc and match_count == 0:
+            return jsonify({"error": "Not Found", "message": "No user or matches found"}), 404
+        
+        # Try to get confirmation
+        confirm_raw = request.args.get("confirm")
+        if confirm_raw is None:
+            confirm = (request.get_json(silent=True) or {}).get("confirm")
+        else:
+            confirm = confirm_raw.lower() in ("1", "true", "yes")
 
-    return jsonify({
-        "puuid": puuid,
-        "numUserDeleted": user.deleted_count,
-        "numMatchesDeleted": result.deleted_count,
-        "status": "success" if result.deleted_count > 0 else "no matches found"
-    }), 200
+        if not confirm:
+            return jsonify({
+                "puuid": puuid,
+                "user_exists": bool(user_doc),
+                "user_preview": {"displayName": user_doc.get("displayName"), "tag": user_doc.get("tag")} if user_doc else None,
+                "num_matches_to_delete": match_count,
+                "message": "Re-run with ?confirm=true to perform deletion"
+            }), 200
+
+        result = matches_collection.delete_many({"puuid": puuid})
+        user = player_collection.delete_one({"puuid": puuid})
+
+        return jsonify({
+            "puuid": puuid,
+            "numUserDeleted": user.deleted_count,
+            "numMatchesDeleted": result.deleted_count,
+            "status": "success" if result.deleted_count > 0 else "no matches found"
+        }), 204
+
+    except PyMongoError as e:
+        return jsonify({"error": "Internal Server Error", "message": "Database error"}), 500
 
 
 

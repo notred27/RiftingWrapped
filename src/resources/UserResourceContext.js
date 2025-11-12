@@ -9,15 +9,10 @@ export function UserResourceProvider({ puuid, year = "2025", children }) {
 
 
   function createResource(endpoint, puuid, year) {
+    console.log(`${process.env.REACT_APP_API_ENDPOINT}/${endpoint}/${puuid}?year=${year}`)
     const promise = fetchCached(`${process.env.REACT_APP_API_ENDPOINT}/${endpoint}/${puuid}?year=${year}`, `${endpoint}-${puuid}-${year}`);
     return wrapPromise(promise);
   }
-
-
-  // function createUserResource(puuid) {
-  //   const promise = fetchCached(`${process.env.REACT_APP_API_ENDPOINT}/getUser?puuid=${puuid}`, `user-resource-${puuid}`);
-  //   return wrapPromise(promise);
-  // }
 
 
   function createUserResource(puuid, {
@@ -34,7 +29,7 @@ export function UserResourceProvider({ puuid, year = "2025", children }) {
 
       async function fetchUser() {
         // timestamp to avoid caches / cached fetchCached
-        const url = `${process.env.REACT_APP_API_ENDPOINT}/getUser?puuid=${encodeURIComponent(puuid)}&_=${Date.now()}`;
+        const url = `${process.env.REACT_APP_API_ENDPOINT}/users/${encodeURIComponent(puuid)}?_=${Date.now()}`;
         const resp = await fetch(url, { signal: controller.signal });
         if (!resp.ok) {
           const text = await resp.text().catch(() => "");

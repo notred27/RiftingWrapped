@@ -1,6 +1,6 @@
-const SharePreviewCard = ({ username, hoursPlayed, champName, shareUrl }) => {
+const SharePreviewCard = ({ username, hoursPlayed, champName, shareUrl, style }) => {
   return (
-    <div style={styles.card} aria-label={`${username}'s Rifting Wrapped 2025 profile`} aria-hidden="false">
+    <div style={{ ...styles.card, ...style }} aria-label={`${username}'s Rifting Wrapped 2025 profile`} aria-hidden="false" >
       <a
         href={shareUrl}
         style={{ textDecoration: "none", color: "inherit" }}
@@ -34,7 +34,7 @@ const styles = {
     transition: "transform 0.2s ease",
     width: "100%",
     maxWidth: 400,
-    minWidth: 300,
+    minWidth: 320,
     margin: "12px auto",
     display: "block",
     textAlign: "left",

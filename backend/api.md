@@ -16,108 +16,199 @@ REACT_APP_API_ENDPOINT = "URL for hosted backend API"
 # Endpoints
 All endpoints extend the URL stored in `REACT_APP_API_ENDPOINT` unless noted otherwise.
 
-## Account
+
+## General
 
 
-<!-- - [`/get_user`]() : Return identifying information for a specific user. -->
-
+### <code>GET</code> <code style="color:orange"><b>/health</b></code>
 <details>
-<summary><code>GET</code> <code style="color:orange"><b>/getUser</b></code>: Return identifying information for a specific user.</summary>
+  <summary>Check if the server is up.</summary>
+
+  ##### Parameters
+
+  > None
+
+  ##### Example Request
+
+  ```shell
+  curl "<API_DOMAIN>/health"
+  ```
+
+
+  ##### Responses
+
+  > | HTTP Code | Content-Type | Response |
+  > |---|---|---|
+  > | `200` | `application/json`   | `{"code":"200","message":"Server is up."}` |
+  > | `Failed to fetch` | -   | - |
+
+</details>
+
+  <hr>
+
+
+
+<br>
+<br>
+
+
+## User Management
+
+
+### <code>GET</code> <code style="color:orange"><b>/users/{puuid}</b></code>
+<details>
+  <summary>Return identifying information about a specific user.</summary>
+
+  ##### Parameters
+
+  > | Name | Type | Data Type | Description |
+  > |---|---|---|---|
+  > | puuid      |  required | String   | user's RIOT puuid  |
+
+  ##### Example Request
+
+  ```shell
+  curl "<API_DOMAIN>/users/diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIPUZlPo9adlsdFYU6Sr8NzQJjiJXnPb6A"
+  ```
+
+
+  ##### Responses
+
+  > | HTTP Code | Content-Type | Response |
+  > |---|---|---|
+  > | `200` | `application/json`   | User Object |
+  > | `404` | `application/json`   | `{"code":"404","message":"No user found with puuid '[puuid]'"}` |
+
+</details>
+
+  <hr>
+
+
+### <code>GET</code> <code style="color:orange"><b>/users/by-riot-id/{displayName}/{tag}</b></code>
+<details>
+  <summary>Return identifying information about a specific user.</summary>
+
+  ##### Parameters
+
+  > | Name | Type | Data Type | Description |
+  > |---|---|---|---|
+  > | displayName      |  required | String   | user's RIOT display name  |
+  > | tag      |  required | String   | user's RIOT tagline (e.g., `NA1`, `2327`)  |
+
+
+  ##### Example Request
+
+  ```shell
+  curl "<API_DOMAIN>/users/by-riot-id/mrwarwickwide/2725"
+  ```
+
+
+  ##### Responses
+
+  > | HTTP Code | Content-Type | Response |
+  > |---|---|---|
+  > | `200` | `application/json`   | User Object |
+  > | `404` | `application/json`   | `{"code":"404","message":"No user found with puuid '[puuid]'"}` |
+
+</details>
+
+<hr>
+
+
+
+
+### <code>POST</code> <code style="color:orange"><b>/users</b></code>
+<details>
+  <summary>Creates a user object if no such user exists. Must be a valid RIOT account.</summary>
+
+  ##### Payload Parameters
+
+  > | Name | Type | Data Type | Description |
+  > |---|---|---|---|
+  > | displayName      |  required | String   | user's RIOT display name  |
+  > | tag      |  required | String   | user's RIOT tagline (e.g., `NA1`, `2327`)  |
+  > | region      |  required | String   | user's RIOT server region (e.g., `NA1`, `EUW1`) |
+
+  ##### Example Request
+
+  ```powershell
+  curl `
+    -X POST `
+    -H "Content-Type: application/x-www-form-urlencoded" `
+    -d "displayName=<DISPLAY_NAME>" `
+    -d "tag=<TAGLINE>" `
+    -d "region=<REGION_CODE>" `
+    "<API_DOMAIN>/users" 
+  ```
+
+  ##### Responses
+
+  > | HTTP Code | Content-Type | Response |
+  > |---|---|---|
+  > | `201` | `application/json`   | `{"code":"201","message":"User created successfully"}` |
+  > | `400` | `application/json`   | `{"code":"400","message":"Must provide a valid RIOT account displayName AND tag"}` |
+  > | `400` | `application/json`   | `{"code":"400","message":"displayName or tag too long"}` |
+  > | `404` | `application/json`   | `{"code":"404","message":"User not found on Riot's servers"}` |
+  > | `409` | `application/json`   | `{"code":"409","message":"User exists"}` |
+  > | `500` | `application/json`   | `{"code":"500","Riot API key missing"}` |
+  > | `502` | `application/json`   | `{"code":"502","Riot API encountered an error"}` |
+  <!-- > | `200` | `application/json`   | `{"code":"200","message":"User updated successfully"}` | -->
+
+</details>
+
+<hr>
+
+### <code>DELETE</code> <code style="color:orange"><b>/users/{puuid}</b></code>
+<details>
+<summary>Delete a user's account and stored information related to the account</summary>
 
 <br>
 
-> Can identify a user by using either `puuid` or `displayName` and `tag`.
+> `NOTE:` Requires a valid Rifting Wrapped API key
 
 ##### Parameters
 
-> | name | type | data type | description |
-> |---|---|---|---|
-> | displayName      |  required | String   | user's RIOT display name  |
-> | tag      |  required | String   | user's RIOT tagline (e.g., `NA1`, `2327`)  |
-
-
-##### Example Request
-
-```shell
-curl "<API_DOMAIN>/getUser?displayName=mrwarwickwide&tag=2725"
-```
-
-
-##### Parameters
-
-> | name | type | data type | description |
+> | Name | Type | Data Type | Description |
 > |---|---|---|---|
 > | puuid      |  required | String   | user's RIOT puuid  |
+> | confirm      |  optional | boolean   | Confirmation to delete the records. Nothing will be deleted if this parameter is not set to `true`  |
+
+
 
 ##### Example Request
 
-```shell
-curl "<API_DOMAIN>/getUser?puuid=diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIPUZlPo9adlsdFYU6Sr8NzQJjiJXnPb6A"
-```
-
-
-##### Responses
-
-> | http code | content-type | response |
-> |---|---|---|
-> | `200` | `application/json`   | User Object |
-> | `400` | `application/json`   | `{"code":"400","message":"Must provide either puuid or displayName AND tag"}` |
-> | `404` | `application/json`   | `{"code":"404","message":"No user found with puuid '[puuid]'"}` |
-
-<hr>
-</details>
-
-<br>
-
-<!-- - [`/add_user`](): Creates a user object if no such user exists. Must be a valid RIOT account. -->
-
-<details>
-<summary><code>POST</code> <code style="color:orange"><b>/addUser</b></code>: Creates a user object if no such user exists. Must be a valid RIOT account. </summary>
-
+Returns 200 if successful, but no records are deleted as confirm is not set.
 
 ```powershell
-curl `
-  -X POST `
-  -H "Content-Type: application/x-www-form-urlencoded" `
-  -d "displayName=<DISPLAY_NAME>" `
-  -d "tag=<TAGLINE>" `
-  -d "region=<REGION_CODE>" `
-  "<API_DOMAIN>/add_user" 
+curl -X DELETE -H "X-API-Key: <ADMIN_API_KEY>" "<API_DOMAIN>/users/<PUUID>"
 ```
 
+Returns 204 and deletes relevant records
 
-
-##### Parameters
-
-> | name | type | data type | description |
-> |---|---|---|---|
-> | displayName      |  required | String   | user's RIOT display name  |
-> | tag      |  required | String   | user's RIOT tagline (e.g., `NA1`, `2327`)  |
-> | region      |  required | String   | user's RIOT server region (e.g., `NA1`, `EUW1`)  |
+```powershell
+curl -X DELETE -H "X-API-Key: <ADMIN_API_KEY>" "<API_DOMAIN>/users/<PUUID>&confirm=true"
+```
 
 ##### Responses
 
-> | http code | content-type | response |
+> | HTTP Code | Content-Type | Response |
 > |---|---|---|
-> | `200` | `application/json`   |  |
-> | `400` | `application/json`   | `{"code":"400","message":"Bad Request"}` |
-> | `404` | `application/json`   | `{"code":"404","message":"User not found."}` |
+> | `200` | `application/json`   | Player object and number of match records for that player. |
+> | `204` | `application/json`   | `{"code":"204","message":"No content"}` |
+> | `400` | `application/json`   | `{"code":"404","message":"Missing puuid"}` |
+> | `401` | `application/json`   | `{"code":"404","message":"Unauthorized"}` |
+> | `404` | `application/json`   | `{"code":"404","message":"No user or matches found"}` |
+
+
+
 
 <hr>
 </details>
 
 
-
 <br>
 
-
-! ADD VERIFICATION TO THIS!!! (DISABLED FOR NOW)
-- [`/delete_by_puuid`](): Delete a stored account. 
-
-
-```shell
-curl -X DELETE "<API_DOMAIN>/delete_by_puuid?puuid=<PUUID>"
-```
+<br>
 
 ## GET
 
@@ -126,6 +217,9 @@ curl -X DELETE "<API_DOMAIN>/delete_by_puuid?puuid=<PUUID>"
 
 <!-- - [`/matchesByDate/<puuid>`](): Statistics relating to number of matches played. -->
 
+### <code>GET</code> <code style="color:orange"><b>/users/{puuid}/playtime</b></code>
+
+-> combine forfeit, matchesByData, champs
 
 <details>
 <summary><code>GET</code> <code style="color:orange"><b>/matchesByDate/{puuid}</b></code>: Statistics relating to number of matches played. </summary>
@@ -152,7 +246,7 @@ curl -X DELETE "<API_DOMAIN>/delete_by_puuid?puuid=<PUUID>"
 <br>
 
 
-- [`/get_user/<puuid>`](): Get basic display stats for user. Change this to combine w/ POST or change name
+<!-- - [`/get_user/<puuid>`](): Get basic display stats for user. Change this to combine w/ POST or change name -->
 
 - [`/forfeit/<puuid>`](): Statistics relating to number of surrendered games.
 
@@ -162,7 +256,6 @@ curl -X DELETE "<API_DOMAIN>/delete_by_puuid?puuid=<PUUID>"
 
 
 
-- [`/health`](): Check if the server is up.
 
 ### Combat
 
@@ -186,7 +279,7 @@ curl -X DELETE "<API_DOMAIN>/delete_by_puuid?puuid=<PUUID>"
 
 ##### Example Request
 
-```shell
+```powershell
 curl "<API_DOMAIN>/highestStatGames/<PUUID>?stat=deaths&year=2025"
 ```
 

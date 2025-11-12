@@ -23,7 +23,7 @@ export default function AutoScroller({ children }) {
   }, []);
 
   return (
-    <div className="scrollContainer" ref={scrollerRef}>
+    <div className="scrollContainer" ref={scrollerRef} style={{maxWidth:"min(80vw, 2000px)", overflow:"hidden"}}>
       <div className="scrollContent">
         {children}
       </div>

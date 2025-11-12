@@ -66,7 +66,7 @@ function PlayerStats() {
                 <link
                     rel="preload"
                     as="fetch"
-                    href={`${process.env.REACT_APP_API_ENDPOINT}/getUser?puuid=${puuid}`}
+                    href={`${process.env.REACT_APP_API_ENDPOINT}/users/${puuid}`}
                     crossOrigin="anonymous"
                 />
 

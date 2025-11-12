@@ -131,10 +131,21 @@ body,
 }
 
 /* ---------- Scroller ---------- */
+
+.marqueeContainer {
+
+  max-width: min(90vw, 2000px);
+  mask: linear-gradient(90deg, transparent, white 15%, white 85%, transparent);
+  -webkit-mask: linear-gradient(90deg, transparent, white 15%, white 85%, transparent);
+
+}
+
+
+
 .scrollContainer {
-  max-width: 80vw;
+  max-width: min(80vw, 2000px);
   overflow: hidden;
-  --scroll-speed: 60s;
+  --scroll-speed: 100s;
   mask: linear-gradient(90deg, transparent, white 20%, white 80%, transparent);
   -webkit-mask: linear-gradient(90deg, transparent, white 20%, white 80%, transparent);
   overflow-x: auto;
@@ -149,6 +160,7 @@ body,
   width: fit-content;
   animation: scroll var(--scroll-speed) linear infinite;
   flex-wrap: nowrap;
+  overflow: visible;
 }
 
 .scrollContainer[data-animated] .scrollContent {
