@@ -28,7 +28,7 @@ export default function PlayerStats() {
         const fetchStatus = async () => {
             try {
                 const apiUrl = process.env.REACT_APP_API_ENDPOINT;
-                const response = await fetch(`${apiUrl}/getUser?puuid=${puuid}`);
+                const response = await fetch(`${apiUrl}/users/${puuid}`);
                 const data = await response.json();
 
 

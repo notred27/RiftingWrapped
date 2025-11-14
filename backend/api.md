@@ -4,6 +4,7 @@ This document outlines the backend endpoints that were implemented to provide da
 
 
 Example .env file to provide secrets/tokens:
+
 ```.env
 REACT_APP_API_ENDPOINT = "URL for hosted backend API"
 
