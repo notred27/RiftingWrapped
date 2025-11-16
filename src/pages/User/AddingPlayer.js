@@ -52,7 +52,7 @@ export default function PlayerStats() {
         return () => {
             clearInterval(intervalId);
         };
-    }, [polling]);
+    }, [polling, puuid, nav]);
 
 
     return (<>

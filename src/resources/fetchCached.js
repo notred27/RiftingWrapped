@@ -1,7 +1,7 @@
 export async function fetchCached(url, key, ttl = 30 * 60 * 1000) { // 30 min TTL
 const cached = JSON.parse(localStorage.getItem(key) || '{}');
   const now = Date.now();
-
+  
   if (cached.data && now - cached.timestamp < ttl) {
     return Promise.resolve(cached.data);
   }
@@ -12,7 +12,15 @@ const cached = JSON.parse(localStorage.getItem(key) || '{}');
       return res.json();
     })
     .then((data) => {
-      localStorage.setItem(key, JSON.stringify({ data, timestamp: now }));
+      // do not cache empty data
+      if(data.length !== 0) {
+        localStorage.setItem(key, JSON.stringify({ data, timestamp: now }));
+
+      } else {
+        // extra sanity check
+        localStorage.removeItem(key);
+      }
+
       return data;
     });
 }
