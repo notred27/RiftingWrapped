@@ -149,6 +149,11 @@ body {
   margin-bottom: 5px;
 }
 
+
+.generic-error {
+  display: none ;
+}
+
 h2 {
   font-weight: normal;
 }

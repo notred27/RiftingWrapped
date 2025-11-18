@@ -1,0 +1,1 @@
+setupFilesAfterEnv: ['src/setupTests.js']

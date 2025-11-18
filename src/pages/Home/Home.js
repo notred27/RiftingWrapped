@@ -121,6 +121,8 @@ function Home() {
         <>
             <Helmet>
                 <link rel="canonical" href={`https://www.riftingwrapped.com/`} />
+                <title>Rifting Wrapped 2025 | Your League of Legends Year in Review</title>
+                <meta name="description" content={`Get a detailed year-end summary of your League of Legends gameplay! Discover your top champions, stats, and trends with a personalized LoL experience.`} />
             </Helmet>
 
             <div className="heroContainer">

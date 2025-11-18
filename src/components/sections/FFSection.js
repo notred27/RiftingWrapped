@@ -3,7 +3,6 @@ import { useStatsResources } from "./../../resources/UserResourceContext.js";
 export default function FFSection() {
 
     const {forfeit} = useStatsResources();
-    console.log(forfeit.read())
     const ffData = forfeit.read()[0];
     
 
