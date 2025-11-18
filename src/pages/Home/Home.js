@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Helmet } from 'react-helmet-async';
@@ -9,8 +9,11 @@ import SharePreviewCard from '../../components/common/SharePreviewCard';
 
 import Marquee from 'react-fast-marquee';
 
+import { fetchCached } from '../../resources/fetchCached';
 
 function Home() {
+    const [numUsers, setNumUsers] = useState(30);
+
     const [selectedPlayer, setSelectedPlayer] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -18,6 +21,16 @@ function Home() {
     const usernameRef = useRef("");
 
     const navigate = useNavigate();
+
+
+
+
+    useEffect(() => {
+    const promise = fetchCached(`${process.env.REACT_APP_API_ENDPOINT}/users/count`, `user-count`)
+    .then((res) => setNumUsers(res.count))
+
+    }, [])
+    
 
     const fetchPlayer = async (e) => {
         const apiUrl = process.env.REACT_APP_API_ENDPOINT;
@@ -184,7 +197,7 @@ function Home() {
 
                 </div>
 
-                <h2 style={{ marginTop: "80px" }}>Join over <span className='emphasize'>20</span> other users in tracking your yearly LOL metrics!</h2>
+                <h2 style={{ marginTop: "80px" }}>Join over <span className='emphasize'>{numUsers}</span> other users in tracking your yearly LOL metrics!</h2>
 
                 <div className='marqueeContainer' >
 

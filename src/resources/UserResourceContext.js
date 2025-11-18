@@ -16,9 +16,9 @@ export function UserResourceProvider({ puuid, year = "2025", children }) {
 
 
   function createUserResource(puuid, {
-    intervalMs = 1000,    // poll interval
-    maxAttempts = 8,     
-    timeoutMs = 40000     // absolute timeout fallback
+    intervalMs = 1500,    // poll interval
+    maxAttempts = 15,     
+    timeoutMs = 70000     // absolute timeout fallback
   } = {}) {
     const controller = new AbortController();
 

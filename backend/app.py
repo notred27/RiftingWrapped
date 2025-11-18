@@ -61,6 +61,18 @@ def health():
 
 ### ======================= ACCOUNT ======================= ###
 
+@app.route('/users/count', methods=['GET'])
+def get_user_count():
+    try:
+        count = player_collection.count_documents({})
+
+        return jsonify({"count": count}), 200
+
+    except PyMongoError as e:
+        abort(500, description=f"Database error occurred: {str(e)}")
+
+
+
 @app.route('/users/<puuid>', methods=['GET'])
 def get_user_info(puuid):
     try:
