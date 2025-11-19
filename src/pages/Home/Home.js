@@ -26,11 +26,11 @@ function Home() {
 
 
     useEffect(() => {
-    const promise = fetchCached(`${process.env.REACT_APP_API_ENDPOINT}/users/count`, `user-count`)
-    .then((res) => setNumUsers(res.count))
+        const promise = fetchCached(`${process.env.REACT_APP_API_ENDPOINT}/users/count`, `user-count`)
+            .then((res) => setNumUsers(res.count))
 
     }, [])
-    
+
 
     const fetchPlayer = async (e) => {
         const apiUrl = process.env.REACT_APP_API_ENDPOINT;
@@ -136,6 +136,13 @@ function Home() {
                 <link rel="canonical" href={`https://www.riftingwrapped.com/`} />
                 <title>Rifting Wrapped 2025 | Your League of Legends Year in Review</title>
                 <meta name="description" content={`Get a detailed year-end summary of your League of Legends gameplay! Discover your top champions, stats, and trends with a personalized LoL experience.`} />
+
+                <link
+                    rel="preload"
+                    as="image"
+                    href="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Jax_0.jpg"
+                />
+
             </Helmet>
 
             <div className="heroContainer">
@@ -208,7 +215,7 @@ function Home() {
                         autoFill={true} >
 
                         {demoCards.map(card => (
-                            <SharePreviewCard key={card.username} {...card} style={{ marginRight: "1rem", maxWidth: "300px", minHeight: "100%", width:"20vw" }} />
+                            <SharePreviewCard key={card.username} {...card} style={{ marginRight: "1rem", maxWidth: "300px", minHeight: "100%", width: "20vw" }} />
                         ))}
                     </Marquee>
                 </div>

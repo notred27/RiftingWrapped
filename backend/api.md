@@ -14,6 +14,7 @@ REACT_APP_API_ENDPOINT = "URL for hosted backend API"
 
 // GITHUB_TOKEN = "TOKEN to allow Github Actions for this repository"
 ```
+
 # Endpoints
 All endpoints extend the URL stored in `REACT_APP_API_ENDPOINT` unless noted otherwise.
 

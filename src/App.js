@@ -13,7 +13,7 @@ function App() {
 
       <header className="siteHeader">
         <span style={{ display: "flex", gap: "5px" }}>
-          <img src='/favicon-32x32.png' alt='rifting wrapped logo'></img>
+          <img src='/favicon-32x32.png' alt='rifting wrapped logo' style={{width:"26px", height:"26px"}}></img>
           <div className="logo">
             Rifting Wrapped 2025
           </div>
