@@ -24,7 +24,13 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run scraper
+        id: run-scraper
         env:
             REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
             MONGO_URI: ${{ secrets.MONGO_URI }}
         run: python fetch-and-store.py
+
+        
+      - name: Show number of matches processed
+        run: |
+          echo "Step output num_matches=${{ steps.run-scraper.outputs.num_matches }}"

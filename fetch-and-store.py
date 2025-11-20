@@ -284,6 +284,7 @@ if __name__ == "__main__":
 
     version = requests.get("https://ddragon.leagueoflegends.com/api/versions.json").json()[0]
     
+    num_processed = 0
 
     for user_puuid in tracked_puuids:
         offset = 0
@@ -335,6 +336,8 @@ if __name__ == "__main__":
                     timeline_data = get_timeline_data(match_id)
 
                     store_match(match_data, timeline_data)
+
+                    num_processed += 1
                     time.sleep(1) 
 
                 except Exception as e:
@@ -346,3 +349,12 @@ if __name__ == "__main__":
     sanity_check(matches_collection)
 
 
+    github_output = os.environ.get("GITHUB_OUTPUT")
+    if github_output:
+        with open(github_output, "a", encoding="utf-8") as fh:
+            fh.write(f"num_matches={num_processed}\n")
+    else:
+
+        print("GITHUB_OUTPUT not present; running locally.")
+        with open("local-github-output.txt", "w", encoding="utf-8") as fh:
+            fh.write(f"num_matches={num_processed}\n")

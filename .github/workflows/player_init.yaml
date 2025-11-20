@@ -16,6 +16,8 @@ on:
         required: true
         default: ''
 
+run-name: "Adding ${{ inputs.region }} user: ${{ inputs.displayName }}#${{ inputs.tag }}"
+
 jobs:
   init_player:
     runs-on: ubuntu-latest
