@@ -21,14 +21,14 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r backend/actions/requirements.txt
 
       - name: Run scraper
         id: run-scraper
         env:
             REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
             MONGO_URI: ${{ secrets.MONGO_URI }}
-        run: python fetch-and-store.py
+        run: python backend/actions/fetch-and-store.py
 
         
       - name: Show number of matches processed

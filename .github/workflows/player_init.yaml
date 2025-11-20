@@ -34,11 +34,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r backend/actions/requirements.txt
 
 
       - name: Run initialization script
         env:
             REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
             MONGO_URI: ${{ secrets.MONGO_URI }}
-        run: python create_user_prefetch.py "${{ github.event.inputs.displayName }}" "${{ github.event.inputs.tag }}" "${{ github.event.inputs.region }}"
+        run: python backend/actions/create_user_prefetch.py "${{ github.event.inputs.displayName }}" "${{ github.event.inputs.tag }}" "${{ github.event.inputs.region }}"
