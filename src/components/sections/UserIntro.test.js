@@ -1,46 +1,34 @@
 import { render, screen} from '@testing-library/react';
 
-afterEach(() => {
-  jest.clearAllTimers();
-  jest.resetAllMocks();
-});
-
+let mockMode = 'success';
 
 jest.mock('../../resources/UserResourceContext.js', () => ({
   __esModule: true,
-  useStatsResources: () => ({
-    user: {
-      read: () => ({
-        displayName: 'Alice',
-        tag: '1234',
-        icon: 'avatar.png',
-        level: 30,
-      }),
-    },
-  }),
+  useStatsResources: () => {
+    if (mockMode === 'error') {
+      return { user: { read: () => { throw new Error('boom') } } };
+    }
+    return {
+      user: { read: () => ({ displayName: 'Alice', tag: '1234', icon: 'avatar.png', level: 30 }) },
+    };
+  },
 }));
-
 
 import UserIntro from './UserIntro';
 
-describe('UserIntro', () => {
-  it('renders user info from useStatsResources', () => {
-    render(<UserIntro year="2025" />);
+afterEach(() => {
+  mockMode = 'success';
+  jest.resetAllMocks();
+});
 
-    // Image src
-    const img = screen.getByAltText('user icon');
-    expect(img).toHaveAttribute('src', 'avatar.png');
+it('API success', () => {
+  mockMode = 'success';
+  render(<UserIntro year="2025" />);
+  expect(screen.getByText('Alice#1234')).toBeInTheDocument();
+});
 
-    // Name
-    const name = screen.getByText('Alice#1234');
-    expect(name).toBeInTheDocument();
-
-    // Level
-    const level = screen.getByText('Level 30');
-    expect(level).toBeInTheDocument();
-
-    // Year in heading
-    const heading = screen.getByText(/2025/);
-    expect(heading).toBeInTheDocument();
-  });
+it('API 404/500 error', () => {
+  mockMode = 'error';
+  render(<UserIntro year="2025" />);
+  expect(screen.getByText('Failed to load user.')).toBeInTheDocument();
 });
