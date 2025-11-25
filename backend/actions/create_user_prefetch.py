@@ -24,7 +24,7 @@ player_collection = db["tracked-players"]
 
 
 # Helper translation for regions
-def get_routing_region(region: str, api_endpoint = None) -> str:
+def get_routing_region(region: str, api_endpoint = False) -> str:
     region = region.upper()
 
     americas = {"NA1", "BR1", "LA1", "LA2"}
@@ -40,7 +40,7 @@ def get_routing_region(region: str, api_endpoint = None) -> str:
         return "asia"
     
     elif region in sea:
-        if(api_endpoint == "region"):
+        if api_endpoint:
             return "asia"
         return "sea"
     else:
@@ -108,7 +108,7 @@ def get_timeline_data(match_id, region):
 
 
 def get_user_puuid(display_name, tag, region):
-    R = get_routing_region(region, 'account')
+    R = get_routing_region(region, True)
     url = f"https://{R}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{display_name}/{tag}"
     return safe_request(url)
 
