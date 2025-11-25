@@ -27,9 +27,10 @@ player_collection = db["tracked-players"]
 def get_routing_region(region: str) -> str:
     region = region.upper()
 
-    americas = {"NA1", "BR1", "LA1", "LA2", "OC1"}
+    americas = {"NA1", "BR1", "LA1", "LA2"}
     europe = {"EUN1", "EUW1", "TR1", "RU", "ME1"}
-    asia = {"KR", "JP1", "SG2", "TW2", "VN2"}
+    asia = {"KR", "JP1"}
+    sea = {"SG2", "OC1", "TW2", "VN2", "PH2", "TH2"}
 
     if region in americas:
         return "americas"
@@ -37,6 +38,9 @@ def get_routing_region(region: str) -> str:
         return "europe"
     elif region in asia:
         return "asia"
+    
+    elif region in sea:
+        return "sea"
     else:
         return "unknown"
 

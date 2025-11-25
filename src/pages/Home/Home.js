@@ -173,6 +173,9 @@ function Home() {
                                 <option value="TR1">TR1</option>
                                 <option value="TW2">TW2</option>
                                 <option value="VN2">VN2</option>
+
+                                <option value="TH2">TH2</option>
+                                <option value="PH2">PH2</option>
                             </select>
                             <input
                                 type="text"
