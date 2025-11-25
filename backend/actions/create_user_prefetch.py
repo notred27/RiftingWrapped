@@ -108,7 +108,8 @@ def get_timeline_data(match_id, region):
 
 
 def get_user_puuid(display_name, tag, region):
-    url = f"https://{get_routing_region(region, "account")}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{display_name}/{tag}"
+    R = get_routing_region(region, 'account')
+    url = f"https://{R}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{display_name}/{tag}"
     return safe_request(url)
 
 
