@@ -9,6 +9,7 @@
 /coverage
 /venv
 backend/__pycache__
+backend/flask/__pycache__
 /match_names
 
 # production
