@@ -3,17 +3,18 @@ import { useStatsResources } from "./../../resources/UserResourceContext.js";
 export default function UserIntro({ year }) {
 	const { user } = useStatsResources();
 
-	let userInfo;
-	try {
-		userInfo = user.read();
-	} catch (err) {
-		return (
-			<div className="alert" style={{ color: 'red' }}>
-				Failed to load user.
-			</div>
-		);
-	}
+	// let userInfo;
+	// try {
+	// 	userInfo = user.read();
+	// } catch (err) {
+	// 	return (
+	// 		<div className="alert" style={{ color: 'red' }}>
+	// 			Failed to load user.
+	// 		</div>
+	// 	);
+	// }
 
+	const userInfo = user.read();
 
 	return (
 		<div style={{ textAlign: "center", padding: "10px", paddingTop: "30px" }}>
