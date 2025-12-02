@@ -1,25 +1,22 @@
+import { Suspense, useEffect, useState } from "react";
 
 import { useNavigate, useParams } from 'react-router-dom';
-
-
-import { Suspense, useEffect, useState } from "react";
 
 import UserIntro from '../../components/sections/UserIntro.js';
 import UserIntroFallback from '../../components/sections/UserIntroFallback.js';
 
 import { UserResourceProvider } from "../../resources/UserResourceContext.js";
+import './PlayerStats.css';
+
 
 export default function PlayerStats() {
-
-    const { puuid } = useParams();
-
     const year = 2025;
-    
-    const [polling, setPolling] = useState(true);
-    const [userData, setUserData] = useState([]);
+    const { puuid } = useParams();
 
     const nav = useNavigate();
 
+    const [polling, setPolling] = useState(true);
+    const [userData, setUserData] = useState([]);
 
 
     useEffect(() => {

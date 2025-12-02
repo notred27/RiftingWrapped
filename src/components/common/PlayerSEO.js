@@ -1,13 +1,12 @@
+import { useEffect, useState } from "react";
 
 import { Helmet } from 'react-helmet-async';
-import { Suspense, useEffect, useState } from "react";
+
 import ErrorBoundary from '../../components/Error/ErrorBoundary.js';
 
 
 export default function PlayerSEO({ puuid, year }) {
-
     const [playerData, setPlayerData] = useState(null);
-
 
     useEffect(() => {
         async function fetchPlayerData() {
@@ -24,13 +23,11 @@ export default function PlayerSEO({ puuid, year }) {
     }, [puuid]);
 
 
-
     return (
         <ErrorBoundary >
 
             <Helmet>
                 <link rel="canonical" href={`https://www.riftingwrapped.com/player/${puuid}`} />
-
                 <link rel="preload" as="fetch" href={`${process.env.REACT_APP_API_ENDPOINT}/users/${puuid}`} crossOrigin="anonymous" />
 
                 {playerData &&
@@ -44,10 +41,8 @@ export default function PlayerSEO({ puuid, year }) {
                         <meta property="og:image" content={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${playerData["champName"]}_0.jpg`} />
                         <meta property="og:url" content={`https://www.riftingwrapped.com//player/${puuid}`} />
                         <meta name="twitter:card" content="summary_large_image" />
-
                     </>}
             </Helmet>
         </ErrorBoundary>
     )
-
 }

@@ -1,36 +1,30 @@
 import { useState, useRef, useEffect } from 'react';
+
 import { useNavigate } from 'react-router-dom';
-
 import { Helmet } from 'react-helmet-async';
-
-import './Home.css';
+import Marquee from 'react-fast-marquee';
 
 import SharePreviewCard from '../../components/common/SharePreviewCard';
 
-import Marquee from 'react-fast-marquee';
-
 import { fetchCached } from '../../resources/fetchCached';
+import './Home.css';
+
 
 function Home() {
-    const [numUsers, setNumUsers] = useState(30);
+    const navigate = useNavigate();
 
+    const [numUsers, setNumUsers] = useState(30);
     const [selectedPlayer, setSelectedPlayer] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     const regionRef = useRef("NA1");
     const usernameRef = useRef("");
 
-    const navigate = useNavigate();
-
-
-
-
     useEffect(() => {
-        const promise = fetchCached(`${process.env.REACT_APP_API_ENDPOINT}/users/count`, `user-count`)
+        fetchCached(`${process.env.REACT_APP_API_ENDPOINT}/users/count`, `user-count`)
             .then((res) => setNumUsers(res.count))
 
     }, [])
-
 
     const fetchPlayer = async (e) => {
         const apiUrl = process.env.REACT_APP_API_ENDPOINT;
@@ -39,7 +33,6 @@ function Home() {
         setSelectedPlayer("");
 
         const region = regionRef.current.value;
-
 
         try {
             const names = usernameRef.current.value.split("#");
@@ -95,7 +88,6 @@ function Home() {
         }
     };
 
-
     const demoCards = [
         {
             username: "MrWarwickWide",
@@ -142,11 +134,9 @@ function Home() {
                     as="image"
                     href="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Jax_0.jpg"
                 />
-
             </Helmet>
 
             <div className="heroContainer">
-
                 <img class="heroOverlay" src="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Jax_0.jpg" alt="Hero Overlay" fetchPriority='high' />
                 <div className="heroText">
                     <h1>Your Year on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
@@ -155,7 +145,6 @@ function Home() {
                     </p>
 
                     <form onSubmit={fetchPlayer} className="searchForm">
-
                         <span style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                             <select defaultValue="NA1" aria-label="region select" id="regionSelect" ref={regionRef}>
                                 <option value="BR1">BR1</option>
@@ -204,25 +193,22 @@ function Home() {
                         </h2>
 
                     }
-
                 </div>
 
                 <h2 style={{ marginTop: "80px" }}>Join over <span className='emphasize'>{numUsers}</span> other users in tracking your yearly LOL metrics!</h2>
-
                 <div className='marqueeContainer' >
-
                     <Marquee
                         speed={30}
                         gradient={false}
                         pauseOnHover={true}
-                        autoFill={true} >
+                        autoFill={true} 
+                    >
 
                         {demoCards.map(card => (
                             <SharePreviewCard key={card.username} {...card} style={{ marginRight: "1rem", maxWidth: "300px", minHeight: "100%", width: "20vw" }} />
                         ))}
                     </Marquee>
                 </div>
-
             </div>
         </>
     );
