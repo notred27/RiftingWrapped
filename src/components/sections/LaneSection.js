@@ -98,7 +98,7 @@ export default function LaneSection({ puuid, year }) {
     return (
         <>
             <SectionImage 
-                imgUrl={`https://cmsassets.rgpub.io/sanity/images/dsfx7636/news_live/89a02acb4e25a0083d9072ca226c25eac75da6bd-1280x720.jpg?auto=format&fit=crop&q=80&h=537&w=956&crop=center`}
+                imgUrl={`/images/banner2.webp`}
                 offset = {"40"}
             />
 

@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 
 import { useParams } from 'react-router-dom';
-import '@fortawesome/fontawesome-free/css/all.min.css';
 
 import { UserResourceProvider } from "../../resources/UserResourceContext.js";
 import PlayerSEO from '../../components/common/PlayerSEO.js';

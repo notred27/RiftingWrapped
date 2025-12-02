@@ -69,7 +69,7 @@ export default function TotalTimeBreakdown({ puuid, year }) {
     return (
         <>
             <SectionImage
-                imgUrl={`https://cdn1.epicgames.com/offer/24b9b5e323bc40eea252a10cdd3b2f10/EGS_LeagueofLegends_RiotGames_S1_2560x1440-80471666c140f790f28dff68d72c384b`}
+                imgUrl={`/images/banner3.webp`}
                 offset={"10"}
             />
 

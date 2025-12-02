@@ -14,7 +14,7 @@ export default function DamageSection({ resource }) {
 
     return (
         <>
-            <SectionImage imgUrl={`https://static1.dualshockersimages.com/wordpress/wp-content/uploads/2018/10/League-of-Legends.jpg`} offset={"35"} />
+            <SectionImage imgUrl={`/images/banner1.webp`} offset={"35"} />
 
             {/* <h2>This year, you were a<br /><span className='emphasize' style={{ fontSize: "60px" }}>[insert architype here]</span></h2> */}
 
