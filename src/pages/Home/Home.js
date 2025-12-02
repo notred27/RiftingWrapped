@@ -9,6 +9,7 @@ import SharePreviewCard from '../../components/common/SharePreviewCard';
 import { fetchCached } from '../../resources/fetchCached';
 import './Home.css';
 
+import bg_image from '../../images/Jax_0.webp'
 
 function Home() {
     const navigate = useNavigate();
@@ -128,16 +129,19 @@ function Home() {
                 <link rel="canonical" href={`https://www.riftingwrapped.com/`} />
                 <title>Rifting Wrapped 2025 | Your League of Legends Year in Review</title>
                 <meta name="description" content={`Get a detailed year-end summary of your League of Legends gameplay! Discover your top champions, stats, and trends with a personalized LoL experience.`} />
-
+           
                 <link
                     rel="preload"
                     as="image"
-                    href="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Jax_0.jpg"
-                />
+                    href={bg_image}
+                    type="image/webp"
+                    fetchpriority="high"
+                />           
+           
             </Helmet>
 
             <div className="heroContainer">
-                <img class="heroOverlay" src="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Jax_0.jpg" alt="Hero Overlay" fetchPriority='high' />
+                <img class="heroOverlay" src={bg_image} alt="Hero Overlay" fetchPriority='high' />
                 <div className="heroText">
                     <h1>Your Year on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
                     <p>

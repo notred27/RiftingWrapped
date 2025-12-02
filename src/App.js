@@ -1,3 +1,5 @@
+import { lazy } from 'react';
+
 import { Link, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 // import Home from './pages/Home/Home.js';
 // import PlayerStats from './pages/User/PlayerStats.js';
@@ -5,9 +7,8 @@ import { Link, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 // import FAQ from './pages/FAQ/FAQ.js';
 // import KofiWidget from './components/KofiWidget.js';
 
-import { lazy } from 'react';
 
-import './App.css';
+
 
 const Home = lazy(() => import('./pages/Home/Home.js'));
 
@@ -21,7 +22,6 @@ const KofiWidget = lazy(() => import('./components/KofiWidget.js'));
 function App() {
     return (
         <Router>
-            <KofiWidget />
 
             <header className="site-header">
                 <span style={{ display: "flex", gap: "5px" }}>
@@ -49,6 +49,7 @@ function App() {
             <footer>
                 <p className='footer__disclaimer'>All data used in Rifting Wrapped comes from the public League of Legends matches a user has participated in. Rifting Wrapped isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
             </footer>
+            <KofiWidget />
 
         </Router>
     );
