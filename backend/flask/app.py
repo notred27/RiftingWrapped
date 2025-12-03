@@ -9,7 +9,7 @@ from datetime import datetime
 from math import floor
 
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='./templates')
 CORS(app)
 
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -1237,7 +1237,7 @@ def share_page(puuid):
         { "_id": 0, "displayName": 1, "tag": 1 }
     )
 
-    return render_template('templates/share.html',
+    return render_template('share.html',
                            puuid=puuid,
                            champ_name=champ[0]['_id'],
                            username=username['displayName'],
