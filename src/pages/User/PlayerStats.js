@@ -48,7 +48,7 @@ function PlayerStats() {
 									<ChampSection />
 									<DamageSection />
 									<KDAsection puuid={puuid} year={year} />
-									<LaneSection puuid={puuid} year={year} />
+									<LaneSection puuid={puuid} />
 									<TotalTimeBreakdown puuid={puuid} year={year} />
 								</Suspense>
 							</div>

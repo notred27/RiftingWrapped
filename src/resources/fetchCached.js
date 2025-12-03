@@ -20,7 +20,7 @@ export async function fetchCached(url, key, ttl = 30 * 60 * 1000) {
         return Promise.resolve(cached.data);
     }
 
-    console.debug('fetchCached: cache MISS for', key, 'fetching', url);
+    // console.debug('fetchCached: cache MISS for', key, 'fetching', url);
 
     // Start the fetch immediately and return the promise
     return fetch(url)

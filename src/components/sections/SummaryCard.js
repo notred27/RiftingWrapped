@@ -4,35 +4,16 @@ import Kills from "./../../images/tmpKills.png"
 import Deaths from "./../../images/tmpDeaths.png"
 
 import { useStatsResources } from "../../resources/UserResourceContext.js";
+import { calcTopChamps } from "../../components/sections/ChampSection.js"
 
 
-function calcTopChamp(data) {
-    const champData = data.read();
-    const champDict = {}
-
-    champData.forEach(({ champion, count }) => {
-        champDict[champion] = count
-    })
-
-    const champNames = Object.keys(champDict)
-    const champVals = champNames.map(name => champDict[name])
-
-    const sorted = champNames
-        .map((name, i) => ({ name, count: champVals[i] }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10)
-
-    const sortedNames = sorted.map(item => item.name)
-    const sortedCounts = sorted.map(item => item.count)
-
-    return [sortedNames[0], sortedCounts[0]]
-}
-
-
-export default function SummaryCard({ year = "2025" }) {
+export default function SummaryCard({ year = "2025", totalPlaytime }) {
     const { champ, user } = useStatsResources();
     const userInfo = user.read();
-    const topChamp = calcTopChamp(champ);
+
+    const [sortedNames, sortedCounts] = calcTopChamps(champ.read())
+    const topChampName = sortedNames[0]
+    const topChampCount = sortedCounts[0];
 
     return (
         <div className="summary-wrapper">
@@ -55,16 +36,11 @@ export default function SummaryCard({ year = "2025" }) {
                     </div>
                 </div>
 
-
-
                 <div className="stats-grid">
-
-
                     <div
                         style={{
                             height: "140px",
                             width: "100%",
-
                             overflowY: "hidden",
                             position: "relative",
                             borderRadius: "10px",
@@ -73,8 +49,8 @@ export default function SummaryCard({ year = "2025" }) {
                         }}
                     >
                         <img
-                            src={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${topChamp[0]}_0.jpg`}
-                            alt={`most played champ :${topChamp[0]}`}
+                            src={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${topChampName}_0.jpg`}
+                            alt={`most played champ :${topChampName}`}
                             style={{
                                 width: "300px",
                                 // height: "100px",
@@ -83,7 +59,7 @@ export default function SummaryCard({ year = "2025" }) {
                                 transform: "translateY(-10%)"
                             }}
                         />
-                        <div className="overlay-badge">{topChamp[0].toUpperCase()} • {topChamp[1]} Games</div>
+                        <div className="overlay-badge">{topChampName.toUpperCase()} • {topChampCount} Games</div>
 
                     </div>
 
@@ -140,7 +116,7 @@ export default function SummaryCard({ year = "2025" }) {
 
                     <div id="hour-stats" className="stat-card">
                         <div className="stat-label">Hours Played</div>
-                        <div className="stat-number">169 hrs</div>
+                        <div className="stat-number">{totalPlaytime} hrs</div>
                     </div>
 
                 </div>

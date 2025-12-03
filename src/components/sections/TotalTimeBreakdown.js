@@ -1,50 +1,19 @@
-import { useState, useEffect } from "react";
+import { useStatsResources } from "../../resources/UserResourceContext.js";
 
 import TotalTimeGraph from "../graphs/TotalTimeGraph.js"
 import SectionImage from '../common/SectionImage.js';
-import SharePreviewCard from "../common/SharePreviewCard.js";
 
-// import SummaryCard from "./SummaryCard.js";
+import SharePreviewCard from "../common/SharePreviewCard.js";
+import SummaryCard from "./SummaryCard.js";
+
 
 export default function TotalTimeBreakdown({ puuid, year }) {
-    const [loading, setLoading] = useState(true);
-    const [timeArr, setTimeArr] = useState([]);
-
-    const [cardInfo, setCardInfo] = useState([]);
-
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const [totalStats, cardPreview] = await Promise.all([
-                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/totalStats/${puuid}?year=${year}`),
-                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/get_card_preview/${puuid}?year=${year}`)
-
-                ]);
-
-                if (!totalStats.ok || !cardPreview.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
-                const [timeData, cardData] = await Promise.all([totalStats.json(), cardPreview.json()]);
-                setTimeArr(timeData[0]);
-                setCardInfo(cardData);
-            } catch (error) {
-                console.error('Failed to fetch champ data:', error)
-                setTimeArr([]);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        if (puuid) {
-            fetchData()
-        }
-    }, [puuid, year])
-
-    if (loading) return;
-    if (!timeArr || timeArr.length === 0) return;
+    const { cardPreview, timeBreakdownStats } = useStatsResources();
+    const cardInfo = cardPreview.read();
+    const timeArr = timeBreakdownStats.read()[0];
 
 
+    // convert to human-readable time
     const totalTime = Math.floor(timeArr["totalPlaytime"] / 3600);
     const totalTimeInRanked = Math.floor(timeArr["totalRankedTime"] / 3600);
     const totalTimeInRift = Math.floor(timeArr["totalSummonersRift"] / 3600);
@@ -53,20 +22,19 @@ export default function TotalTimeBreakdown({ puuid, year }) {
     const deadTime = Math.floor(timeArr["totalTimeDead"] / 3600);
     const roamTime = Math.floor(timeArr["totalRoamTime"] / 3600);
 
+    const dragonTime = Math.round(timeArr["dragons"] * 50 / 3600);
+    const baronTime = Math.round(timeArr["barons"] * 40 / 3600);
+    const baronBuffTime = Math.round(timeArr["barons"] * 180 / 3600);
 
-    const dragonTime = Math.round(timeArr["dragons"] * 50 / 3600)
-    const baronTime = Math.round(timeArr["barons"] * 40 / 3600)
-    const baronBuffTime = Math.round(timeArr["barons"] * 180 / 3600)
+    const otherTime = totalTime - (ccTime + deadTime + roamTime + dragonTime + baronTime + baronBuffTime);
 
-    const otherTime = totalTime - (ccTime + deadTime + roamTime + dragonTime + baronTime + baronBuffTime)
-
-    const timeLabels = ["Other", "Time Dead", "Time CC'ing Others", "Time Roaming", "Time Killing Baron", "Time Baron Buffed", "Time Killing Dragons"]
-    const timeBreakdown = [otherTime, deadTime, ccTime, roamTime, baronTime, baronBuffTime, dragonTime]
+    const timeLabels = ["Other", "Time Dead", "Time CC'ing Others", "Time Roaming", "Time Killing Baron", "Time Baron Buffed", "Time Killing Dragons"];
+    const timeBreakdown = [otherTime, deadTime, ccTime, roamTime, baronTime, baronBuffTime, dragonTime];
 
 
+    // For generating posts
     const shareUrl = `https://riftingwrapped.onrender.com/share/${puuid}`;
     const shareText = `I spent over ${totalTime} hours on League of Legends this year! #LeagueOfLegends #RiftingWrapped`;
-
 
     return (
         <>
@@ -89,10 +57,7 @@ export default function TotalTimeBreakdown({ puuid, year }) {
             </div>
 
 
-            {/* <SummaryCard year={year} /> */}
-
-
-
+            <SummaryCard year={year} totalPlaytime={totalTime} />
 
             <h2 style={{ textAlign: "center", maxWidth: "90vw" }}>
                 Impressed with your stats?
@@ -102,7 +67,6 @@ export default function TotalTimeBreakdown({ puuid, year }) {
             <div style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: "10px" }}>
 
                 <div style={{ maxWidth: "90vw" }}>
-
                     <SharePreviewCard
                         username={cardInfo["username"]}
                         hoursPlayed={cardInfo["hoursPlayed"]}
@@ -112,7 +76,6 @@ export default function TotalTimeBreakdown({ puuid, year }) {
                 </div>
 
                 <div className="shareButtonRow" >
-
                     <button
                         className="shareButton"
                         onClick={() => {
@@ -173,25 +136,17 @@ export default function TotalTimeBreakdown({ puuid, year }) {
                     >
                         Share on Facebook
                     </button>
-
-
-
-
-
                 </div>
-
             </div>
+
 
             <h2 style={{ textAlign: "center", maxWidth: "90vw" }}>
                 Want to see your own recap?
             </h2>
 
-            <a id="homePageLink" href="/" style={{ color: "whitesmoke", fontWeight: "bold", padding: "16px",  marginBottom:"80px", fontSize:"large", borderRadius:"10px", width:"200px", textAlign:"center"}}>
-            Try it now!
+            <a id="homePageLink" href="/" style={{ color: "whitesmoke", fontWeight: "bold", padding: "16px", marginBottom: "80px", fontSize: "large", borderRadius: "10px", width: "200px", textAlign: "center" }}>
+                Try it now!
             </a>
-
-            
-
         </>
     )
 }
