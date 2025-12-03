@@ -1237,7 +1237,7 @@ def share_page(puuid):
         { "_id": 0, "displayName": 1, "tag": 1 }
     )
 
-    return render_template('share.html',
+    return render_template('templates/share.html',
                            puuid=puuid,
                            champ_name=champ[0]['_id'],
                            username=username['displayName'],

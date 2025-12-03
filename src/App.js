@@ -24,7 +24,7 @@ function App() {
         <Router>
 
             <header className="site-header">
-                <span style={{ display: "flex", gap: "5px" }}>
+                <span style={{ display: "flex", gap: "5px", width:"max-content" }}>
                     <img src='/favicon-32x32.png' alt='rifting wrapped logo' className="site-header__logo" />
                     <div className="site-header__title">
                         Rifting Wrapped 2025
@@ -46,8 +46,33 @@ function App() {
                 </Routes>
             </main>
 
-            <footer>
+            <footer className='footer' style={{ backgroundColor: "#0f2331", display: "grid", alignItems: "center", justifyContent: "space-between" }}>
+
                 <p className='footer__disclaimer'>All data used in Rifting Wrapped comes from the public League of Legends matches a user has participated in. Rifting Wrapped isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
+
+                <div className='site-header__nav' style={{ display: "flex", flexDirection: "column", textAlign: "right", fontWeight: "bold", gap: "10px", alignItems: "flex-end" }}>
+
+
+                    <span style={{ display: "flex", gap: "5px", width: "max-content" }}>
+                        <img src='/favicon-32x32.png' alt='rifting wrapped logo' className="site-header__logo" />
+                        <div className="site-header__title">
+                            Rifting Wrapped 2025
+                        </div>
+                    </span>
+
+
+
+                    <Link to="/">Home</Link>
+                    <Link to="/faq">FAQ</Link>
+                    <Link to="https://ko-fi.com/notred27">Support Us</Link>
+
+
+
+
+                </div>
+
+
+
             </footer>
             <KofiWidget />
 

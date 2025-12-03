@@ -12,7 +12,7 @@ const SharePreviewCard = ({ username, hoursPlayed, champName, shareUrl, style })
           style={styles.image}
         />
         <div style={styles.content}>
-          <h2 style={styles.title}>Rifting Wrapped - {username}'s 2025 Stats</h2>
+          <h2 style={styles.title}>{username}'s Rifting Wrapped 2025</h2>
           <p style={styles.description}>
             {username} spent <strong>{hoursPlayed}</strong> hours on the Rift this year. Check out their top stats!
           </p>

@@ -1,8 +1,8 @@
 
 
-export default function SectionImage({ imgUrl, offset }) {
+export default function SectionImage({ imgUrl, offset, height = 300 }) {
     return (
-        <div className="sectionImageContainer">
+        <div className="sectionImageContainer" style={{maxHeight:`${height}px`, height:"fit-content"}}>
             <img
                 src={imgUrl}
                 alt={`Banner Splash`}

@@ -141,7 +141,7 @@ function Home() {
             </Helmet>
 
             <div className="heroContainer">
-                <img class="heroOverlay" src={bg_image} alt="Hero Overlay" fetchPriority='high' />
+                <img className="heroOverlay" src={bg_image} alt="Hero Overlay"  />
                 <div className="heroText">
                     <h1>Your Year on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
                     <p>
@@ -209,7 +209,7 @@ function Home() {
                     >
 
                         {demoCards.map(card => (
-                            <SharePreviewCard key={card.username} {...card} style={{ marginRight: "1rem", maxWidth: "300px", minHeight: "100%", width: "20vw" }} />
+                            <SharePreviewCard key={card.username} {...card} style={{ marginRight: "1rem", width: "300px", height: "300px", maxWidth: "20vw" }} />
                         ))}
                     </Marquee>
                 </div>

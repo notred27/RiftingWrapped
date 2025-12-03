@@ -4,6 +4,8 @@ import TotalTimeGraph from "../graphs/TotalTimeGraph.js"
 import SectionImage from '../common/SectionImage.js';
 import SharePreviewCard from "../common/SharePreviewCard.js";
 
+// import SummaryCard from "./SummaryCard.js";
+
 export default function TotalTimeBreakdown({ puuid, year }) {
     const [loading, setLoading] = useState(true);
     const [timeArr, setTimeArr] = useState([]);
@@ -87,89 +89,109 @@ export default function TotalTimeBreakdown({ puuid, year }) {
             </div>
 
 
+            {/* <SummaryCard year={year} /> */}
 
 
-            <h2>Impressed with your stats? Share your Rifting Wrapped Recap with friends!</h2>
 
-            <div>
 
-                <SharePreviewCard
-                    username={cardInfo["username"]}
-                    hoursPlayed={cardInfo["hoursPlayed"]}
-                    champName={cardInfo["champName"]}
-                    shareUrl={`https://riftingwrapped.onrender.com/share/${puuid}`}
-                />
+            <h2 style={{ textAlign: "center", maxWidth: "90vw" }}>
+                Impressed with your stats?
+                <br />
+                Share your Rifting Wrapped Recap with friends!</h2>
+
+            <div style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: "10px" }}>
+
+                <div style={{ maxWidth: "90vw" }}>
+
+                    <SharePreviewCard
+                        username={cardInfo["username"]}
+                        hoursPlayed={cardInfo["hoursPlayed"]}
+                        champName={cardInfo["champName"]}
+                        shareUrl={`https://riftingwrapped.onrender.com/share/${puuid}`}
+                    />
+                </div>
+
+                <div className="shareButtonRow" >
+
+                    <button
+                        className="shareButton"
+                        onClick={() => {
+                            navigator.clipboard.writeText(shareUrl);
+                            alert("Copied share link!");
+                        }}
+                    >
+                        Copy Link
+                    </button>
+
+                    <button
+                        href={`https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            window.open(
+                                `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`,
+                                '',
+                                'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=800'
+                            );
+                        }}
+                        className="shareButton reddit"
+                        target="_blank"
+                        rel="noopener nofollow noreferrer"
+                    >
+                        Share on Reddit
+                    </button>
+
+                    <button
+                        href={`https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            window.open(
+                                `https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
+                                '',
+                                'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
+                            );
+                        }}
+                        className="shareButton twitter"
+                        target="_blank"
+                        rel="noopener nofollow noreferrer"
+                    >
+                        Share on Twitter
+                    </button>
+
+                    <button
+                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            window.open(
+                                `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+                                '',
+                                'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
+                            );
+                        }}
+                        className="shareButton facebook"
+                        target="_blank"
+                        rel="noopener nofollow noreferrer"
+                    >
+                        Share on Facebook
+                    </button>
+
+
+
+
+
+                </div>
+
             </div>
 
-            <div className="shareButtonRow" >
+            <h2 style={{ textAlign: "center", maxWidth: "90vw" }}>
+                Want to see your own recap?
+            </h2>
 
-                <button
-                    className="shareButton"
-                    onClick={() => {
-                        navigator.clipboard.writeText(shareUrl);
-                        alert("Copied share link!");
-                    }}
-                >
-                    Copy Link
-                </button>
+            <a id="homePageLink" href="/" style={{ color: "whitesmoke", fontWeight: "bold", padding: "16px",  marginBottom:"80px", fontSize:"large", borderRadius:"10px", width:"200px", textAlign:"center"}}>
+            Try it now!
+            </a>
 
-                <a
-                    href={`https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
-                    onClick={(e) => {
-                        e.preventDefault();
-                        window.open(
-                            `https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
-                            '',
-                            'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
-                        );
-                    }}
-                    className="shareButton twitter"
-                    target="_blank"
-                    rel="noopener nofollow noreferrer"
-                >
-                    Share on Twitter
-                </a>
+            
 
-                <a
-                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
-                    onClick={(e) => {
-                        e.preventDefault();
-                        window.open(
-                            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-                            '',
-                            'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
-                        );
-                    }}
-                    className="shareButton facebook"
-                    target="_blank"
-                    rel="noopener nofollow noreferrer"
-                >
-                    Share on Facebook
-                </a>
-
-                <a
-                    href={`https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`}
-                    onClick={(e) => {
-                        e.preventDefault();
-                        window.open(
-                            `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`,
-                            '',
-                            'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=800'
-                        );
-                    }}
-                    className="shareButton reddit"
-                    target="_blank"
-                    rel="noopener nofollow noreferrer"
-                >
-                    Share on Reddit
-                </a>
-
-
-
-            </div>
-
-
-            <h2>Want to see your own recap? <a href="/" style={{ color: "whitesmoke", fontWeight: "bold" }}>Try it now!</a></h2>
         </>
     )
 }

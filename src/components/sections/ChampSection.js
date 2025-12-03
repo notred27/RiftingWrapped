@@ -87,6 +87,7 @@ export default function ChampSection() {
             <SectionImage
                 imgUrl={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${topChamp}_0.jpg`}
                 offset={"25"}
+                height={400}
             />
 
             <div className="champSectionWrapper">

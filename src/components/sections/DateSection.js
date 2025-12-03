@@ -30,9 +30,9 @@ export default function DateSection() {
             </h2>
 
             <h3>
-                With this dedication, you were hitting the Rift every{" "}
+                With this dedication, you were hitting the Rift at least once in every{" "}
                 <span className="emphasize">
-                    1 in {(Math.floor(3650 / totalUniqueDays) / 10).toFixed(1)} days
+                    {(Math.floor(3650 / totalUniqueDays) / 10).toFixed(1)} days
                 </span>.
             </h3>
 

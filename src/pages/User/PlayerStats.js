@@ -21,7 +21,6 @@ import LaneSection from '../../components/sections/LaneSection.js';
 import TotalTimeBreakdown from '../../components/sections/TotalTimeBreakdown.js';
 
 import './PlayerStats.css'
-// import Temp from '../../components/sections/Temp.js';
 
 
 function PlayerStats() {
@@ -52,13 +51,6 @@ function PlayerStats() {
 									<LaneSection puuid={puuid} year={year} />
 									<TotalTimeBreakdown puuid={puuid} year={year} />
 								</Suspense>
-
-								{/* <Suspense fallback={<span />}>
-                        <div className="fade-in">
-                            <Temp year={year} />
-                        </div>
-                    </Suspense> */}
-
 							</div>
 
 						</ErrorBoundary>
