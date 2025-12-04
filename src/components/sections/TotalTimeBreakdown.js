@@ -57,7 +57,7 @@ export default function TotalTimeBreakdown({ puuid, year }) {
             </div>
 
 
-            <SummaryCard year={year} totalPlaytime={totalTime} />
+            {/* <SummaryCard year={year} totalPlaytime={totalTime} /> */}
 
             <h2 style={{ textAlign: "center", maxWidth: "90vw" }}>
                 Impressed with your stats?
