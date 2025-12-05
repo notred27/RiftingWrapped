@@ -323,32 +323,35 @@ def create_pending_matches(puuid, region):
 
 
 def process_pending_matches(new_puuid, region):
+    count = 0
     while True:
         pending = matches_collection.find_one_and_update(
-            {"status": "pending"},
+            {"status": "pending", "puuid": new_puuid},
             {"$set": {"status": "processing"}},
             sort=[("_id", ASCENDING)]
         )
 
         if not pending:
-            print("No more pending matches.")
+            print(f"No more pending matches for user {new_puuid}.")
             break
 
-        match_id = pending["matchId"]
-        puuid = pending["puuid"]
 
         try:
+            match_id = pending["matchId"]
+            puuid = pending["puuid"]
+
             match_data = get_match_data(match_id, region)
             timeline_data = get_timeline_data(match_id, region)
-            store_match(match_data, timeline_data, new_puuid)
+            store_match(match_data, timeline_data, puuid)
 
 
-            print(f"Processed {match_id} for {puuid}")
+            print(f"Processed {match_id} ({count} matches)")
 
             player_collection.update_one(
                 {"puuid": puuid},
                 {"$inc": {"processedMatches": 1}}
             )
+            count += 1
 
 
         except Exception as e:
@@ -424,7 +427,6 @@ if __name__ == "__main__":
 
         create_pending_matches(new_puuid, REGION)
         
-
         process_pending_matches(new_puuid, REGION)
 
         player_collection.update_one(
