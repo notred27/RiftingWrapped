@@ -16,9 +16,9 @@ on:
         required: true
         default: ''
 
-concurrency:
-  group: "player-initialization-queue"
-  cancel-in-progress: false
+# concurrency:
+#   group: "player-initialization-queue"
+#   cancel-in-progress: false
 
 
 run-name: "Adding ${{ inputs.region }} user: ${{ inputs.displayName }}#${{ inputs.tag }}"
