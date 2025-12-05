@@ -147,6 +147,7 @@ function Home() {
                     <p>
                         Discover your top champions, match stats, and trends for 2025 with a personalized recap of your League of Legends journey.
                     </p>
+                    
 
                     <form onSubmit={fetchPlayer} className="searchForm">
                         <span style={{ display: "flex", gap: "10px", alignItems: "center" }}>
@@ -184,6 +185,8 @@ function Home() {
                             Fetch My Stats!
                         </button>
                     </form>
+
+                    <h4>We are currently aware of an error that is preventing the creation of new accounts. <br /> We are working towards restoring the accounts (and validating the data) of players who tried to sign up within the last 24-48 hours. <br />Please bear with us as we address this issue. Thank you :)</h4>
 
                     {selectedPlayer && !isLoading && <p className="search-error">{selectedPlayer}</p>}
                     {isLoading &&
