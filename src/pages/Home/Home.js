@@ -1,15 +1,18 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import Marquee from 'react-fast-marquee';
 
-import SharePreviewCard from '../../components/common/SharePreviewCard';
-
+import { PlayerListProvider } from '../../resources/PlayerListContext';
 import { fetchCached } from '../../resources/fetchCached';
-import './Home.css';
+
+import SharePreviewCard from '../../components/common/SharePreviewCard';
+import UserSearchBar from '../../components/common/UserSearchBar';
 
 import bg_image from '../../images/Jax_0.webp'
+import './Home.css';
+
 
 function Home() {
     const navigate = useNavigate();
@@ -18,13 +21,10 @@ function Home() {
     const [selectedPlayer, setSelectedPlayer] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    const regionRef = useRef("NA1");
-    const usernameRef = useRef("");
 
     useEffect(() => {
         fetchCached(`${process.env.REACT_APP_API_ENDPOINT}/users/count`, `user-count`)
             .then((res) => setNumUsers(res.count))
-
     }, [])
 
     const fetchPlayer = async (e) => {
@@ -33,10 +33,10 @@ function Home() {
         setIsLoading(true);
         setSelectedPlayer("");
 
-        const region = regionRef.current.value;
+        const region = document.getElementById("regionSelect").value;
 
         try {
-            const names = usernameRef.current.value.split("#");
+            const names = document.getElementById("nameInput").value.split("#");
             if (names.length !== 2) {
                 setSelectedPlayer("Invalid Search Name");
                 setIsLoading(false);
@@ -60,7 +60,6 @@ function Home() {
                 if (!addResponse.ok) {
                     throw new Error("Failed to add new user");
                 }
-
 
                 // Fetch again to get puuid
                 response = await fetch(`${apiUrl}/users/by-riot-id/${displayName}/${tag}`);
@@ -120,7 +119,6 @@ function Home() {
             champName: "Jhin",
             shareUrl: "/player/i4E4IYdhi9-JXuF6hchhPdPC6clE8jOPwBrYBLG7xEKDRk3Y-Fqtw-tcSX0FGn_wo4RY3PZG3MUdlw"
         },
-
     ]
 
     return (
@@ -129,19 +127,19 @@ function Home() {
                 <link rel="canonical" href={`https://www.riftingwrapped.com/`} />
                 <title>Rifting Wrapped 2025 | Your League of Legends Year in Review</title>
                 <meta name="description" content={`Get a detailed year-end summary of your League of Legends gameplay! Discover your top champions, stats, and trends with a personalized LoL experience.`} />
-           
+
                 <link
                     rel="preload"
                     as="image"
                     href={bg_image}
                     type="image/webp"
                     fetchpriority="high"
-                />           
-           
+                />
+
             </Helmet>
 
             <div className="heroContainer">
-                <img className="heroOverlay" src={bg_image} alt="Hero Overlay"  />
+                <img className="heroOverlay" src={bg_image} alt="Hero Overlay" />
                 <div className="heroText">
                     <h1>Your Year on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
                     <p>
@@ -151,34 +149,47 @@ function Home() {
 
                     <form onSubmit={fetchPlayer} className="searchForm">
                         <span style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                            <select defaultValue="NA1" aria-label="region select" id="regionSelect" ref={regionRef}>
-                                <option value="BR1">BR1</option>
-                                <option value="EUN1">EUN1</option>
-                                <option value="EUW1">EUW1</option>
-                                <option value="JP1">JP1</option>
-                                <option value="KR">KR</option>
-                                <option value="LA1">LA1</option>
-                                <option value="LA2">LA2</option>
-                                <option value="ME1">ME1</option>
-                                <option value="NA1">NA1</option>
-                                <option value="OC1">OC1</option>
-                                <option value="RU">RU</option>
-                                <option value="SG2">SG2</option>
-                                <option value="TR1">TR1</option>
-                                <option value="TW2">TW2</option>
-                                <option value="VN2">VN2</option>
 
-                                <option value="TH2">TH2</option>
-                                <option value="PH2">PH2</option>
-                            </select>
-                            <input
-                                type="text"
-                                name="username"
-                                ref={usernameRef}
-                                placeholder="GAME NAME#TAG"
-                                autoComplete="on"
-                                id="nameInput"
-                            />
+
+
+
+                            <PlayerListProvider>
+                                <Suspense fallback=
+
+                                    {<>
+                                        <select defaultValue="NA1" aria-label="region select" id="regionSelect" >
+                                            <option value="BR1">BR1</option>
+                                            <option value="EUN1">EUN1</option>
+                                            <option value="EUW1">EUW1</option>
+                                            <option value="JP1">JP1</option>
+                                            <option value="KR">KR</option>
+                                            <option value="LA1">LA1</option>
+                                            <option value="LA2">LA2</option>
+                                            <option value="ME1">ME1</option>
+                                            <option value="NA1">NA1</option>
+                                            <option value="OC1">OC1</option>
+                                            <option value="RU">RU</option>
+                                            <option value="SG2">SG2</option>
+                                            <option value="TR1">TR1</option>
+                                            <option value="TW2">TW2</option>
+                                            <option value="VN2">VN2</option>
+                                            <option value="TH2">TH2</option>
+                                            <option value="PH2">PH2</option>
+                                        </select>
+                                        <input
+                                            type="text"
+                                            name="username"
+                                            placeholder="Game Name#Tag"
+                                            autoComplete="on"
+                                            id="nameInput"
+                                        />
+                                    </>}>
+                                    <UserSearchBar />
+                                </Suspense>
+                            </PlayerListProvider>
+
+
+
                         </span>
 
                         <button type="submit" id="submitBtn">
@@ -202,13 +213,14 @@ function Home() {
                     }
                 </div>
 
+
                 <h2 style={{ marginTop: "80px" }}>Join over <span className='emphasize'>{numUsers}</span> other users in tracking your yearly LOL metrics!</h2>
                 <div className='marqueeContainer' >
                     <Marquee
                         speed={30}
                         gradient={false}
                         pauseOnHover={true}
-                        autoFill={true} 
+                        autoFill={true}
                     >
 
                         {demoCards.map(card => (

@@ -72,6 +72,19 @@ def get_user_count():
         abort(500, description=f"Database error occurred: {str(e)}")
 
 
+@app.route('/users/all', methods=['GET'])
+def get_all_users():
+    try:
+        users = list(player_collection.find(
+            {}, 
+            {"_id": 0, "displayName": 1, "tag": 1, "region": 1, "icon":1}
+        ))
+
+        return jsonify(users), 200
+
+    except PyMongoError as e:
+        abort(500, description=f"Database error occurred: {str(e)}")
+
 
 @app.route('/users/<puuid>', methods=['GET'])
 def get_user_info(puuid):
@@ -231,18 +244,14 @@ def require_admin_key():
         abort(401, description="Unauthorized")
 
 
-@app.route('/deleteUser', methods=['DELETE'])
-def delete_by_puuid():
+@app.route('/users/<puuid>', methods=['DELETE'])
+def delete_by_puuid(puuid):
 
     try:
         require_admin_key()
     except Exception:
         return jsonify({"error": "Unauthorized"}), 401
 
-
-    puuid = request.args.get('puuid')
-    if not puuid:
-        return jsonify({"error": "Missing puuid"}), 400
 
     try:
         match_count = matches_collection.count_documents({"puuid": puuid})
