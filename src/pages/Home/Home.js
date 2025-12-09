@@ -2,17 +2,18 @@ import { useState, useEffect, Suspense } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import Marquee from 'react-fast-marquee';
 
 import { PlayerListProvider } from '../../resources/PlayerListContext';
 import { fetchCached } from '../../resources/fetchCached';
 
-import SharePreviewCard from '../../components/common/SharePreviewCard';
 import UserSearchBar from '../../components/common/UserSearchBar';
 
 import bg_image from '../../images/Jax_0.webp'
 import './Home.css';
+import PlayerMarquee from '../../components/sections/PlayerMarquee';
 
+import ErrorBoundary from '../../components/Error/ErrorBoundary';
+import GenericSearch from '../../components/common/GenericSearch';
 
 function Home() {
     const navigate = useNavigate();
@@ -33,9 +34,8 @@ function Home() {
         setIsLoading(true);
         setSelectedPlayer("");
 
-        const region = document.getElementById("regionSelect").value;
-
         try {
+            const region = document.getElementById("regionSelect").value;
             const names = document.getElementById("nameInput").value.split("#");
             if (names.length !== 2) {
                 setSelectedPlayer("Invalid Search Name");
@@ -47,7 +47,7 @@ function Home() {
             const tag = names[1];
             setSelectedPlayer(displayName);
 
-            let response = await fetch(`${apiUrl}/users/by-riot-id/${displayName}/${tag}`);
+            let response = await fetch(`${apiUrl}/users/by-riot-id/${displayName}/${tag}/${region}`);
 
             if (response.status === 404) {
                 console.log("User not found, trying to add...");
@@ -83,43 +83,12 @@ function Home() {
             setIsLoading(false);
         } catch (error) {
             console.error(error);
-            setSelectedPlayer("Error fetching or adding user");
+            setSelectedPlayer("Error fetching or adding user. Please check the entered information and try again.");
             setIsLoading(false);
         }
     };
 
-    const demoCards = [
-        {
-            username: "MrWarwickWide",
-            hoursPlayed: "110",
-            champName: "Warwick",
-            shareUrl: "/player/diCdQ445kzKsYeE19oqdFWmYfuDrnGU3oKeTkAyWzweVEIPUZlPo9adlsdFYU6Sr8NzQJjiJXnPb6A"
-        },
-        {
-            username: "bigleagueplayer",
-            hoursPlayed: "463",
-            champName: "Gragas",
-            shareUrl: "/player/TDQjFdHq3qPgUtc1VNmpCOBwQpwAPEeRDuqws_7oYv3SVQqzAgNfXPtzjpSpmdptJMTyx6nwLzYutA"
-        },
-        {
-            username: "jar",
-            hoursPlayed: "190",
-            champName: "Nunu",
-            shareUrl: "/player/DtXnq3chwI7rBuqeyQJcCwmIyw12dVJwf-FqbaZiuU5X0JGjdjT1Y1Zt5sX3TgwPxJtCwBq__NeHLw"
-        },
-        {
-            username: "nexensis12",
-            hoursPlayed: "20",
-            champName: "Velkoz",
-            shareUrl: "/player/r1xGUZF0L4HCQee47pytClt3OsPHqyhXgZfFkq-WRU15oQx88iHeh392Re6uTE9GBEaEJGh3vqf7zQ"
-        },
-        {
-            username: "SemThigh",
-            hoursPlayed: "470",
-            champName: "Jhin",
-            shareUrl: "/player/i4E4IYdhi9-JXuF6hchhPdPC6clE8jOPwBrYBLG7xEKDRk3Y-Fqtw-tcSX0FGn_wo4RY3PZG3MUdlw"
-        },
-    ]
+
 
     return (
         <>
@@ -145,50 +114,18 @@ function Home() {
                     <p>
                         Discover your top champions, match stats, and trends for 2025 with a personalized recap of your League of Legends journey.
                     </p>
-                    
+
 
                     <form onSubmit={fetchPlayer} className="searchForm">
                         <span style={{ display: "flex", gap: "10px", alignItems: "center" }}>
 
-
-
-
                             <PlayerListProvider>
-                                <Suspense fallback=
-
-                                    {<>
-                                        <select defaultValue="NA1" aria-label="region select" id="regionSelect" >
-                                            <option value="BR1">BR1</option>
-                                            <option value="EUN1">EUN1</option>
-                                            <option value="EUW1">EUW1</option>
-                                            <option value="JP1">JP1</option>
-                                            <option value="KR">KR</option>
-                                            <option value="LA1">LA1</option>
-                                            <option value="LA2">LA2</option>
-                                            <option value="ME1">ME1</option>
-                                            <option value="NA1">NA1</option>
-                                            <option value="OC1">OC1</option>
-                                            <option value="RU">RU</option>
-                                            <option value="SG2">SG2</option>
-                                            <option value="TR1">TR1</option>
-                                            <option value="TW2">TW2</option>
-                                            <option value="VN2">VN2</option>
-                                            <option value="TH2">TH2</option>
-                                            <option value="PH2">PH2</option>
-                                        </select>
-                                        <input
-                                            type="text"
-                                            name="username"
-                                            placeholder="Game Name#Tag"
-                                            autoComplete="on"
-                                            id="nameInput"
-                                        />
-                                    </>}>
-                                    <UserSearchBar />
-                                </Suspense>
+                                <ErrorBoundary fallback={(err) => <GenericSearch error={err} />}>
+                                    <Suspense fallback={<GenericSearch />}>
+                                        <UserSearchBar />
+                                    </Suspense>
+                                </ErrorBoundary>
                             </PlayerListProvider>
-
-
 
                         </span>
 
@@ -197,7 +134,6 @@ function Home() {
                         </button>
                     </form>
 
-                    <h4>We are currently aware of an error that is preventing the creation of new accounts. <br /> We are working towards restoring the accounts (and validating the data) of players who tried to sign up within the last 24-48 hours. <br />Please bear with us as we address this issue. Thank you :)</h4>
 
                     {selectedPlayer && !isLoading && <p className="search-error">{selectedPlayer}</p>}
                     {isLoading &&
@@ -213,21 +149,12 @@ function Home() {
                     }
                 </div>
 
+                <h2 style={{ marginTop: "40px", maxWidth: "800px", fontSize: "large" }}>Don't see your name? Enter your account and region to join over <span className='emphasize'>{numUsers}</span> other users in tracking your yearly LOL metrics!</h2>
 
-                <h2 style={{ marginTop: "80px" }}>Join over <span className='emphasize'>{numUsers}</span> other users in tracking your yearly LOL metrics!</h2>
-                <div className='marqueeContainer' >
-                    <Marquee
-                        speed={30}
-                        gradient={false}
-                        pauseOnHover={true}
-                        autoFill={true}
-                    >
+                {/* <PlayerListProvider> */}
+                <PlayerMarquee />
 
-                        {demoCards.map(card => (
-                            <SharePreviewCard key={card.username} {...card} style={{ marginRight: "1rem", width: "300px", height: "300px", maxWidth: "20vw" }} />
-                        ))}
-                    </Marquee>
-                </div>
+                {/* </PlayerListProvider> */}
             </div>
         </>
     );

@@ -24,7 +24,7 @@ function App() {
         <Router>
 
             <header className="site-header">
-                <span style={{ display: "flex", gap: "5px", width:"max-content" }}>
+                <span style={{ display: "flex", gap: "5px", width: "max-content" }}>
                     <img src='/favicon-32x32.png' alt='rifting wrapped logo' className="site-header__logo" />
                     <div className="site-header__title">
                         Rifting Wrapped 2025
@@ -66,13 +66,7 @@ function App() {
                     <Link to="/faq">FAQ</Link>
                     <Link to="https://ko-fi.com/notred27">Support Us</Link>
 
-
-
-
                 </div>
-
-
-
             </footer>
             <KofiWidget />
 

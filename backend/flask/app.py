@@ -77,7 +77,7 @@ def get_all_users():
     try:
         users = list(player_collection.find(
             {}, 
-            {"_id": 0, "displayName": 1, "tag": 1, "region": 1, "icon":1}
+            {"_id": 0, "displayName": 1, "tag": 1, "region": 1, "icon":1, "puuid":1}
         ))
 
         return jsonify(users), 200
@@ -100,17 +100,18 @@ def get_user_info(puuid):
         return abort(500, description=f"Database error occurred: {str(e)}")
 
 
-@app.route('/users/by-riot-id/<displayName>/<tag>', methods=['GET'])
-def get_user_info_by_name(displayName, tag):
+@app.route('/users/by-riot-id/<displayName>/<tag>/<region>', methods=['GET'])
+def get_user_info_by_name(displayName, tag, region):
     query = {}
     query["displayName"] = {"$regex": f"^{displayName}$", "$options": "i"}
     query["tag"] = {"$regex": f"^{tag}$", "$options": "i"}
+    query["region"] = {"$regex": f"^{region}$", "$options": "i"}
 
     try:
         result = player_collection.find_one(query, {"_id": 0})
 
         if not result:
-            abort(404, description=f"No user found with displayName `{displayName}` and tag `{tag}`")
+            abort(404, description=f"No user found with displayName `{displayName}`, tag `{tag}`, and region `{region}`")
 
         return jsonify(result), 200
 
