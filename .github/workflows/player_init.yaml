@@ -16,11 +16,6 @@ on:
         required: true
         default: ''
 
-# concurrency:
-#   group: "player-initialization-queue"
-#   cancel-in-progress: false
-
-
 run-name: "Adding ${{ inputs.region }} user: ${{ inputs.displayName }}#${{ inputs.tag }}"
 
 jobs:
@@ -46,4 +41,4 @@ jobs:
         env:
             REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
             MONGO_URI: ${{ secrets.MONGO_URI }}
-        run: python backend/actions/create_user_prefetch.py "${{ github.event.inputs.displayName }}" "${{ github.event.inputs.tag }}" "${{ github.event.inputs.region }}"
+        run: python backend/actions/user_producer.py "${{ github.event.inputs.displayName }}" "${{ github.event.inputs.tag }}" "${{ github.event.inputs.region }}"
