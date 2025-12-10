@@ -247,19 +247,6 @@ class Consumer:
             logger.info("Processed match %s for player %s", match_id, puuid)
 
 
-            remaining = matches_collection.count_documents({
-                            "puuid": puuid,
-                            "status": {"$in": ["pending", "processing"]}
-                        })
-
-            if remaining == 0:
-                # Only set to done if the player was in "counting" state (avoids overwriting other states).
-                player_collection.update_one(
-                    {"puuid": puuid, "status": "counting"},
-                    {"$set": {"status": "done", "countingFinishedAt": datetime.now(timezone.utc)}}
-                )
-                logger.info("Player %s has no remaining matches — set status to 'done'", puuid)
-
         except Exception as e:
             logger.exception("Failed to process match %s: %s", match_id, e)
             matches_collection.update_one({"_id": match_doc["_id"]}, {"$set": {"status": "failed", "error": str(e)}})
