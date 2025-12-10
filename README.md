@@ -4,12 +4,25 @@
 
 <h1><img src = "public/favicon-32x32.png" /> Rifting Wrapped 2025</h1>
 
-
 **Relive your best League of Legends matches and stats this past year with Rifting Wrapped!**
 
-
+  <img src="https://img.shields.io/badge/React-blue?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/Flask-ffff00?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/MongoDB-4ea94b?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/AWS%20Amplify-FF2088?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/Render-000000?style=for-the-badge"/>
+  
 
 </div>
+
+## Overview
+
+
+**Rifting Wrapped** is a full-stack analytics website that provides yearly highlights about a player's League of Legends gameplay.  
+From champion distributions and kill heatmaps to position and performance breakdowns, this app lets players rediscover their highlights with interactive visualizations.
+
+
 
 
 ## Features
@@ -42,17 +55,17 @@ This end-to-end app is powered by React, Flask, Render, and MongoDB to create a 
 3) Finally, using a Flask API to handle database requests, our front end displays all of this data in responsive charts.
 
 
-#### Tech stack:
-> `Hosting`: AWS Amplify, Render <br/>
-> `Front End`: React, HTML, JS, CSS <br/>
-> `Back End`: MongoDB, Flask (Python), Github Actions 
+## Tech stack:
 
+**Frontend:** React, HTML, JavaScript, CSS  
+**Backend:** Flask (Python), MongoDB  
+**Deployment:** AWS Amplify (frontend), Render (backend)  
+**Automation:** GitHub Actions (cron-based match updaters)
 
-To power this app, a custom API was created to interface between our front end and database. Details about this API can be found [here](/backend/flask/api.md).
-
+> A full specification of the internal API is available at: [`backend/flask/api.md`](/backend/flask/api.md)
 
 ## Disclaimer
 
-All data used in Rifting Wrapped comes from the public League of Legends matches a user has participated in. 
+Rifting Wrapped uses only publicly available match data.
 
-Rifting Wrapped isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
+Rifting Wrapped is not endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
