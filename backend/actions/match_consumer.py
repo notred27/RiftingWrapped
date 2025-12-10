@@ -221,14 +221,24 @@ class Consumer:
             stats = self.extract_match_stats(match_data, timeline_data, puuid)
             locations = self.get_kill_death_positions(match_data, timeline_data, puuid, queue_id)
 
+
+
+            match_meta = {
+                "gameCreated": datetime.fromtimestamp(match_data["info"].get("gameCreation", 0) / 1000),
+                "gameDuration": match_data["info"].get("gameDuration", 0),
+                "gameType": match_data["info"].get("gameType", "Unknown"),
+            }
+
+
             matches_collection.update_one(
                 {"_id": match_doc["_id"]},
                 {"$set": {
                     "status": "done",
                     "stats": stats,
+                    "queueId":queue_id,
                     "locations": locations,
-                    "match_data": match_data,
-                    "timeline_data": timeline_data,
+                    "matchInfo": match_meta,
+                    # "timeline_data": timeline_data,
                     # "processed_at": datetime.now(timezone.utc)
                 }}
             )
