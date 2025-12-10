@@ -146,10 +146,10 @@ def extract_match_stats(match_data, timeline_data, puuid):
     kda = round((participant.get("kills", 0) + participant.get("assists", 0)) / max(1, deaths), 2)
 
     return {
-        "matchId": match_data["metadata"]["matchId"],
+        # "matchId": match_data["metadata"]["matchId"],
         "champion": participant.get("championName", ""),
-        "riotIdGameName": participant.get("riotIdGameName", ""),
-        "riotIdTagline": participant.get("riotIdTagline", ""),
+        # "riotIdGameName": participant.get("riotIdGameName", ""),
+        # "riotIdTagline": participant.get("riotIdTagline", ""),
 
         "kills":participant.get("kills", 0),
         "deaths":participant.get("deaths", 0),
@@ -184,7 +184,7 @@ def extract_match_stats(match_data, timeline_data, puuid):
             "barons": objectives.get("baron", {}).get("kills", 0),
             "dragons": objectives.get("dragon", {}).get("kills", 0),
             "riftHeralds": objectives.get("riftHerald", {}).get("kills", 0),
-            "dragonTypes": dragon_types,
+            # "dragonTypes": dragon_types,
             "voidGrubs": objectives.get("horde", {}).get("kills", 0),
             "atakhan": objectives.get("atakhan", {}).get("kills", 0),
         },
@@ -236,13 +236,13 @@ def store_match(match_data, timeline_data, new_puuid):
     queue_id = match_data["info"].get("queueId", -1)
 
     match_info = {
-        "matchId": match_id,
+        # "matchId": match_id,
         "gameCreated": datetime.fromtimestamp(match_data["info"].get("gameCreation", 0) / 1000),
         "gameDuration": match_data["info"].get("gameDuration", 0),
-        "teams": {
-            "blue": [p['puuid'] for p in participants if p['teamId'] == 100],
-            "red": [p['puuid'] for p in participants if p['teamId'] == 200]
-        },
+        # "teams": {
+        #     "blue": [p['puuid'] for p in participants if p['teamId'] == 100],
+        #     "red": [p['puuid'] for p in participants if p['teamId'] == 200]
+        # },
         "gameType": match_data["info"].get("gameType", "Unknown"),
     }
 
