@@ -1,0 +1,36 @@
+name: Match Scraper Cron
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/actions/requirements.txt
+
+      - name: Run scraper
+        id: run-scraper
+        env:
+            REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
+            MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: python backend/actions/match_consumer.py
+
+        
+      - name: Show number of matches processed
+        run: |
+          echo "Step output num_matches=${{ steps.run-script.outputs.num_matches }}"
