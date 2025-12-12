@@ -107,7 +107,7 @@ function Home() {
 
             </Helmet>
 
-            <div className="heroContainer">
+            <div className="heroContainer" >
                 <img className="heroOverlay" src={bg_image} alt="Hero Overlay" />
                 <div className="heroText">
                     <h1>Your Year on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
@@ -117,7 +117,7 @@ function Home() {
 
 
                     <form onSubmit={fetchPlayer} className="searchForm">
-                        <span style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                        <span style={{ display: "flex", gap: "10px", alignItems: "center", width:"100%"}}>
 
                             <PlayerListProvider>
                                 <ErrorBoundary fallback={(err) => <GenericSearch error={err} />}>

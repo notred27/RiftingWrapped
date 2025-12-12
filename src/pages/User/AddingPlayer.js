@@ -72,30 +72,33 @@ export default function PlayerStats() {
                 <span>.</span>
                 <span>.</span>
             </span></p>}
-            {userData["status"] === "counting" && 
-                
-            
-            <p className="loading-text">Gathering your match history<span className="dots">
-                <span>.</span>
-                <span>.</span>
-                <span>.</span>
-            </span></p>
-            
-  
-        }
-            {userData["status"] === "pending" && 
-            
-            userData.processedMatches !== undefined ? 
-            
-            <div style={{ textAlign: "center" }}><h2 className="loading-text">Processing your matches<span className="dots">
-                <span>.</span>
-                <span>.</span>
-                <span>.</span>
-            </span></h2><h3>{userData.processedMatches} / {userData.totalMatches} Matches Processed</h3></div>
-                      :
+            {userData["status"] === "counting" &&
 
-            <p style={{textAlign:"center", paddingLeft:"5vw", paddingRight:"5vw"}}> You're in queue! Check back later to see if your matches have been processed. This can usually take up to an hour, and depends on how many other users are simultaneously joining for the first time.</p>
-        }
+                <p className="loading-text">Gathering your match history<span className="dots">
+                    <span>.</span>
+                    <span>.</span>
+                    <span>.</span>
+                </span></p>
+
+            }
+            {userData["status"] === "pending" &&
+
+                userData.processedMatches !== undefined ?
+
+                <div style={{ textAlign: "center" }}>
+                    <h2 className="loading-text">Processing your matches<span className="dots">
+                            <span>.</span>
+                            <span>.</span>
+                            <span>.</span>
+                        </span>
+                    </h2>
+                    <h3>{userData.processedMatches} / {userData.totalMatches} Matches Processed</h3>
+                </div>
+                :
+                <p style={{ textAlign: "center", paddingLeft: "5vw", paddingRight: "5vw" }}>
+                    You're in queue! Check back later to see if your matches have been processed. This can usually take up to an hour, and depends on how many other users are simultaneously joining for the first time.
+                </p>
+            }
         </div>
 
     </>)

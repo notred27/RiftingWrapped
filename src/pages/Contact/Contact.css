@@ -1,0 +1,15 @@
+:root{
+  --bg-1: rgba(15,25,35,0.92);
+  --bg-2: rgba(0,0,0,0.86);
+  --muted: #cbd5e1;
+  --accent: rgba(0,112,187,0.9);
+  --faq-duration: 300ms;
+  --faq-ease: cubic-bezier(.2,.9,.2,1);
+  --faq-max-mobile: 800px;
+  --faq-max-desktop: 600px;
+  --card-gap: 12px;
+}
+
+.header { text-align: center; margin-bottom: 12px; }
+.header h1 { font-size: 1.6rem; margin:0; font-weight:900; }
+.subtitle { margin-top:6px; color:var(--muted); font-size:0.95rem; }

@@ -13,6 +13,10 @@ import { Link, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 const Home = lazy(() => import('./pages/Home/Home.js'));
 
 const FAQ = lazy(() => import('./pages/FAQ/FAQ.js'));
+const About = lazy(() => import('./pages/About/About.js'));
+const Contact = lazy(() => import('./pages/Contact/Contact.js'));
+
+
 const AddingPlayer = lazy(() => import('./pages/User/AddingPlayer.js'));
 const PlayerStats = lazy(() => import('./pages/User/PlayerStats.js'));
 const KofiWidget = lazy(() => import('./components/KofiWidget.js'));
@@ -36,13 +40,15 @@ function App() {
                 </nav>
             </header>
 
-            <main>
+            <main >
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/player/:puuid" element={<PlayerStats />} />
                     <Route path="/addPlayer/:puuid" element={<AddingPlayer />} />
-                    <Route path="/about" element={<Home />} />
+
                     <Route path="/faq" element={<FAQ />} />
+                    {/* <Route path="/about" element={<About />} /> */}
+                    {/* <Route path="/contact-us" element={<Contact />} /> */}
                 </Routes>
             </main>
 
@@ -52,7 +58,6 @@ function App() {
 
                 <div className='site-header__nav' style={{ display: "flex", flexDirection: "column", textAlign: "right", fontWeight: "bold", gap: "10px", alignItems: "flex-end" }}>
 
-
                     <span style={{ display: "flex", gap: "5px", width: "max-content" }}>
                         <img src='/favicon-32x32.png' alt='rifting wrapped logo' className="site-header__logo" />
                         <div className="site-header__title">
@@ -60,10 +65,14 @@ function App() {
                         </div>
                     </span>
 
-
-
                     <Link to="/">Home</Link>
                     <Link to="/faq">FAQ</Link>
+
+                    {/* <Link to="/about">About</Link> */}
+                    {/* <Link to="/contact-us">Contact Us</Link> */}
+
+                    {/* <Link to="/privacy">Privacy</Link> */}
+
                     <Link to="https://ko-fi.com/notred27">Support Us</Link>
 
                 </div>

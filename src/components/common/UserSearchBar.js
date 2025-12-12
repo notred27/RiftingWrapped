@@ -118,7 +118,7 @@ export default function UserSearchBar() {
 
     return (
         <>
-            <select defaultValue="NA1" aria-label="region select" id="regionSelect" style={{fontSize:"18px", width:"80px"}} >
+            <select defaultValue="NA1" aria-label="region select" id="regionSelect" style={{fontSize:"18px", width:"80px", height:"54px"}} >
                 <option value="BR1">BR1</option>
                 <option value="EUN1">EUN1</option>
                 <option value="EUW1">EUW1</option>
@@ -138,7 +138,7 @@ export default function UserSearchBar() {
                 <option value="PH2">PH2</option>
             </select>
 
-            <div ref={containerRef} style={{ position: "relative", minWidth: "300px", padding:"0px" }}>
+            <div ref={containerRef} style={{ position: "relative", width:"100%", padding:"0px" }}>
                 <input
                     ref={inputRef}
                     id="nameInput"
@@ -171,9 +171,10 @@ export default function UserSearchBar() {
                             style={{
                                 position: "absolute",
                                 top: "calc(100% + 6px)",
-                                left: 0,
+                                // left: 0,
                                 right: 0,
                                 maxHeight: 260,
+                                minWidth:"300px",
                                 overflowY: "auto",
                                 border: "1px solid #ddd",
                                 borderRadius: 6,

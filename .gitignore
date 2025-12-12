@@ -34,3 +34,6 @@ rifting-wrapped_accessKeys.csv
 .amplify
 # amplify_outputs*
 amplifyconfiguration*
+
+
+local-github-output.txt

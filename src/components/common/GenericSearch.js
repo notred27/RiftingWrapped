@@ -4,7 +4,7 @@ export default function GenericSearch() {
 
     return (
         <>
-            <select defaultValue="NA1" aria-label="region select" id="regionSelect" >
+            <select defaultValue="NA1" aria-label="region select" id="regionSelect" style={{height:"54px"}}>
                 <option value="BR1">BR1</option>
                 <option value="EUN1">EUN1</option>
                 <option value="EUW1">EUW1</option>
