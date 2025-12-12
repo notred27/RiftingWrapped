@@ -18,6 +18,11 @@ REQUESTS_PER_SECOND = float(os.getenv("REQUESTS_PER_SECOND", "10.0"))
 MAX_RETRIES = 5
 BACKOFF_BASE = 2.0
 
+
+MAX_RUN_SECONDS = int(os.getenv("MAX_RUN_SECONDS", str(20 * 60)))  # default 20 min
+POLL_INTERVAL = float(os.getenv("POLL_INTERVAL", "10.0"))          # seconds to wait when queue empty
+
+
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
 matches_collection = db["player-matches"]
@@ -253,26 +258,55 @@ class Consumer:
 
     def run(self):
         num_processed = 0
-        while True:
-            match_doc = self.process_next_match()
-            if not match_doc:
-                logger.info("No pending matches. Stopping this job")
-            
-                github_output = os.environ.get("GITHUB_OUTPUT")
-                if github_output:
+        start_time = time.time()
+        logger.info("Consumer started; will run for up to %s seconds", MAX_RUN_SECONDS)
+
+        try:
+            while True:
+                elapsed = time.time() - start_time
+                if elapsed >= MAX_RUN_SECONDS:
+                    logger.info("Max run time reached (%.1fs). Stopping.", elapsed)
+                    break
+
+                match_doc = self.process_next_match()
+                if not match_doc:
+                    # No work right now — sleep and keep polling until timeout
+                    remaining = MAX_RUN_SECONDS - (time.time() - start_time)
+                    logger.debug("No pending matches. Sleeping %ss (remaining time: %.1fs)", POLL_INTERVAL, remaining)
+                    # If remaining time is less than the poll interval, sleep only the remaining time
+                    sleep_for = min(POLL_INTERVAL, max(0.0, remaining))
+                    if sleep_for <= 0:
+                        logger.info("No remaining time to wait. Exiting.")
+                        break
+                    time.sleep(sleep_for)
+                    continue
+
+                # We got a match — process it
+                self.process_match(match_doc)
+                num_processed += 1
+
+        except KeyboardInterrupt:
+            logger.info("Interrupted by user (KeyboardInterrupt). Exiting early.")
+        except Exception:
+            logger.exception("Unhandled exception in consumer.run()")
+        finally:
+            # write result back to GitHub Actions output or local fallback
+            github_output = os.environ.get("GITHUB_OUTPUT")
+            if github_output:
+                try:
                     with open(github_output, "a", encoding="utf-8") as fh:
                         fh.write(f"num_matches={num_processed}\n")
-                else:
-
-                    print("GITHUB_OUTPUT not present; running locally.")
+                except Exception as e:
+                    logger.exception("Failed to write GITHUB_OUTPUT: %s", e)
+            else:
+                logger.info("GITHUB_OUTPUT not present; writing local-github-output.txt")
+                try:
                     with open("local-github-output.txt", "w", encoding="utf-8") as fh:
                         fh.write(f"num_matches={num_processed}\n")
-                break
+                except Exception as e:
+                    logger.exception("Failed to write local output file: %s", e)
 
-
-            self.process_match(match_doc)
-            num_processed += 1
-
+            logger.info("Consumer finished. Total matches processed: %d", num_processed)
 
 
 if __name__ == "__main__":
