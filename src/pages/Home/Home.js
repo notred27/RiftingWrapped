@@ -117,7 +117,7 @@ function Home() {
 
             </Helmet>
 
-            <div className="heroContainer"  >
+            <div className="heroContainer" >
                 <img className="heroOverlay" src={bg_image} alt="Hero Overlay" />
                 <div className="heroText" style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "0px 30px", flexWrap: "wrap" }}>
                     <div style={{ width: "600px", textAlign: "left" }}>
@@ -132,7 +132,7 @@ function Home() {
                     <div>
 
                         <form onSubmit={fetchPlayer} className="searchForm">
-                            <span style={{ display: "flex", gap: "10px", alignItems: "center", width: "100%" }}>
+                            <span style={{ display: "flex", gap: "10px", alignItems: "center", width: "100%", backgroundColor:"#1c2a38", padding:"4px", borderBottom:"4px solid #0070bb"}}>
 
                                 <PlayerListProvider>
                                     <ErrorBoundary fallback={(err) => <GenericSearch error={err} />}>
