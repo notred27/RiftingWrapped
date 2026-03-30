@@ -62,7 +62,8 @@ This end-to-end app is powered by React, Flask, Render, and MongoDB to create a 
 **Deployment:** AWS Amplify (frontend), Render (backend)  
 **Automation:** GitHub Actions (cron-based match updaters)
 
-> A full specification of the internal API is available at: [`backend/flask/api.md`](/backend/flask/api.md)
+>[!IMPORTANT]
+> A full specification of the internal API is available at [`backend/flask/api.md`](/backend/flask/api.md)
 
 ## Disclaimer
 
