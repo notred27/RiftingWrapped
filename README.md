@@ -4,7 +4,9 @@
 
 <h1><img src = "public/favicon-32x32.png" /> Rifting Wrapped 2025</h1>
 
-**Relive your best League of Legends matches and stats this past year with Rifting Wrapped!**
+**Join _over 200_ other users in reliving your best League of Legends matches and stats from this past year!**
+
+[View our live demo here!](https://www.riftingwrapped.com/)
 
   <img src="https://img.shields.io/badge/React-blue?style=for-the-badge"/>
   <img src="https://img.shields.io/badge/Flask-ffff00?style=for-the-badge"/>
