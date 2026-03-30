@@ -6,8 +6,6 @@
 
 **Join _over 200_ other users in reliving your best League of Legends matches and stats from this past year!**
 
-[View our live demo here!](https://www.riftingwrapped.com/)
-
   <img src="https://img.shields.io/badge/React-blue?style=for-the-badge"/>
   <img src="https://img.shields.io/badge/Flask-ffff00?style=for-the-badge"/>
   <img src="https://img.shields.io/badge/MongoDB-4ea94b?style=for-the-badge"/>
@@ -15,6 +13,14 @@
   <img src="https://img.shields.io/badge/AWS%20Amplify-FF2088?style=for-the-badge"/>
   <img src="https://img.shields.io/badge/Render-000000?style=for-the-badge"/>
   
+
+
+
+<img src="README/landing.gif" />
+
+
+[View our live demo here!](https://www.riftingwrapped.com/)
+
 
 </div>
 
@@ -29,7 +35,10 @@ From champion distributions and kill heatmaps to position and performance breakd
 
 ## Features
 
+<div align="center">
 
+<img src="README/demo.gif" />
+</div>
 
 <!-- ### See your stats! -->
 
