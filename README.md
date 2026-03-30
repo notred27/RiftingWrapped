@@ -58,6 +58,9 @@ From champion distributions and kill heatmaps to position and performance breakd
 
 This end-to-end app is powered by React, Flask, Render, and MongoDB to create a responsive and real-time experience that stays up to date on all of your latest matches. It utilizes [RIOT's public API](https://developer.riotgames.com/apis) to gather data for each user.
 
+<img src ="README/pipeline.png" style="max-height:500px;" />
+
+
 
 1) When a user initially registers (i.e., searches for an account name), we scrape their entire public match history from the past year to index it in our database.
 
