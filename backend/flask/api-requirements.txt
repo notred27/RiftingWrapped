@@ -4,4 +4,4 @@ pymongo==4.13.2
 python-dotenv==1.1.1
 requests==2.32.4
 gunicorn>=21.2.0
-setuptools>=68,<75
+setuptools>=78.1.1
