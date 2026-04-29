@@ -19,7 +19,7 @@ const Contact = lazy(() => import('./pages/Contact/Contact.js'));
 
 const AddingPlayer = lazy(() => import('./pages/User/AddingPlayer.js'));
 const PlayerStats = lazy(() => import('./pages/User/PlayerStats.js'));
-const KofiWidget = lazy(() => import('./components/KofiWidget.js'));
+// const KofiWidget = lazy(() => import('./components/KofiWidget.js'));
 
 
 
@@ -77,7 +77,7 @@ function App() {
 
                 </div>
             </footer>
-            <KofiWidget />
+            {/* <KofiWidget /> */}
 
         </Router>
     );
