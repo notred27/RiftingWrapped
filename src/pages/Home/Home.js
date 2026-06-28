@@ -119,7 +119,7 @@ function Home() {
             <div className="heroContainer" >
                 <img className="heroOverlay" src={bg_image} alt="Hero Overlay" />
                 <div className="heroText" style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "0px 30px", flexWrap: "wrap" }}>
-                    <div style={{ width: "600px", textAlign: "left" }}>
+                    <div style={{ width: "600px"}}>
 
                         <h1>Your Year on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
                         <p>
@@ -131,8 +131,16 @@ function Home() {
                     <div>
 
                         <form onSubmit={fetchPlayer} className="searchForm">
-                            <span style={{ display: "flex", gap: "10px", alignItems: "center", width: "100%", backgroundColor: "#1c2a38", padding: "4px", borderBottom: "4px solid #0070bb" }}>
-
+                            <span style={{ 
+                                display: "flex", 
+                                gap: "0px",
+                                alignItems: "center", 
+                                width: "100%", 
+                                backgroundColor: "#1c2a38", 
+                                padding: "4px", 
+                                borderBottom: "4px solid #0070bb",
+                                borderRadius: "4px"
+                            }}>
                                 <PlayerListProvider>
                                     <ErrorBoundary fallback={(err) => <GenericSearch error={err} />}>
                                         <Suspense fallback={<GenericSearch />}>
@@ -167,11 +175,17 @@ function Home() {
 
                 <PlayerMarquee />
 
-
-
-                <h3 style={{ margin: "0px", maxWidth: "1000px", fontSize: "16px", fontWeight: "initial" }}>
-                    Don't see your username? Join over <span className='emphasize' style={{ fontWeight: "bold", textDecoration: "underline" }}><i>{numUsers} players</i></span> in tracking your yearly <strong>LOL</strong> metrics!
-                </h3>
+                <h2 style={{ 
+    margin: "20px 0 30px", 
+    maxWidth: "500px", 
+    fontSize: "16px", 
+    fontWeight: "normal",
+    color: "#ccc",
+    lineHeight: "1.6",
+    zIndex:"1"
+}}>
+                    Don't see your username? Join over <span style={{ fontWeight: "700", color: "#4A9EFF" }}><i>{numUsers} players</i></span> in tracking your yearly <strong>LOL</strong> metrics!
+                </h2>
             </div>
         </>
     );
