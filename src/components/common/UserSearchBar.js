@@ -124,7 +124,7 @@ export default function UserSearchBar() {
                     ref={inputRef}
                     id="nameInput"
                     type="text"
-                    name="username"
+                    name="summoner-search"
                     autoComplete="off"
                     value={query}
                     placeholder={"Game Name#Tag"}

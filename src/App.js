@@ -25,7 +25,8 @@ const PlayerStats = lazy(() => import('./pages/User/PlayerStats.js'));
 
 function App() {
     return (
-        <Router>
+        <Router >
+            <div style={{display:"flex", flexDirection:"column", minHeight:"100vh"}}>
 
             <header className="site-header">
                 <span style={{ display: "flex", gap: "5px", width: "max-content" }}>
@@ -40,7 +41,7 @@ function App() {
                 </nav>
             </header>
 
-            <main >
+            <main style={{flex:"1"}}>
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/player/:puuid" element={<PlayerStats />} />
@@ -78,6 +79,7 @@ function App() {
                 </div>
             </footer>
             {/* <KofiWidget /> */}
+            </div>
 
         </Router>
     );

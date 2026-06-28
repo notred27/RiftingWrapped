@@ -86,7 +86,7 @@ export function UserResourceProvider({ puuid, year = "2025", children }) {
         if (!puuid) return null;
         return {
             user: createUserResource(puuid),
-lolVersion: wrapPromise(fetchCached('https://ddragon.leagueoflegends.com/api/versions.json', 'lol-current-version')),
+            lolVersion: wrapPromise(fetchCached('https://ddragon.leagueoflegends.com/api/versions.json', 'lol-current-version')),
 
             date: createResource('matchesByDate', puuid, year),
             forfeit: createResource('forfeit', puuid, year),

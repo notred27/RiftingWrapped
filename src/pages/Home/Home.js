@@ -114,7 +114,6 @@ function Home() {
                     type="image/webp"
                     fetchpriority="high"
                 />
-
             </Helmet>
 
             <div className="heroContainer" >
@@ -132,7 +131,7 @@ function Home() {
                     <div>
 
                         <form onSubmit={fetchPlayer} className="searchForm">
-                            <span style={{ display: "flex", gap: "10px", alignItems: "center", width: "100%", backgroundColor:"#1c2a38", padding:"4px", borderBottom:"4px solid #0070bb"}}>
+                            <span style={{ display: "flex", gap: "10px", alignItems: "center", width: "100%", backgroundColor: "#1c2a38", padding: "4px", borderBottom: "4px solid #0070bb" }}>
 
                                 <PlayerListProvider>
                                     <ErrorBoundary fallback={(err) => <GenericSearch error={err} />}>
@@ -150,7 +149,7 @@ function Home() {
                         </form>
 
 
-                        {selectedPlayer && !isLoading && <p className="search-error" style={{maxWidth:"400px", fontSize:"small"}}>{selectedPlayer}</p>}
+                        {selectedPlayer && !isLoading && <p className="search-error" style={{ maxWidth: "400px", fontSize: "small" }}>{selectedPlayer}</p>}
                         {isLoading &&
 
                             <p className="loading-text">
@@ -173,10 +172,6 @@ function Home() {
                 <h3 style={{ margin: "0px", maxWidth: "1000px", fontSize: "16px", fontWeight: "initial" }}>
                     Don't see your username? Join over <span className='emphasize' style={{ fontWeight: "bold", textDecoration: "underline" }}><i>{numUsers} players</i></span> in tracking your yearly <strong>LOL</strong> metrics!
                 </h3>
-
-                {/* <PlayerListProvider> */}
-
-                {/* </PlayerListProvider> */}
             </div>
         </>
     );
