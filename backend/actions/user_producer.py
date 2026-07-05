@@ -20,7 +20,7 @@ MONGO_URI = os.getenv("MONGO_URI")
 
 # All "which year are we wrapping" logic flows from this single value, so the
 # DB name and the match-date cutoffs can never drift apart like they did before.
-WRAP_YEAR = int(os.getenv("WRAP_YEAR", "2025"))
+WRAP_YEAR = int(os.getenv("WRAP_YEAR", "2026"))
 DB_NAME = os.getenv("DB_NAME", f"rifting-wrapped-{WRAP_YEAR}")
  
 START_DATE = int(datetime(WRAP_YEAR, 1, 1, tzinfo=timezone.utc).timestamp())
