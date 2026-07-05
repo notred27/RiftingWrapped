@@ -42,7 +42,7 @@ jobs:
 
       - name: Run initialization script
         env:
-            RIOT_API_KEY: ${{ secrets.RIOT_API_KEY }}
+            RIOT_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
             MONGO_URI: ${{ secrets.MONGO_URI }}
             WRAP_YEAR: ${{ vars.WRAP_YEAR }}
         run: python backend/actions/user_producer.py "${{ github.event.inputs.displayName }}" "${{ github.event.inputs.tag }}" "${{ github.event.inputs.region }}"
