@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import { UserResourceProvider } from "../../resources/UserResourceContext.js";
 import PlayerSEO from '../../components/common/PlayerSEO.js';
@@ -22,10 +22,12 @@ import TotalTimeBreakdown from '../../components/sections/TotalTimeBreakdown.js'
 
 import './PlayerStats.css'
 
+const DEFAULT_YEAR = "2026";
 
 function PlayerStats() {
 	const { puuid } = useParams();
-	const year = "2025";	// Hard for now, maybe add future options
+	const [searchParams] = useSearchParams();
+	const year = searchParams.get('year') || DEFAULT_YEAR;
 
 	return (
 		<>

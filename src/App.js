@@ -32,7 +32,7 @@ function App() {
                     <span style={{ display: "flex", gap: "5px", width: "max-content" }}>
                         <img src='/favicon-32x32.png' alt='rifting wrapped logo' className="site-header__logo" />
                         <div className="site-header__title">
-                            Rifting Wrapped 2025
+                            Rifting Wrapped 2026
                         </div>
                     </span>
                     <nav className="site-header__nav">
@@ -73,7 +73,7 @@ function App() {
                         <span style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
                             <img src='/favicon-32x32.png' alt='Rifting Wrapped logo' style={{ width: "20px", height: "20px" }} />
                             <span style={{ fontWeight: "800", fontSize: "0.95rem", color: "#fff" }}>
-                                Rifting Wrapped 2025
+                                Rifting Wrapped 2026
                             </span>
                         </span>
 

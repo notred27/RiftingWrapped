@@ -170,7 +170,7 @@ export default function KDAsection({ puuid, year }) {
                 </div>
 
             </div>
-            <MapOverlay puuid={puuid}> </MapOverlay>
+            <MapOverlay puuid={puuid} year={year} />
 
         </>
     )
