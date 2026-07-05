@@ -21,7 +21,7 @@ MONGO_URI = os.getenv("MONGO_URI")
 # All "which year are we wrapping" logic flows from this single value, so the
 # DB name and the match-date cutoffs can never drift apart like they did before.
 WRAP_YEAR = int(os.getenv("WRAP_YEAR", "2026"))
-DB_NAME = os.getenv("DB_NAME", f"rifting-wrapped-{WRAP_YEAR}")
+DB_NAME = os.getenv("DB_NAME", "rifting-wrapped")
  
 START_DATE = int(datetime(WRAP_YEAR, 1, 1, tzinfo=timezone.utc).timestamp())
 END_DATE = int(datetime(WRAP_YEAR + 1, 1, 1, tzinfo=timezone.utc).timestamp())
@@ -47,7 +47,8 @@ if not MONGO_URI:
 # DB collections
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
-matches_collection = db["player-matches"]
+yy = WRAP_YEAR % 100
+matches_collection = db[f"matches-{yy:02d}"]
 player_collection = db["tracked-players"]
 dlq_collection = db.get_collection("producer-dlq")
  

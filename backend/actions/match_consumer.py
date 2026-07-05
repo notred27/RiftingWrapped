@@ -17,7 +17,7 @@ MONGO_URI = os.getenv("MONGO_URI")
 
 
 WRAP_YEAR = int(os.getenv("WRAP_YEAR", "2026"))
-DB_NAME = os.getenv("DB_NAME", f"rifting-wrapped-{WRAP_YEAR}")
+DB_NAME = os.getenv("DB_NAME", f"rifting-wrapped")
 
 REQUESTS_PER_SECOND = float(os.getenv("REQUESTS_PER_SECOND", "10.0"))
 MAX_RETRIES = 5
@@ -39,8 +39,10 @@ if not MONGO_URI:
 
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
-matches_collection = db["player-matches"]
+yy = WRAP_YEAR % 100
+matches_collection = db[f"matches-{yy:02d}"]
 player_collection = db["tracked-players"]
+dlq_collection = db.get_collection("producer-dlq")
 
 
 def get_routing_region(region: str, api_endpoint: bool = False) -> str:
