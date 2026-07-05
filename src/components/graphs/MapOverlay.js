@@ -4,7 +4,7 @@ import h337 from 'heatmap.js';
 const CANVAS_SIZE = 300;
 const GAME_MAP_SIZE = 15000;
 
-export default function DualHeatmapOverlay({ puuid }) {
+export default function DualHeatmapOverlay({ puuid, year }) {
     const killContainerRef = useRef(null);
     const deathContainerRef = useRef(null);
     const killHeatmapRef = useRef(null);
@@ -13,7 +13,7 @@ export default function DualHeatmapOverlay({ puuid }) {
 
     // Fetch match events
     useEffect(() => {
-        fetch(`${process.env.REACT_APP_API_ENDPOINT}/mapEvents/${puuid}`)
+        fetch(`${process.env.REACT_APP_API_ENDPOINT}/mapEvents/${puuid}?year=${year}`)
             .then(res => res.json())
             .then(data => setMapData(data));
     }, [puuid]);

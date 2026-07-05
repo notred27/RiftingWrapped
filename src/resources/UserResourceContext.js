@@ -5,7 +5,7 @@ import wrapPromise from './wrapPromise.js';
 
 const StatsResourceContext = createContext(null);
 
-export function UserResourceProvider({ puuid, year = "2025", children }) {
+export function UserResourceProvider({ puuid, year, children }) {
 
     function createResource(endpoint, puuid, year) {
         // console.log(`${process.env.REACT_APP_API_ENDPOINT}/${endpoint}/${puuid}?year=${year}`)
@@ -28,7 +28,7 @@ export function UserResourceProvider({ puuid, year = "2025", children }) {
 
             async function fetchUser() {
                 // timestamp to avoid caches / cached fetchCached
-                const url = `${process.env.REACT_APP_API_ENDPOINT}/users/${encodeURIComponent(puuid)}?_=${Date.now()}`;
+                const url = `${process.env.REACT_APP_API_ENDPOINT}/users/${encodeURIComponent(puuid)}?year=${year}&_=${Date.now()}`;
                 const resp = await fetch(url, { signal: controller.signal });
                 if (!resp.ok) {
                     const text = await resp.text().catch(() => "");
