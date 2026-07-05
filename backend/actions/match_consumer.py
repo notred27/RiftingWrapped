@@ -2,34 +2,45 @@ import os
 import time
 import logging
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
 
 import requests
 from dotenv import load_dotenv
 from pymongo import MongoClient, ASCENDING
 
-load_dotenv(".env")
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
-API_KEY = os.getenv("REACT_APP_API_KEY")
+RIOT_API_KEY = os.getenv("REACT_APP_API_KEY")
 MONGO_URI = os.getenv("MONGO_URI")
-DB_NAME = os.getenv("DB_NAME", "rifting-wrapped-2024")
+
+
+
+WRAP_YEAR = int(os.getenv("WRAP_YEAR", "2026"))
+DB_NAME = os.getenv("DB_NAME", f"rifting-wrapped-{WRAP_YEAR}")
 
 REQUESTS_PER_SECOND = float(os.getenv("REQUESTS_PER_SECOND", "10.0"))
 MAX_RETRIES = 5
 BACKOFF_BASE = 2.0
 
-
 MAX_RUN_SECONDS = int(os.getenv("MAX_RUN_SECONDS", str(20 * 60)))  # default 20 min
 POLL_INTERVAL = float(os.getenv("POLL_INTERVAL", "10.0"))          # seconds to wait when queue empty
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logger = logging.getLogger("consumer")
+
+if not RIOT_API_KEY:
+    logger.error("RIOT_API_KEY is not set. Check your .env file.")
+    raise SystemExit(1)
+
+if not MONGO_URI:
+    logger.error("MONGO_URI is not set. Check your .env file.")
+    raise SystemExit(1)
 
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
 matches_collection = db["player-matches"]
 player_collection = db["tracked-players"]
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-logger = logging.getLogger("consumer")
 
 
 def get_routing_region(region: str, api_endpoint: bool = False) -> str:
@@ -130,12 +141,12 @@ class Consumer:
         matches_collection.update_one({"_id": match["_id"]}, {"$set": {"status": "processing"}})
         return match
 
-    def extract_match_stats(self, match_data: dict, timeline_data: dict, puuid: str) -> dict:
-        participant = next(p for p in match_data["info"]["participants"] if p["puuid"] == puuid)
+    def extract_match_stats(self, participant: dict, match_data: dict, timeline_data: dict) -> dict:
         participant_id = participant["participantId"]
-        team_id = int((participant["teamId"] / 100) - 1)
+        team_id_raw = participant["teamId"]
         teams = match_data.get("info", {}).get("teams", [])
-        objectives = teams[team_id].get("objectives", {}) if team_id < len(teams) else {}
+        team = next((t for t in teams if t.get("teamId") == team_id_raw), {})
+        objectives = team.get("objectives", {})
 
         ping_keys = [
             "allInPings", "assistMePings", "enemyMissingPings", "enemyVisionPings",
@@ -196,11 +207,10 @@ class Consumer:
             "gameEndedInSurrender": participant.get("gameEndedInSurrender", False),
         }
 
-    def get_kill_death_positions(self, match_data: dict, timeline_data: dict, puuid: str, queue_id: int) -> dict:
+    def get_kill_death_positions(self, participant: dict, timeline_data: dict, queue_id: int) -> dict:
         if queue_id not in self.TARGET_QUEUES:
             return {"kills": [], "deaths": []}
 
-        participant = next(p for p in match_data["info"]["participants"] if p["puuid"] == puuid)
         participant_id = participant["participantId"]
 
         kills, deaths = [], []
@@ -213,6 +223,26 @@ class Consumer:
                         deaths.append(event.get("position", {}))
         return {"kills": kills, "deaths": deaths}
 
+    def _finalize_player_if_done(self, puuid: str):
+        """
+        Check whether any matches are still pending/processing for this
+        player; if none remain, finalize their profile status.
+        """
+        remaining = matches_collection.count_documents(
+            {"puuid": puuid, "status": {"$in": ["pending", "processing"]}}
+        )
+        if remaining > 0:
+            return
+
+        failed = matches_collection.count_documents({"puuid": puuid, "status": "failed"})
+        new_status = "done_with_errors" if failed > 0 else "done"
+
+        player_collection.update_one(
+            {"puuid": puuid},
+            {"$set": {"status": new_status, "finished_at": datetime.now(timezone.utc)}},
+        )
+        logger.info("Player %s finished processing (status=%s, failed_matches=%d)", puuid, new_status, failed)
+
     def process_match(self, match_doc: dict):
         match_id = match_doc["matchId"]
         puuid = match_doc["puuid"]
@@ -222,39 +252,42 @@ class Consumer:
             match_data = self.rs.safe_request("GET", f"https://{R}.api.riotgames.com/lol/match/v5/matches/{match_id}")
             timeline_data = self.rs.safe_request("GET", f"https://{R}.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline")
 
+            participant = next(p for p in match_data["info"]["participants"] if p["puuid"] == puuid)
             queue_id = match_data["info"].get("queueId", -1)
-            stats = self.extract_match_stats(match_data, timeline_data, puuid)
-            locations = self.get_kill_death_positions(match_data, timeline_data, puuid, queue_id)
+            stats = self.extract_match_stats(participant, match_data, timeline_data)
+            locations = self.get_kill_death_positions(participant, timeline_data, queue_id)
 
-
-
+            game_created_ms = match_data["info"].get("gameCreation", 0)
             match_meta = {
-                "gameCreated": datetime.fromtimestamp(match_data["info"].get("gameCreation", 0) / 1000),
+                "gameCreated": datetime.fromtimestamp(game_created_ms / 1000, tz=timezone.utc),
                 "gameDuration": match_data["info"].get("gameDuration", 0),
                 "gameType": match_data["info"].get("gameType", "Unknown"),
             }
-
 
             matches_collection.update_one(
                 {"_id": match_doc["_id"]},
                 {"$set": {
                     "status": "done",
                     "stats": stats,
-                    "queueId":queue_id,
+                    "queueId": queue_id,
                     "locations": locations,
                     "matchInfo": match_meta,
-                    # "timeline_data": timeline_data,
-                    # "processed_at": datetime.now(timezone.utc)
                 }}
             )
 
             player_collection.update_one({"puuid": puuid}, {"$inc": {"processedMatches": 1}})
             logger.info("Processed match %s for player %s", match_id, puuid)
 
-
         except Exception as e:
             logger.exception("Failed to process match %s: %s", match_id, e)
             matches_collection.update_one({"_id": match_doc["_id"]}, {"$set": {"status": "failed", "error": str(e)}})
+            # Still count as "handled" for progress purposes, even though it failed.
+            player_collection.update_one({"puuid": puuid}, {"$inc": {"processedMatches": 1}})
+
+        finally:
+            # Whether this match succeeded or failed, check if the player's
+            # queue is now empty and finalize their status if so.
+            self._finalize_player_if_done(puuid)
 
     def run(self):
         num_processed = 0
@@ -273,7 +306,6 @@ class Consumer:
                     # No work right now — sleep and keep polling until timeout
                     remaining = MAX_RUN_SECONDS - (time.time() - start_time)
                     logger.debug("No pending matches. Sleeping %ss (remaining time: %.1fs)", POLL_INTERVAL, remaining)
-                    # If remaining time is less than the poll interval, sleep only the remaining time
                     sleep_for = min(POLL_INTERVAL, max(0.0, remaining))
                     if sleep_for <= 0:
                         logger.info("No remaining time to wait. Exiting.")
@@ -281,7 +313,6 @@ class Consumer:
                     time.sleep(sleep_for)
                     continue
 
-                # We got a match — process it
                 self.process_match(match_doc)
                 num_processed += 1
 
@@ -290,7 +321,6 @@ class Consumer:
         except Exception:
             logger.exception("Unhandled exception in consumer.run()")
         finally:
-            # write result back to GitHub Actions output or local fallback
             github_output = os.environ.get("GITHUB_OUTPUT")
             if github_output:
                 try:
@@ -310,5 +340,5 @@ class Consumer:
 
 
 if __name__ == "__main__":
-    consumer = Consumer(API_KEY)
+    consumer = Consumer(RIOT_API_KEY)
     consumer.run()
