@@ -9,6 +9,10 @@ jobs:
   run-scraper:
     runs-on: ubuntu-latest
 
+    environment: Prod
+    permissions:
+      contents: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -28,6 +32,7 @@ jobs:
         env:
             REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
             MONGO_URI: ${{ secrets.MONGO_URI }}
+            WRAP_YEAR: ${{ vars.WRAP_YEAR }}
         run: python backend/actions/fetch-and-store.py
 
         
