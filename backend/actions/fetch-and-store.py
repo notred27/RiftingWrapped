@@ -14,18 +14,24 @@ load_dotenv(Path(__file__).resolve().parent / ".env")
 RIOT_API_KEY = os.getenv("REACT_APP_API_KEY")
 MONGO_URI = os.getenv("MONGO_URI")
 
-WRAP_YEAR = int(os.getenv("WRAP_YEAR", "2025"))
-DB_NAME = os.getenv("DB_NAME", f"rifting-wrapped-{WRAP_YEAR}")
+WRAP_YEAR = int(os.getenv("WRAP_YEAR", "2026"))
+DB_NAME = os.getenv("DB_NAME", "rifting-wrapped")
 
-# Only pull matches from the last 2 hours
+# How far back to look for new matches. Default 2 hours for normal runs;
+# override via env (e.g. LOOKBACK_SECONDS=604800 for a 7-day backfill after
+# downtime) without needing to edit this file.
+LOOKBACK_SECONDS = int(os.getenv("LOOKBACK_SECONDS", str(2 * 60 * 60)))
+
+# Never pull matches past the wrap year's boundary, even if WRAP_YEAR is
+# stale when this runs (e.g. right after New Year's).
 END_DATE = int(datetime(WRAP_YEAR + 1, 1, 1, tzinfo=timezone.utc).timestamp())
-cutoffDate = min(int(time.time()) - (2 * 60 * 60), END_DATE)
+cutoffDate = min(int(time.time()) - LOOKBACK_SECONDS, END_DATE)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("sync")
 
 if not RIOT_API_KEY:
-    logger.error("RIOT_API_KEY is not set. Check your .env file.")
+    logger.error("REACT_APP_API_KEY is not set. Check your .env file.")
     raise SystemExit(1)
 
 if not MONGO_URI:
@@ -34,12 +40,13 @@ if not MONGO_URI:
 
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
-matches_collection = db["player-matches"]
-player_collection = db["tracked-players"]
+
+yy = WRAP_YEAR % 100
+matches_collection = db[f"matches-{yy:02d}"]
+player_collection = db["tracked-players"]  # shared across all wrap years
 
 tracked_players = list(player_collection.find({}, {"puuid": 1, "region": 1, "_id": 0}))
 tracked_puuids = {p["puuid"] for p in tracked_players}
-# region per puuid, so each player's API calls route to the right cluster
 puuid_region = {p["puuid"]: p.get("region", "NA1") for p in tracked_players}
 
 
@@ -272,7 +279,8 @@ if __name__ == "__main__":
         logger.error("Duplicate keys found! Clean up duplicates before creating the index.")
         logger.error(e)
 
-    logger.info("Starting Riot match sync for DB '%s'...", DB_NAME)
+    logger.info("Starting Riot match sync -> db '%s', collection 'matches-%02d'...", DB_NAME, yy)
+    logger.info("Tracked players found: %d", len(tracked_puuids))
 
     version = None
     try:
@@ -287,7 +295,6 @@ if __name__ == "__main__":
         offset = 0
         count = 100
 
-        # Update icon and level (platform region, not routing region)
         try:
             r = requests.get(
                 f"https://{region.upper()}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{user_puuid}",
