@@ -113,10 +113,7 @@ h4 {
     margin: 2px;
 }
 
-.emphasize {
-    font-weight: 800;
-    font-size: 25px;
-}
+
 
 .centeredColumn {
     display: flex;
@@ -224,18 +221,14 @@ h4 {
         line-height: 1.3;
     }
 
-    #SurrenderGrid .emphasize {
-        font-size: 18px;
-    }
+
 
     #SurrenderGrid+h2 {
         font-size: 14px;
         line-height: 1.3;
     }
 
-    #SurrenderGrid+h2 .emphasize {
-        font-size: 20px;
-    }
+
 }
 
 
@@ -266,9 +259,7 @@ h4 {
         max-width: 90vw;
     }
 
-    .champText h1 .emphasize {
-        font-size: 40px;
-    }
+
 
     .champText h2 {
         font-size: 16px;
@@ -366,9 +357,7 @@ h4 {
 
 
 @media (max-width: 600px) {
-    .emphasize {
-        font-size: 18px;
-    }
+
 
     h2 {
         font-size: 1.2rem;

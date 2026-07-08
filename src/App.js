@@ -62,7 +62,6 @@ function App() {
                     gap: "24px",
                     padding: "clamp(24px, 4vh, 48px) clamp(16px, 5vw, 64px)",
                     borderTop: "1px solid rgba(255,255,255,0.08)",
-                    width: "100%"
                 }}>
                     <div style={{
                         display: "flex",

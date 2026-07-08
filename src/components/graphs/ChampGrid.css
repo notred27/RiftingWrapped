@@ -1,41 +1,75 @@
-.champion-grid {
-  display: flex;
-  /* grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); */
-  gap: 6px;
-  min-width: 80vw;
-  max-width: 2000px;
-
-  margin: 0 auto;
-  flex-wrap: wrap;
-  flex-direction: row;
-
-}
-
 .champion-grid-container {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
 }
 
 @media (max-width: 768px) {
-.champion-grid-container {
+  .champion-grid-container {
     padding-left: 10px;
+  }
 }
+
+/* Scrolling viewport - height is locked to exactly 4 rows of icons + gaps */
+.champion-grid-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  height: calc(var(--rows) * 40px + (var(--rows) - 1) * 6px);
+  min-width: 80%;
+  max-width: 2000px;
+  scrollbar-width: none;
+}
+.champion-grid-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.champion-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(var(--rows), 40px);
+  grid-auto-columns: 40px;
+  gap: 6px;
 }
 
 .champion-icon-wrapper {
   width: 40px;
   height: 40px;
   position: relative;
+  scroll-snap-align: start;
 }
-
 .champion-icon {
   width: 100%;
   height: 100%;
   border-radius: 4px;
   object-fit: contain;
   transition: opacity 0.2s;
+  display: block;
 }
-
 .champion-icon.not-played {
   opacity: 0.2;
+}
+
+.champion-grid-nav {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fffce8;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.champion-grid-nav:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+.champion-grid-nav:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.15);
 }

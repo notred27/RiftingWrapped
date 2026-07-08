@@ -8,109 +8,115 @@ import {
   CategoryScale,
   LinearScale,
 } from 'chart.js';
-
 ChartJS.register(BarElement, Title, Tooltip, Legend, CategoryScale, LinearScale);
 
-function StackedDamageChart({ damageDealt = [0, 0, 0], damageTaken = [0, 0, 0], chartTitle = 'Damage Breakdown' }) {
-  const labels = ['Damage Dealt', 'Damage Taken'];
+// Same three colors, used consistently anywhere physical/true/magic appears
+const COLORS = {
+  physical: '#D85A30',
+  true: '#B4B2A9',
+  magic: '#7F77DD',
+};
 
+function StackedDamageChart({ damageDealt = [0, 0, 0], damageTaken = [0, 0, 0] }) {
+  const labels = ['Damage dealt', 'Damage taken'];
   const data = {
     labels,
     datasets: [
       {
         label: 'Physical',
         data: [damageDealt[0], damageTaken[0]],
-        backgroundColor: '#fa7970',
+        backgroundColor: COLORS.physical,
         stack: 'stack1',
-        barThickness: 15,
+        barThickness: 22,
+        borderRadius: 6,
+        borderSkipped: false,
       },
       {
         label: 'True',
         data: [damageDealt[1], damageTaken[1]],
-        backgroundColor: '#FFFCE8',
+        backgroundColor: COLORS.true,
         stack: 'stack1',
-        barThickness: 15,
+        barThickness: 22,
+        borderRadius: 6,
+        borderSkipped: false,
       },
       {
         label: 'Magic',
         data: [damageDealt[2], damageTaken[2]],
-        backgroundColor: '#292f56',
+        backgroundColor: COLORS.magic,
         stack: 'stack1',
-        barThickness: 15,
+        barThickness: 22,
+        borderRadius: 6,
+        borderSkipped: false,
       },
     ],
   };
 
   const options = {
-  indexAxis: 'y',
-  responsive: true,
-  plugins: {
-    legend: {
-      display: true,
-      position: 'bottom',
-      labels: {
-        color: '#fffce8',
-        font: {
-          size: 14,
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      // Legend is drawn as custom HTML below the chart instead - see component return
+      legend: { display: false },
+      title: { display: false },
+      tooltip: {
+        backgroundColor: '#1a1a19',
+        titleColor: '#fffce8',
+        bodyColor: '#fffce8',
+        padding: 8,
+        callbacks: {
+          label: (context) => {
+            const label = context.dataset.label || '';
+            const value = context.parsed.x || 0;
+            return `${label}: ${value.toLocaleString()} damage`;
+          },
         },
       },
     },
-    title: {
-      display: true,
-      position: "bottom",
-      text: chartTitle,
-      color: '#fffce8',
-      font: {
-        size: 15,
-        weight: 'bold',
-      },
-    },
-    tooltip: {
-      callbacks: {
-        label: (context) => {
-          const label = context.dataset.label || '';
-          const value = context.parsed.x || 0;
-          const category = context.label || '';
-          return `${category} - ${label}: ${value.toLocaleString()} damage`;
+    scales: {
+      x: {
+        stacked: true,
+        ticks: {
+          color: '#898781',
+          font: { size: 11 },
+          callback: function (value) {
+            if (value >= 1000000) return value / 1000000 + 'M';
+            if (value >= 1000) return value / 1000 + 'K';
+            return value;
+          },
         },
+        grid: { color: '#2c2c2a' },
+      },
+      y: {
+        stacked: true,
+        ticks: { color: '#fffce8', font: { size: 13 } },
+        grid: { display: false },
       },
     },
-  },
-  scales: {
-    x: {
-      stacked: true,
-      ticks: {
-        color: '#fffce8',
-        callback: function(value) {
-          if (value >= 1000000) {
-            return (value / 1000000) + 'M';
-          } else if (value >= 1000) {
-            return (value / 1000) + 'K';
-          }
-          return value;
-        }
-      },
-      grid: {
-        color: '#333',
-      },
-    },
-    y: {
-      stacked: true,
-      ticks: {
-        color: '#fffce8',
-        font: {
-          size: 14,
-        },
-      },
-      grid: {
-       display: false,
+  };
 
-      },
-    },
-  },
-};
-
-  return <Bar data={data} options={options} />;
+  return (
+    <div>
+      <div style={{ position: 'relative', height: '160px' }}>
+        <Bar data={data} options={options} />
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '12px' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#aaa' }}>
+          <span style={{ width: '10px', height: '10px', borderRadius: '3px', background: COLORS.physical, display: 'inline-block' }} />
+          physical
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#aaa' }}>
+          <span style={{ width: '10px', height: '10px', borderRadius: '3px', background: COLORS.true, display: 'inline-block' }} />
+          true
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#aaa' }}>
+          <span style={{ width: '10px', height: '10px', borderRadius: '3px', background: COLORS.magic, display: 'inline-block' }} />
+          magic
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export default StackedDamageChart;

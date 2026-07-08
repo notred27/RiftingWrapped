@@ -4,128 +4,119 @@ import { useStatsResources } from "../../resources/UserResourceContext.js";
 
 import HorizontalBarChart from '../graphs/ChampGraph.js'
 import ChampGrid from '../graphs/ChampGrid.js'
-import SectionImage from '../common/SectionImage.js'
 
+
+import StatCard from '../common/StatCard.js';
 
 
 export function calcTopChamps(champData) {
-    const champDict = {}
-    let totalGames = 0
+	const champDict = {}
+	let totalGames = 0
 
-    champData.forEach(({ champion, count }) => {
-        champDict[champion] = count
-        totalGames += count
-    })
+	champData.forEach(({ champion, count }) => {
+		champDict[champion] = count
+		totalGames += count
+	})
 
-    const champNames = Object.keys(champDict)
-    const champVals = champNames.map(name => champDict[name])
+	const champNames = Object.keys(champDict)
+	const champVals = champNames.map(name => champDict[name])
 
-    const sorted = champNames
-        .map((name, i) => ({ name, count: champVals[i] }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10)
+	const sorted = champNames
+		.map((name, i) => ({ name, count: champVals[i] }))
+		.sort((a, b) => b.count - a.count)
+		.slice(0, 10)
 
-    const sortedNames = sorted.map(item => item.name)
-    const sortedCounts = sorted.map(item => item.count)
+	const sortedNames = sorted.map(item => item.name)
+	const sortedCounts = sorted.map(item => item.count)
 
-    return [sortedNames, sortedCounts, champNames, totalGames]
+	return [sortedNames, sortedCounts, champNames, totalGames]
 }
 
 
 
 
 export default function ChampSection() {
-    const { lolVersion, champ } = useStatsResources();
-    const version = lolVersion.read()[0];
-    const champData = champ.read();
+	const { lolVersion, champ } = useStatsResources();
+	const version = lolVersion.read()[0];
+	const champData = champ.read();
 
-    const [allChampions, setAllChampions] = useState([]);
+	const [allChampions, setAllChampions] = useState([]);
 
-    useEffect(() => {
-        async function fetchChampionData() {
-            try {
-                const champRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/champion.json`);
-                const champJson = await champRes.json();
+	useEffect(() => {
+		async function fetchChampionData() {
+			try {
+				const champRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/champion.json`);
+				const champJson = await champRes.json();
 
-                const champList = Object.values(champJson.data).map(champ => ({
-                    id: champ.id,
-                    name: champ.name
-                }));
+				const champList = Object.values(champJson.data).map(champ => ({
+					id: champ.id,
+					name: champ.name
+				}));
 
-                setAllChampions(champList);
+				setAllChampions(champList);
+			} catch (error) {
+				console.error('Failed to fetch champion data:', error);
+			}
+		}
 
-                // Preload 
-                // champList.forEach(({ id }) => {
-                //     const img = new Image();
-                //     img.src = `https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${id}.png`;
-                // });
-
-            } catch (error) {
-                console.error('Failed to fetch champion data:', error);
-            }
-        }
-
-        fetchChampionData();
-    }, [version]);
+		fetchChampionData();
+	}, [version]);
 
 
-    // Data cleaning
-    const [sortedNames, sortedCounts, playedChamps, totalGames] = calcTopChamps(champData)
-    const topChamp = sortedNames[0]
-    const topCount = sortedCounts[0]
+	// Data cleaning
+	const [sortedNames, sortedCounts, playedChamps, totalGames] = calcTopChamps(champData)
+	const topChamp = sortedNames[0]
+	const topCount = sortedCounts[0]
 
 
-    return (
-        <>
-            <SectionImage
-                imgUrl={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${topChamp}_0.jpg`}
-                offset={"25"}
-                height={400}
-            />
+	return (
 
-            <div className="champSectionWrapper">
-                <div className="champText">
-                    <h1>
-                        <span className='emphasize' style={{ fontSize: "60px" }}>{topChamp.toUpperCase()}</span>
-                        <br />
-                        was your go-to champ
-                        <br />
-                        on the rift this year.
-                    </h1>
-                    <h2>
-                        You played as {topChamp} in
-                        <span className='emphasize'>
-                            &nbsp;{topCount}&nbsp;
-                        </span>
-                        games,
-                        <br />
-                        accounting for
-                        <span className='emphasize'>
-                            &nbsp;{Math.round((topCount / totalGames) * 100)}%&nbsp;
-                        </span>
-                        of your total games!
-                    </h2>
-                </div>
+		<StatCard
+			eyebrow="Your go-to champion was"
+			title={`${topChamp.toUpperCase()}`}
+			subtitle={`${topCount} games · ${Math.round((topCount / totalGames) * 100)}% of your games`}
+		>
 
-                <div id='ChampHistogram'>
-                    <HorizontalBarChart
-                        champs={sortedNames}
-                        values={sortedCounts}
-                    />
-                </div>
-            </div>
+			<div style={{ position: "relative" }} >
+				<HorizontalBarChart
+					champs={sortedNames}
+					values={sortedCounts}
+				/>
+				<img
+					alt={`${topChamp}-portrait`}
+					style={{
+						position: "absolute",
+						width: "100%",
+						height: "100%",
+						top: "0",
+						left: "0",
+						zIndex: "1",
+						opacity: "0.4",
+						borderRadius: "8px",
+						objectFit: "cover",
+						objectPosition: "center",
+					}}
+					src={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${topChamp}_0.jpg`}
+				/>
+			</div>
 
-            <div style={{ textAlign: "center" }}>
-                You also played as {playedChamps.length} of {allChampions.length} unique champions
-                ({Math.round(playedChamps.length / (allChampions.length) * 1000) / 10}% of the total roster)
-            </div>
+			<br />
 
-            <ChampGrid
-                allChampions={allChampions}
-                playedChampions={playedChamps}
-                champData={champData}
-                version={version}
-            />
-        </>
-    )
+			<p>
+				You also played as <span className='emphasize-md'>{playedChamps.length}</span> of <span className='emphasize-md'>{allChampions.length}</span> unique champions
+			</p>
+			<p className='subtitle'>
+				(that's {Math.round(playedChamps.length / (allChampions.length) * 1000) / 10}% of the total roster)
+			</p>
+
+			<div >
+				<ChampGrid
+					allChampions={allChampions}
+					playedChampions={playedChamps}
+					champData={champData}
+					version={version}
+				/>
+			</div>
+
+		</StatCard>)
 }

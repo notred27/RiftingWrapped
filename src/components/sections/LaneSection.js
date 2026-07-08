@@ -5,8 +5,13 @@ import PingGraph from './../graphs/PingGraph.js';
 import ObjectiveBubbleChart from './../graphs/ObjectiveBubbleChart.js';
 
 import TableEntry from './../common/TableEntry.js';
-import SectionImage from './../common/SectionImage.js';
 
+
+
+import StatCard from '../common/StatCard.js';
+
+import './LaneSection.css'
+import StatGrid from '../common/StatGrid.js';
 
 function filterByRole(arr) {
 
@@ -45,123 +50,152 @@ function filterByRole(arr) {
 }
 
 
+const ROLE_COLORS = {
+    Top: '#D5896F',
+    Mid: '#DAB785',
+    Jungle: '#70A288',
+    ADC: '#04395E',
+    Support: '#031D44',
+};
+
+
 export default function LaneSection({ puuid }) {
     const { role, cs, pings, objectives } = useStatsResources();
     const csArr = cs.read();
     const objectiveArr = objectives.read()[0];
     const pingArr = pings.read()[0];
+    delete pingArr['Command Ping']
     const roleArr = filterByRole(role.read());
+
+
+    const playedRoles = roleArr.filter(r => r.games > 0).sort((a, b) => b.games - a.games);
+    const unplayedRoles = roleArr.filter(r => r.games === 0);
+
+    objectiveArr['_id'] = 0;
+    const totalObjectives = Object.values(objectiveArr).reduce((a, c) => parseInt(a) + parseInt(c), 0);
+    const totalRoleGames = roleArr.reduce((sum, role) => sum + role.games, 0);
+
+    const totalPings = Object.values(pingArr).reduce((a, c) => parseInt(a) + parseInt(c), 0);
+    const maxPing = Object.keys(pingArr).reduce((a, b) => pingArr[a] > pingArr[b] ? a : b);
+
 
     return (
         <>
-            <SectionImage
-                imgUrl={`/images/banner2.webp`}
-                offset={"40"}
-            />
+            <StatCard
+                eyebrow={"Out of all the lanes"}
+                title={`${roleArr[0]?.label || "EVERYWHERE"}`}
+                subtitle={"was your home"}
+            >
 
-            <h2 className='emphasize'>Let's see how you did in your lane this year</h2>
+                <div className="position-breakdown-body">
+                    <RoleGraph roles={roleArr} />
 
-            <h2 style={{ textAlign: "center" }}>
-                This year you rocked a variety of roles,<br />
-                but it's undeniable that<br />
-                <span className='emphasize' style={{ fontSize: "40px" }}>
-                    {roleArr[0]?.label || "a lane"}
-                </span><br />
-                was your domain!
-            </h2>
+                    <div className="position-breakdown-legend">
+                        {playedRoles.map(role => (
+                            <div className="position-breakdown-row" key={role.label}>
+                                <span className="position-breakdown-role">
+                                    <span
+                                        className="position-breakdown-swatch"
+                                        style={{ background: ROLE_COLORS[role.label] || '#3a3a37' }}
+                                    />
+                                    {role.label}
+                                </span>
+                                <span className="position-breakdown-stats">
+                                    {role.games} games · <span style={{ color: ROLE_COLORS[role.label], fontWeight: 500 }}>{role.winRate}% WR</span>
+                                </span>
+                            </div>
+                        ))}
 
-            <div id='PositionBreakdownContainer'>
-                <RoleGraph roles={roleArr} />
-
-                <span>
-                    <p style={{ margin: "5px", fontSize: "20px" }}>You played as:</p>
-                    {roleArr.map((role, idx) => {
-                        const Tag = `h${Math.min(idx + 1, 6)}`;
-                        return (
-                            <Tag className='roleHeader' key={role.label}>
-                                {role.label} for {role.games} games ({role.winRate}% WR)
-                            </Tag>
-                        );
-                    })}
-                </span>
-            </div>
-
-            <div className='splitColumn'>
-                <div>
-                    {csArr.bestCs.map((game, idx) => <TableEntry key={`Highest_CS_Entry_${idx}`} puuid={puuid} match={game} />)}
-
-                    <p className='tableLabel'>Your Games With The Highest CS</p>
-                </div>
-
-                <div className="verticalSpacing" style={{ textAlign: "right" }}>
-                    <h2>
-                        You hit new highs with
-                        <br />
-                        your CS this year, killing
-                        <br />
-                        <span className='emphasize'>{csArr.stats[0].totalMinions.toLocaleString()} Minions</span> and
-                        <br />
-                        <span className='emphasize'>{csArr.stats[0].totalJungleMinions.toLocaleString()} Jungle Monsters!</span>
-                    </h2>
-
-                    <h2>
-                        That's an average of
-                        <br />
-                        <span className='emphasize'>{(Math.floor((csArr.stats[0].totalMinions + csArr.stats[0].totalJungleMinions) / csArr.stats[0].numGames * 10) / 10).toLocaleString()}</span> total CS per game.
-                    </h2>
-                </div>
-            </div>
-
-            <div className='splitColumn'>
-                <div className='verticalSpacing' >
-                    <h2>
-                        However, you also hit new
-                        <br />
-                        lows in <span className='emphasize'>{csArr.stats[0].lowCsGames.toLocaleString()} games</span> where
-                        <br />
-                        you had <span className='emphasize'>less than 100 cs.</span>
-                    </h2>
-
-                    <h2>
-                        This excludes special gamemodes,
-                        <br />
-                        games that lasted less than 15 minutes.
-                    </h2>
-                </div>
-
-                <div>
-                    {csArr.worstCs.map((game, idx) => <TableEntry key={`Lowest_CS_Entry_${idx}`} puuid={puuid} match={game} />)}
-                    <p className='tableLabel'>Your Games With The Lowest CS</p>
-                </div>
-            </div>
-
-
-            <div className='splitColumn'>
-                <div>
-                    <h2 className='emphasize'>You also helped to take down tons of objectives,</h2>
-                    <ObjectiveBubbleChart objectives={{
-                        barons: objectiveArr["barons"],
-                        dragons: objectiveArr["dragons"],
-                        riftHeralds: objectiveArr["riftHeralds"],
-                        voidGrubs: objectiveArr["voidGrubs"],
-                        atakhan: objectiveArr["atakhans"],
-                        towers: objectiveArr["towers"],
-                        inhibitors: objectiveArr["inhibitors"]
-                    }} />
-                </div>
-
-                <div>
-                    <h2 className='emphasize' style={{ textAlign: "center" }}>
-                        and loved to ping your teammates.
-                        <br />
-                        Let's just hope they listened.
-                    </h2>
-
-                    <div style={{ width: "400px", height: "500px" }}>
-                        {pingArr && <PingGraph pings={Object.values(pingArr)} labels={Object.keys(pingArr)} />}
+                        {unplayedRoles.length > 0 && (
+                            <div className="position-breakdown-row position-breakdown-row-muted">
+                                <span className="position-breakdown-role">
+                                    <span className="position-breakdown-swatch position-breakdown-swatch-muted" />
+                                    {unplayedRoles.map(r => r.label).join(' / ')}
+                                </span>
+                                <span className="position-breakdown-stats">0 games</span>
+                            </div>
+                        )}
                     </div>
                 </div>
-            </div>
+
+
+            </StatCard>
+
+            <StatCard
+                eyebrow={"You stayed busy, with an average of"}
+                title={`${(Math.floor((csArr.stats[0].totalMinions + csArr.stats[0].totalJungleMinions) / csArr.stats[0].numGames * 10) / 10).toLocaleString()} CS `}
+                subtitle={"per game"}
+            >
+
+                <StatGrid items={[
+                    { label: "Minions Killed", value: `${csArr.stats[0].totalMinions.toLocaleString()}` },
+                    { label: "Jungle Monsters Killed", value: `${csArr.stats[0].totalJungleMinions.toLocaleString()}` },
+
+                ]} />
+
+                <br />
+
+                <div>
+                    <p className='tableLabel'>Your Games With The Highest CS</p>
+
+                    {csArr.bestCs.map((game, idx) => <TableEntry key={`Highest_CS_Entry_${idx}`} puuid={puuid} match={game} />)}
+
+                </div>
+
+
+
+
+                <div >
+
+                    <h2>
+                        Games under 100CS
+                    </h2>
+
+                    <p className='emphasize-lg'>{csArr.stats[0].lowCsGames.toLocaleString()} games</p>
+                    <p className='subtitle'>
+                        * This excludes special game modes, and games that lasted less than 15 minutes.
+                    </p>
+                </div>
+
+                {/* <div>
+                        {csArr.worstCs.map((game, idx) => <TableEntry key={`Lowest_CS_Entry_${idx}`} puuid={puuid} match={game} />)}
+                        <p className='tableLabel'>Your Games With The Lowest CS</p>
+                    </div> */}
+
+            </StatCard>
+
+
+            <StatCard
+                eyebrow={"You helped take down tons of objectives, averaging"}
+                title={`${(Math.floor(totalObjectives / totalRoleGames * 10) / 10).toLocaleString()} per game`}
+                subtitle={`(${totalObjectives.toLocaleString()} objectives across ${totalRoleGames.toLocaleString()} games)`}
+            >
+
+                <ObjectiveBubbleChart objectives={{
+                    barons: objectiveArr["barons"],
+                    dragons: objectiveArr["dragons"],
+                    riftHeralds: objectiveArr["riftHeralds"],
+                    voidGrubs: objectiveArr["voidGrubs"],
+                    atakhan: objectiveArr["atakhans"],
+                    towers: objectiveArr["towers"],
+                    inhibitors: objectiveArr["inhibitors"]
+                }} />
+
+            </StatCard>
+            <StatCard
+                eyebrow={"You loved to alert your teammates, with a total of"}
+                title={`${totalPings.toLocaleString()} pings`}
+                subtitle={`"${maxPing}" was your favorite · ${Math.floor(pingArr[maxPing] / totalPings * 100)}% of all pings`}
+            >
+
+                <div style={{ width: "90%", margin: "0 auto" }}>
+                    {pingArr && <PingGraph pings={Object.values(pingArr)} labels={Object.keys(pingArr)} />}
+
+                </div>
+
+                <br />
+                <p className='subtitle'>Let's just hope they listened.</p>
+            </StatCard>
         </>
     );
 }

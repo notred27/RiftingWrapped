@@ -1,0 +1,37 @@
+.kill-detail-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    width: 100%;
+    
+    margin: 0 auto;
+    margin-top: 4px;
+    align-items: start;
+}
+
+.kill-detail-map {
+    grid-column: span 1;
+    min-width: 0;
+}
+
+.kill-detail-games {
+    grid-column: span 2;
+    min-width: 0;
+}
+
+/* Below this width, stack both children full-width instead of forcing the
+   1-column / 2-column split - this is the "fill the empty space" behavior */
+@media (max-width: 640px) {
+    .kill-detail-row {
+        grid-template-columns: 1fr;
+    }
+    .kill-detail-games {
+        grid-column: 1 / -1;
+    }
+
+    .kill-detail-map {
+        grid-column: 1 / -1;
+        width: 80%;
+        margin: 0 auto;
+    }
+}

@@ -5,6 +5,7 @@ import SectionImage from '../common/SectionImage.js';
 
 import SharePreviewCard from "../common/SharePreviewCard.js";
 import SummaryCard from "./SummaryCard.js";
+import StatCard from "../common/StatCard.js";
 
 
 export default function TotalTimeBreakdown({ puuid, year }) {
@@ -33,120 +34,122 @@ export default function TotalTimeBreakdown({ puuid, year }) {
 
 
     // For generating posts
-    const shareUrl = `https://riftingwrapped.onrender.com/share/${puuid}`;
+    const shareUrl = `https://riftingwrapped.onrender.com/share/${puuid}?year=2026`;
     const shareText = `I spent over ${totalTime} hours on League of Legends this year! #LeagueOfLegends #RiftingWrapped`;
 
     return (
         <>
-            <SectionImage
-                imgUrl={`/images/banner3.webp`}
-                offset={"10"}
-            />
+            <StatCard
+                eyebrow={"In Total, You spent"}
+                title={`${totalTime.toLocaleString()} hours`}
+                subtitle={"playing League this year!"}
+            >
+                <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center", flexWrap: "wrap", textAlign: "left" }}>
+                    <TotalTimeGraph times={timeBreakdown} labels={timeLabels}></TotalTimeGraph>
 
-            <div className="centeredColumn" style={{ textAlign: "center" }}>
+                    <div>
+                        <h2 className="subtitle">This includes:</h2>
 
-                <h2 className="emphasize">In Conclusion</h2>
+                        <p><span className="emphasize-lg">{totalTimeInRift}&nbsp;hrs</span> in Summoner's Rift,</p>
 
-                <h2>You spent <span className="emphasize">{totalTime.toLocaleString()} hours</span> playing league this year.</h2>
+                        <p><span className="emphasize-lg">{totalTimeInRanked}&nbsp;hrs</span> in Ranked, and</p>
 
-                <h3>This includes <span className="emphasize">{totalTimeInRanked} hours</span> in Ranked matches, <span className="emphasize">{totalTimeInRift} hours</span> in Summoner's Rift, and <span className="emphasize">{totalTime - totalTimeInRanked - totalTimeInRift} hours</span> in other gamemodes.</h3>
-
-                <TotalTimeGraph times={timeBreakdown} labels={timeLabels}></TotalTimeGraph>
-
-                <h2>That's equivalent to <span className="emphasize">{Math.floor(totalTime / 8)} workdays</span> or <span className="emphasize">{Math.floor(totalTime / 24)} full days</span>, for better or worse.</h2>
-            </div>
+                        <p><span className="emphasize-lg">{totalTime - totalTimeInRanked - totalTimeInRift}&nbsp;hrs</span> in Other Game Modes.</p>
+                    </div>
 
 
-            {/* <SummaryCard year={year} totalPlaytime={totalTime} /> */}
+                </div>
 
-            <h2 style={{ textAlign: "center", maxWidth: "90vw" }}>
-                Impressed with your stats?
+
+                <h2 className="subtitle">That's equivalent to <span className="emphasize">{Math.floor(totalTime / 8)} workdays</span> or for <span className="emphasize">{Math.floor(totalTime / 24)} full days</span>, for better or worse.</h2>
+
+            </StatCard>
+
+            <StatCard
+                eyebrow={"Impressed with your stats?"}
+                title={"Share your Wrapped!"}
+
+            >
+                <div style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: "10px" }}>
+
+                    <div >
+                        <SharePreviewCard
+                            username={cardInfo["username"]}
+                            hoursPlayed={cardInfo["hoursPlayed"]}
+                            champName={cardInfo["champName"]}
+                            shareUrl={`https://riftingwrapped.onrender.com/share/${puuid}`}
+                        />
+                    </div>
+
+                    <div className="shareButtonRow" >
+                        <button
+                            className="shareButton"
+                            onClick={() => {
+                                navigator.clipboard.writeText(shareUrl);
+                                alert("Copied share link!");
+                            }}
+                        >
+                            Copy Link
+                        </button>
+
+                        <button
+                            href={`https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                window.open(
+                                    `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`,
+                                    '',
+                                    'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=800'
+                                );
+                            }}
+                            className="shareButton reddit"
+                            target="_blank"
+                            rel="noopener nofollow noreferrer"
+                        >
+                            Share on Reddit
+                        </button>
+
+                        <button
+                            href={`https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                window.open(
+                                    `https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
+                                    '',
+                                    'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
+                                );
+                            }}
+                            className="shareButton twitter"
+                            target="_blank"
+                            rel="noopener nofollow noreferrer"
+                        >
+                            Share on Twitter
+                        </button>
+
+                        <button
+                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                window.open(
+                                    `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+                                    '',
+                                    'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
+                                );
+                            }}
+                            className="shareButton facebook"
+                            target="_blank"
+                            rel="noopener nofollow noreferrer"
+                        >
+                            Share on Facebook
+                        </button>
+                    </div>
+                </div>
                 <br />
-                Share your Rifting Wrapped Recap with friends!</h2>
-
-            <div style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: "10px" }}>
-
-                <div style={{ maxWidth: "90vw" }}>
-                    <SharePreviewCard
-                        username={cardInfo["username"]}
-                        hoursPlayed={cardInfo["hoursPlayed"]}
-                        champName={cardInfo["champName"]}
-                        shareUrl={`https://riftingwrapped.onrender.com/share/${puuid}`}
-                    />
-                </div>
-
-                <div className="shareButtonRow" >
-                    <button
-                        className="shareButton"
-                        onClick={() => {
-                            navigator.clipboard.writeText(shareUrl);
-                            alert("Copied share link!");
-                        }}
-                    >
-                        Copy Link
-                    </button>
-
-                    <button
-                        href={`https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            window.open(
-                                `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`,
-                                '',
-                                'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=800'
-                            );
-                        }}
-                        className="shareButton reddit"
-                        target="_blank"
-                        rel="noopener nofollow noreferrer"
-                    >
-                        Share on Reddit
-                    </button>
-
-                    <button
-                        href={`https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            window.open(
-                                `https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
-                                '',
-                                'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
-                            );
-                        }}
-                        className="shareButton twitter"
-                        target="_blank"
-                        rel="noopener nofollow noreferrer"
-                    >
-                        Share on Twitter
-                    </button>
-
-                    <button
-                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            window.open(
-                                `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-                                '',
-                                'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
-                            );
-                        }}
-                        className="shareButton facebook"
-                        target="_blank"
-                        rel="noopener nofollow noreferrer"
-                    >
-                        Share on Facebook
-                    </button>
-                </div>
-            </div>
 
 
-            <h2 style={{ textAlign: "center", maxWidth: "90vw" }}>
-                Want to see your own recap?
-            </h2>
+                <h2 className="subtitle">Want to see your own recap? <a className="emphasize" style={{ textDecoration: "underline", cursor: "pointer" }} href="/">Try Rifting Wrapped out now!</a></h2>
 
-            <a id="homePageLink" href="/" style={{ color: "whitesmoke", fontWeight: "bold", padding: "16px", marginBottom: "80px", fontSize: "large", borderRadius: "10px", width: "200px", textAlign: "center" }}>
-                Try it now!
-            </a>
+            </StatCard>
         </>
     )
 }

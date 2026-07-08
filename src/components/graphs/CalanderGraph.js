@@ -1,182 +1,90 @@
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
+import { useEffect, useState } from "react";
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
+function CalanderGraph({ dates }) {
+  const [bars, setBars] = useState([]);
 
-function CalanderGraph({dates}) {
-  const data = {
-    labels: [""],
-    datasets: [
-      {
-        label: "January",
-        data: [dates[0]],
-        backgroundColor: '#292f56',
-        borderColor: '#292f56',
-        borderWidth: 1,
-        stack:"t1",
-      },
+  const MONTHS = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
 
-      {
-        label: "February",
-        data: [dates[1]],
-        backgroundColor: '#3b3562',
-        borderColor: '#3b3562',
-        borderWidth: 1,
-        stack:"t1",
+  const START_COLOR = "#292f56";
+  const END_COLOR = "#fa7970";
 
-      },
+  function lerp(a, b, t) {
+    return Math.round(a + (b - a) * t);
+  }
 
-      {
-        label: "March",
-        data: [dates[2]],
-        backgroundColor: '#4f3b6d',
-        borderColor: '#4f3b6d',
-        borderWidth: 1,
-        stack:"t1",
+  function interpolateColor(hexA, hexB, t) {
+    const a = [1, 3, 5].map(i => parseInt(hexA.slice(i, i + 2), 16));
+    const b = [1, 3, 5].map(i => parseInt(hexB.slice(i, i + 2), 16));
 
-      },
+    const rgb = a.map((v, i) => lerp(v, b[i], t));
+    return `rgb(${rgb.join(",")})`;
+  }
 
-      {
-        label: "April",
-        data: [dates[3]],
-        backgroundColor: '#644075',
-        borderColor: '#644075',
-        borderWidth: 1,
-        stack:"t1",
+  useEffect(() => {
+    if (!dates) return;
 
-      },
+    const newBars = dates.map((value, i) => ({
+      month: MONTHS[i],
+      value,
+      color: interpolateColor(
+        START_COLOR,
+        END_COLOR,
+        i / (MONTHS.length - 1)
+      ),
+    }));
 
-      {
-        label: "May",
-        data: [dates[4]],
-        backgroundColor: '#79447c',
-        borderColor: '#79447c',
-        borderWidth: 1,
-        stack:"t1",
-
-      },
-
-      {
-        label: "June",
-        data: [dates[5]],
-        backgroundColor: '#8f4880',
-        borderColor: '#8f4880',
-        borderWidth: 1,
-        stack:"t1",
-
-      },
-
-      {
-        label: "July",
-        data: [dates[6]],
-        backgroundColor: '#a44d83',
-        borderColor: '#a44d83',
-        borderWidth: 1,
-        stack:"t1",
-
-      },
-      {
-        label: "August",
-        data: [dates[7]],
-        backgroundColor: '#b85283',
-        borderColor: '#b85283',
-        borderWidth: 1,
-        stack:"t1",
-
-      },
-      {
-        label: "September",
-        data: [dates[8]],
-        backgroundColor: '#cc5980',
-        borderColor: '#cc5980',
-        borderWidth: 1,
-        stack:"t1",
-
-      },
-      {
-        label: "October",
-        data: [dates[9]],
-        backgroundColor: '#dd627c',
-        borderColor: '#dd627c',
-        borderWidth: 1,
-        stack:"t1",
-
-      },
-      {
-        label: "November",
-        data: [dates[10]],
-        backgroundColor: '#ed6c77',
-        borderColor: '#ed6c77',
-        borderWidth: 1,
-        stack:"t1",
-
-      },
-      {
-        label: "December",
-        data: [dates[11]],
-        backgroundColor: '#fa7970',
-        borderColor: '#fa7970',
-        borderWidth: 1,
-        stack:"t1",
-
-      },
-    ],
-  };
-
-  const options = {
-    indexAxis: 'y',
-    responsive: true,
-    aspectRatio: 7,
-    barThickness:100,
-
-    scales: {
-      x: {
-        beginAtZero: true,
-        display: false,
-
-      },
-
-      y: {
-        grid: {
-            display: false,
-          },
-          ticks: {
-            fontColor:"#71816D",
-            fontSize:20,
-
-            display: true,
-          },
-          border: {
-            display: false,
-          },
-          
-
-      },
-
-    },
-    plugins: {
-        legend: {
-            display: false,
-        },
-        tooltip: {
-            callbacks: {
-              label: (tooltipItem) => `${tooltipItem.dataset.label}: ${tooltipItem.raw.toLocaleString()} days`, 
-            },
-          },
-    },
-  };
+    setBars(newBars);
+  }, [dates]);
 
   return (
-    <div 
-      tabIndex={-1}
-      role="img"
-      aria-label="Bar chart showing playtime per month"
-      style={{width:"80vw", marginLeft:"50px"}}>
-
-      <Bar data={data} options={options} />
-
+    <div
+  style={{
+    display: "flex",
+    alignItems: "flex-end", // Bars grow upward
+    width: "100%",
+    height: "180px",
+    gap: "6px",
+  }}
+>
+  {bars.map((bar) => (
+    <div
+      key={bar.month}
+      style={{
+        flex: 1, // Every month gets the same width
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "flex-end",
+        alignItems: "center",
+        height:"100%"
+      }}
+    >
+      {bar.value > 0? `${bar.value}` :""}
+      <div
+        title={`${bar.month}: ${bar.value} day${bar.value === 1 ? "" : "s"}`}
+        style={{
+          width: "100%",
+          height: `${(bar.value / Math.max(...dates, 1)) * 100}%`,
+          background: bar.color,
+          borderRadius: "4px 4px 0 0",
+          minHeight: bar.value > 0 ? "4px" : "0",
+          transition: "height 0.3s ease",
+        }}
+      />
+      <span
+        style={{
+          marginTop: "6px",
+          fontSize: "0.7rem",
+        }}
+      >
+        {bar.month.slice(0, 3)}
+      </span>
     </div>
+  ))}
+</div>
   );
-};
+}
 
 export default CalanderGraph;

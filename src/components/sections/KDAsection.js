@@ -1,177 +1,102 @@
-import { useEffect, useState } from 'react';
-
 import TableEntry from './../common/TableEntry.js';
 import KDAgraph from './../graphs/KDAgraph.js'
 import MapOverlay from './../graphs/MapOverlay.js';
 
+import StatCard from '../common/StatCard.js';
+import StatGrid from '../common/StatGrid.js';
+
+import { useStatsResources } from '../../resources/UserResourceContext.js';
+
+import './KDAsection.css'
+
 export default function KDAsection({ puuid, year }) {
-    const [loading, setLoading] = useState(true);
-    const [highestKillGames, setHighestKillGames] = useState(null);
+    const {
+        highestKillGames,
+        highestDeathGames,
+        combatTotals,
+        killFreq,
+        deathFreq,
+        kda,
+    } = useStatsResources();
 
-    const [highestDeathGames, setHighestDeathGames] = useState(null);
+    const highestKillGamesData = highestKillGames.read().slice(0,4);
+    const highestDeathGamesData = highestDeathGames.read().slice(0,4);
+    const combatStats = combatTotals.read()[0];
+    const killFreqArr = killFreq.read();
+    const deathFreqArr = deathFreq.read();
+    const kdaGames = kda.read();
 
-    const [combatStats, setCombatStats] = useState(null);
-
-    const [killFreqArr, setKillFreqArr] = useState(null);
-    const [deathFreqArr, setDeathFreqArr] = useState(null);
-
-    const [kdaGames, setKdaGames] = useState(null);
-
-
-
-    useEffect(() => {
-        if (!puuid) return;
-
-        const fetchAllData = async () => {
-            setLoading(true);
-            try {
-                const [deathsRes, killsRes, totalsRes, killFreq, deathFreq, kdaRes] = await Promise.all([
-                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/highestStatGames/${puuid}?year=${year}&stat=deaths`),
-                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/highestStatGames/${puuid}?year=${year}&stat=kills`),
-                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/matchTotals/${puuid}?year=${year}`),
-                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/killFrequency/${puuid}?year=${year}`),
-                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/deathFrequency/${puuid}?year=${year}`),
-                    fetch(`${process.env.REACT_APP_API_ENDPOINT}/kda/${puuid}?year=${year}`),
-                ]);
-
-                if (!deathsRes.ok || !killsRes.ok || !totalsRes.ok || !killFreq.ok || !deathFreq.ok || !kdaRes.ok) {
-                    throw new Error('One or more network responses were not ok');
-                }
-
-                const [deathData, killData, totalsData, killFreqData, deathFreqData, kdaData] = await Promise.all([
-                    deathsRes.json(),
-                    killsRes.json(),
-                    totalsRes.json(),
-                    killFreq.json(),
-                    deathFreq.json(),
-                    kdaRes.json(),
-
-
-                ]);
-
-                setHighestDeathGames(deathData);
-                setHighestKillGames(killData);
-                setCombatStats(totalsData[0]);
-                setKillFreqArr(killFreqData);
-                setDeathFreqArr(deathFreqData);
-                setKdaGames(kdaData);
-
-            } catch (error) {
-                console.error('Failed to fetch game data:', error);
-                setHighestDeathGames([]);
-                setHighestKillGames([]);
-                setCombatStats([]);
-                setKillFreqArr([]);
-                setDeathFreqArr([]);
-                setKdaGames([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchAllData();
-    }, [puuid, year]);
-
-
-
-    if (loading) return;
-    if (!combatStats || combatStats.length === 0) return;
+    if (!combatStats) return null;
 
     return (
         <>
-            <h1 className='emphasize'>Lets take a look at some of your highlights</h1>
-
-            <div className='splitColumn'>
-                <div>
-                    {highestKillGames.map((game, idx) => <TableEntry key = {`Highest_Kill_Entry_${idx}`} puuid={puuid} match={game}></TableEntry>)}
-                    <p className='tableLabel'>Your Games With The Most Kills</p>
+            <StatCard>
+                <div style={{ textAlign: "left" }}>
+                    <p>Total Champs Killed</p>
+                    <h1 className='emphasize-xlg'>{combatStats.totalKills.toLocaleString()}</h1>
                 </div>
 
-                <div className='verticalSpacing'>
-                    <h2>
-                        You killed <span className='emphasize'>{combatStats.totalKills.toLocaleString()}</span> champs,
-                        <br />
-                        averaging <span className='emphasize'>{Math.floor(combatStats.totalKills / combatStats.numGames * 100) / 100}</span> kills per game!
-                    </h2>
+                <StatGrid
+                    items={[
+                        { label: "Avg. Kills Per Game", value: `${Math.floor(combatStats.totalKills / combatStats.numGames * 100) / 100}` },
+                        { label: "Killing Sprees", value: `${combatStats.totalKillingSprees}` },
+                        { label: "Enemies Dove", value: `${combatStats.totalTowerTakedowns}` },
+                    ]}
+                />
 
-                    <h2>
-                        These stats are a result of <span className='emphasize'>{combatStats.totalKillingSprees}</span> killing
-                        <br />
-                        sprees, and the <span className='emphasize'>{combatStats.totalTowerTakedowns}</span> enemies
-                        <br />
-                        you killed under their own turrets.
-                    </h2>
-
-                    <h2>
-                        Of the <span className='emphasize'>{combatStats.totalPositiveGames}</span> games where you went positive,
-                        <br />
-                        you won <span className='emphasize'>{Math.floor(combatStats.positiveWR / combatStats.totalPositiveGames * 10000) / 100}%</span> of the time.
-                    </h2>
-
+                <div className='kill-detail-row'>
+                    <MapOverlay puuid={puuid} year={year} type='kills' />
+                    <div className='kill-detail-games'>
+                        {highestKillGamesData.map((game, idx) => <TableEntry key={`Highest_Kill_Entry_${idx}`} puuid={puuid} match={game} />)}
+                        <p className='tableLabel'>Your Games With The Most Kills</p>
+                    </div>
                 </div>
-            </div>
+            </StatCard>
 
-
-            <div className='splitColumn'>
-                <div className='verticalSpacing' style={{textAlign: "right" }}>
-                    <h2>
-                        However, you were killed
-                        <br />
-                        <span className='emphasize'>{combatStats.totalDeaths.toLocaleString()}</span> times by other
-                        <br />
-                        players this year.
-                    </h2>
-
-                    <h2>
-                        Due to this, you spent&nbsp;
-                        {Math.round(combatStats.totalTimeDead / 60) < 300 ?
-                            <span className='emphasize'>{Math.round(combatStats.totalTimeDead / 60)} minutes</span>
-                            :
-                            <span className='emphasize'>{Math.round(combatStats.totalTimeDead / 360) / 10} hours</span>
-                        }
-                        <br />
-                        dead and waiting to respawn.
-                    </h2>
-
-                    <h2>
-                        Of the <span className='emphasize'>{combatStats.totalNegativeGames}</span> games that you went negative,
-                        <br />
-                        you won <span className='emphasize'>{Math.floor(combatStats.negativeWR / combatStats.totalNegativeGames * 10000) / 100}%</span> of the time.
-                    </h2>
-
-
+            <StatCard>
+                <div style={{ textAlign: "left" }}>
+                    <p>Total Deaths</p>
+                    <h1 className='emphasize-xlg'>{combatStats.totalDeaths.toLocaleString()}</h1>
                 </div>
 
-                <div>
-                    {highestDeathGames.map((game, idx) => <TableEntry key = {`Highest_Death_Entry_${idx}`} puuid={puuid} match={game} />)}
+                <StatGrid
+                    items={[
+                        { label: "Avg. Deaths Per Game", value: `${Math.floor(combatStats.totalDeaths / combatStats.numGames * 100) / 100}` },
+                        { label: "Total Time Dead", value: `${Math.round(combatStats.totalTimeDead / 60) < 300 ? `${Math.round(combatStats.totalTimeDead / 60)} minutes ` : `${Math.round(combatStats.totalTimeDead / 360) / 10} hrs`}` },
+                        // { label: " ", value: ` ` },
+                    ]}
+                />
 
-                    <p className='tableLabel'>Your Games With The Most Deaths</p>
+                <div className='kill-detail-row'>
+                    <MapOverlay puuid={puuid} year={year} type='deaths' />
+                    <div className='kill-detail-games'>
+                        {highestDeathGamesData.map((game, idx) => <TableEntry key={`Highest_Death_Entry_${idx}`} puuid={puuid} match={game} />)}
+                        <p className='tableLabel'>Your Games With The Most Deaths</p>
+                    </div>
                 </div>
-            </div>
+            </StatCard>
 
-
-            <div className='chartContainer'>
+            <StatCard>
                 <KDAgraph kills={killFreqArr} deaths={deathFreqArr} />
-            </div>
 
+                <div style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", width: "100%", justifyContent: "center", textAlign: "left" }}>
+                    <div style={{ width: "50%" }}>
+                        <p>
+                            Of the <span className='emphasize'>{combatStats.totalPositiveGames}</span> games where you went positive,<br /> you won <span className='emphasize'>{Math.floor(combatStats.positiveWR / combatStats.totalPositiveGames * 10000) / 100}%</span> of the time.
+                        </p>
+                        <TableEntry puuid={puuid} match={kdaGames["bestKDA"]} />
+                        <p className='tableLabel'>Your best KDA game</p>
+                    </div>
 
-
-            <div className='splitColumn'>
-                <div>
-                    <h2>Your best KDA was <span className='emphasize'>{kdaGames["bestKDA"].stats.kda}</span></h2>
-                    <TableEntry puuid={puuid} match={kdaGames["bestKDA"]} />
+                    <div style={{ width: "50%" }}>
+                        <p>
+                            Of the <span className='emphasize'>{combatStats.totalNegativeGames}</span> games that you went negative,<br /> you won <span className='emphasize'>{Math.floor(combatStats.negativeWR / combatStats.totalNegativeGames * 10000) / 100}%</span> of the time.
+                        </p>
+                        <TableEntry puuid={puuid} match={kdaGames["worstKDA"]} />
+                        <p className='tableLabel'>Your worst KDA game</p>
+                    </div>
                 </div>
-
-
-                <div>
-                    <h2>Your worst KDA was <span className='emphasize'>{kdaGames["worstKDA"].stats.kda}</span></h2>
-                    <TableEntry puuid={puuid} match={kdaGames["worstKDA"]} />
-
-                </div>
-
-            </div>
-            <MapOverlay puuid={puuid} year={year} />
-
+            </StatCard>
         </>
     )
 }

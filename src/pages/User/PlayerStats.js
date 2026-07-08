@@ -21,6 +21,7 @@ import LaneSection from '../../components/sections/LaneSection.js';
 import TotalTimeBreakdown from '../../components/sections/TotalTimeBreakdown.js';
 
 import './PlayerStats.css'
+import SummaryCard from "../../components/sections/SummaryCard.js";
 
 const DEFAULT_YEAR = "2026";
 
@@ -36,7 +37,7 @@ function PlayerStats() {
 			<UserResourceProvider puuid={puuid} year={year}>
 				<ErrorBoundary fallback={(err) => <UserError error={err} />}>
 					<Suspense fallback={<UserIntroFallback year={year} />}>
-						<div className="fade-in">
+						<div className="fade-in" style={{marginBottom:"20px"}}>
 							<UserIntro year={year} />
 						</div>
 
@@ -45,13 +46,20 @@ function PlayerStats() {
 							<div className="fade-in" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
 
 								<Suspense fallback={<div style={{ height: "500px", width: "80vw" }} />}>
+
 									<DateSection />
 									<FFSection />
+
 									<ChampSection />
+
 									<DamageSection />
 									<KDAsection puuid={puuid} year={year} />
+
 									<LaneSection puuid={puuid} />
+
 									<TotalTimeBreakdown puuid={puuid} year={year} />
+
+									{/* <SummaryCard></SummaryCard> */}
 								</Suspense>
 							</div>
 

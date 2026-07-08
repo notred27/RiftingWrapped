@@ -1,10 +1,14 @@
-import { Suspense, lazy} from 'react';
+import { Suspense, lazy } from 'react';
 import { useStatsResources } from "./../../resources/UserResourceContext.js";
+import './styles.css'
 
-const CalanderGraph = lazy(() =>  import('./../graphs/CalanderGraph.js'));
+import StatCard from '../common/StatCard.js';
+import StatGrid from '../common/StatGrid.js';
+
+const CalanderGraph = lazy(() => import('./../graphs/CalanderGraph.js'));
 
 export default function DateSection() {
-    const {date} = useStatsResources();
+    const { date } = useStatsResources();
     const monthlyStats = date.read();
 
     const dates = Array(12).fill(0);
@@ -20,25 +24,31 @@ export default function DateSection() {
     }
 
     return (
-        <div style={{ textAlign: "center" }}>
+        <StatCard
+            eyebrow="you visited the Rift during"
+            title={`${totalGames} Games!`} >
 
-            <h2>
-                This year, you visited the Rift in <br />
-                <span className='emphasize' style={{fontSize:"40px"}}>{totalGames} games of League</span><br />
-                spread across <br />
-                <span className='emphasize' style={{fontSize:"40px"}}>{totalUniqueDays} different days!</span>
-            </h2>
 
-            <h3>
-                With this dedication, you were hitting the Rift at least once in every{" "}
-                <span className="emphasize">
-                    {(Math.floor(3650 / totalUniqueDays) / 10).toFixed(1)} days
-                </span>.
-            </h3>
 
-            <Suspense fallback={<div style={{width:"50vw", height:"200px"}}></div>}>
-                <CalanderGraph dates={dates} />
+
+
+            <StatGrid
+                items={[
+                    { label: "Unique Days Played", value: `${totalUniqueDays} days` },
+                    { label: "Played Once Every", value: `${(Math.floor(3650 / totalUniqueDays) / 10).toFixed(1)} days` },
+                ]}
+            />
+
+            <br />
+            <Suspense fallback={<div style={{ width: "100%", height: "40px" }}></div>}>
+                <div style={{ margin: "10px" }}>
+                    <p className='subtitle' style={{ textAlign: "left" }}>Breakdown By Month</p>
+                    <CalanderGraph dates={dates} />
+                </div>
+
             </Suspense>
-        </div>
+
+
+        </StatCard>
     );
 }
