@@ -1,7 +1,7 @@
 import { useStatsResources } from "./../../resources/UserResourceContext.js";
 
-import StatCard from "../common/StatCard.js";
-import StatGrid from "../common/StatGrid.js";
+import StatCard from "../layout/StatCard.js";
+import StatGrid from "../layout/StatGrid.js";
 
 import FFGraph from "../graphs/FFGraph.js";
 

@@ -2,8 +2,8 @@ import { Suspense, lazy } from 'react';
 import { useStatsResources } from "./../../resources/UserResourceContext.js";
 import './styles.css'
 
-import StatCard from '../common/StatCard.js';
-import StatGrid from '../common/StatGrid.js';
+import StatCard from '../layout/StatCard.js';
+import StatGrid from '../layout/StatGrid.js';
 
 const CalanderGraph = lazy(() => import('./../graphs/CalanderGraph.js'));
 

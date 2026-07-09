@@ -6,7 +6,7 @@ import HorizontalBarChart from '../graphs/ChampGraph.js'
 import ChampGrid from '../graphs/ChampGrid.js'
 
 
-import StatCard from '../common/StatCard.js';
+import StatCard from '../layout/StatCard.js';
 
 
 export function calcTopChamps(champData) {

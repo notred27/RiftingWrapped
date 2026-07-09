@@ -12,7 +12,7 @@ import bg_image from '../../images/Jax_0.webp'
 import './Home.css';
 import PlayerMarquee from '../../components/sections/PlayerMarquee';
 
-import ErrorBoundary from '../../components/Error/ErrorBoundary';
+import ErrorBoundary from '../../components/error/ErrorBoundary';
 import GenericSearch from '../../components/common/GenericSearch';
 
 function Home() {
@@ -120,7 +120,7 @@ function Home() {
                 />
             </Helmet>
 
-            <div className="heroContainer" >
+            <div className="heroContainer">
                 <img className="heroOverlay" src={bg_image} alt="Hero Overlay" />
                 <div className="heroText" style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "0px 30px", flexWrap: "wrap" }}>
                     <div style={{ width: "600px" }}>

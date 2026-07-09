@@ -1,40 +1,35 @@
 import { useStatsResources } from "./../../resources/UserResourceContext.js";
 import './UserIntro.css'
 import './styles.css'
-
-import StatCard from "../common/StatCard.js";
+import StatCard from "../layout/StatCard.js";
 
 export default function UserIntro({ year }) {
-	const { user } = useStatsResources();
-	const userInfo = user.read();
+    const { user } = useStatsResources();
+    const userInfo = user.read();
 
-	return (
-		<StatCard>
-			<img
-				src={`${userInfo.icon}`}
-				alt="user icon"
-				style={{
-					width: "88px",
-					height: "88px",
-					borderRadius: "4px",
-					// border: `2px solid var(--accent-color)`,
-					maxWidth: "40vw",
-				}}
-			/>
+    return (
+        <StatCard className="intro-card">
+            <p className="intro-eyebrow">Hey there</p>
 
-			<h1 id="user-name" className="emphasize-lg">
-				{userInfo.displayName}
-			</h1>
+            <div className="intro-identity">
+                <img
+                    src={userInfo.icon}
+                    alt="user icon"
+                    className="intro-icon"
+                />
+                <div className="intro-name-block">
+                    <h1 className="intro-name">{userInfo.displayName}</h1>
+                    <p className="subtitle intro-tag">
+                        #{userInfo.tag} · level {userInfo.level}
+                    </p>
+                </div>
+            </div>
 
-			<p className="subtitle">
-				#{userInfo.tag} · level {userInfo.level}
-			</p>
+            <h2 className="intro-headline">
+                Let's dive into your League of Legends performance in {year}
+            </h2>
 
-			<span className="capsule">
-				Rifting Wrapped {year}
-			</span>
-
-			<p>Let's dive in to your League of Legends performance in {year}!</p>
-		</StatCard>
-	);
+            <span className="capsule">Rifting Wrapped {year}</span>
+        </StatCard>
+    );
 }

@@ -8,10 +8,10 @@ import TableEntry from './../common/TableEntry.js';
 
 
 
-import StatCard from '../common/StatCard.js';
+import StatCard from '../layout/StatCard.js';
 
 import './LaneSection.css'
-import StatGrid from '../common/StatGrid.js';
+import StatGrid from '../layout/StatGrid.js';
 
 function filterByRole(arr) {
 

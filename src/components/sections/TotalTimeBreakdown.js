@@ -5,7 +5,7 @@ import SectionImage from '../common/SectionImage.js';
 
 import SharePreviewCard from "../common/SharePreviewCard.js";
 import SummaryCard from "./SummaryCard.js";
-import StatCard from "../common/StatCard.js";
+import StatCard from "../layout/StatCard.js";
 
 
 export default function TotalTimeBreakdown({ puuid, year }) {
