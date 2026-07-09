@@ -77,7 +77,7 @@ export default function TotalTimeBreakdown({ puuid, year }) {
                             username={cardInfo["username"]}
                             hoursPlayed={cardInfo["hoursPlayed"]}
                             champName={cardInfo["champName"]}
-                            shareUrl={`https://riftingwrapped.onrender.com/share/${puuid}`}
+                            shareUrl={`https://riftingwrapped.onrender.com/share/${puuid}?year=2026`}
                         />
                     </div>
 
