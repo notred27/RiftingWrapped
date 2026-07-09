@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react'
-
+import { useEffect, useState } from 'react';
 import { useStatsResources } from "../../resources/UserResourceContext.js";
 
-import HorizontalBarChart from '../graphs/ChampGraph.js'
-import ChampGrid from '../graphs/ChampGrid.js'
 
-
+import HorizontalBarChart from '../graphs/ChampGraph.js';
+import ChampGrid from '../graphs/ChampGrid.js';
 import StatCard from '../layout/StatCard.js';
+
 
 
 export function calcTopChamps(champData) {
@@ -20,7 +19,6 @@ export function calcTopChamps(champData) {
 
 	const champNames = Object.keys(champDict)
 	const champVals = champNames.map(name => champDict[name])
-
 	const sorted = champNames
 		.map((name, i) => ({ name, count: champVals[i] }))
 		.sort((a, b) => b.count - a.count)
@@ -31,8 +29,6 @@ export function calcTopChamps(champData) {
 
 	return [sortedNames, sortedCounts, champNames, totalGames]
 }
-
-
 
 
 export default function ChampSection() {
@@ -70,7 +66,6 @@ export default function ChampSection() {
 
 
 	return (
-
 		<StatCard
 			eyebrow="Your go-to champion was"
 			title={`${topChamp.toUpperCase()}`}
@@ -118,5 +113,6 @@ export default function ChampSection() {
 				/>
 			</div>
 
-		</StatCard>)
+		</StatCard>
+		);
 }

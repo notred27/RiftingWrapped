@@ -2,8 +2,8 @@ import { Suspense, useEffect, useState } from "react";
 
 import { useNavigate, useParams } from 'react-router-dom';
 
-import UserIntro from '../../components/sections/UserIntro.js';
-import UserIntroFallback from '../../components/sections/UserIntroFallback.js';
+import UserIntro from '../../components/slides/UserIntro.js';
+import UserIntroFallback from '../../components/slides/UserIntroFallback.js';
 
 import { UserResourceProvider } from "../../resources/UserResourceContext.js";
 import './PlayerStats.css';

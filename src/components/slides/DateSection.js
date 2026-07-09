@@ -1,9 +1,11 @@
 import { Suspense, lazy } from 'react';
 import { useStatsResources } from "./../../resources/UserResourceContext.js";
-import './styles.css'
 
 import StatCard from '../layout/StatCard.js';
 import StatGrid from '../layout/StatGrid.js';
+
+import './styles.css'
+
 
 const CalanderGraph = lazy(() => import('./../graphs/CalanderGraph.js'));
 
@@ -28,10 +30,6 @@ export default function DateSection() {
             eyebrow="you visited the Rift during"
             title={`${totalGames} Games!`} >
 
-
-
-
-
             <StatGrid
                 items={[
                     { label: "Unique Days Played", value: `${totalUniqueDays} days` },
@@ -47,8 +45,6 @@ export default function DateSection() {
                 </div>
 
             </Suspense>
-
-
         </StatCard>
     );
 }

@@ -10,7 +10,7 @@ import UserSearchBar from '../../components/common/UserSearchBar';
 
 import bg_image from '../../images/Jax_0.webp'
 import './Home.css';
-import PlayerMarquee from '../../components/sections/PlayerMarquee';
+import PlayerMarquee from '../../components/slides/PlayerMarquee';
 
 import ErrorBoundary from '../../components/error/ErrorBoundary';
 import GenericSearch from '../../components/common/GenericSearch';
@@ -25,11 +25,11 @@ function Home() {
     const WRAP_YEAR = 2026;
 
 
-        useEffect(() => {
-            fetchCached(`${process.env.REACT_APP_API_ENDPOINT}/users/count`, `user-count`)
-                .then((res) => setNumUsers(res.count))
-                .catch((err) => console.warn('Failed to fetch user count:', err));
-        }, [])
+    useEffect(() => {
+        fetchCached(`${process.env.REACT_APP_API_ENDPOINT}/users/count`, `user-count`)
+            .then((res) => setNumUsers(res.count))
+            .catch((err) => console.warn('Failed to fetch user count:', err));
+    }, [])
 
 
 
@@ -59,23 +59,28 @@ function Home() {
             );
 
             if (response.status === 404) {
+                setSelectedPlayer(`Registering ${displayName}... this can take a minute.`);
+
                 const addResponse = await fetch(`${apiUrl}/users`, {
                     method: "POST",
-                    body: new URLSearchParams({ displayName, tag, region}),
+                    body: new URLSearchParams({ displayName, tag, region }),
                 });
 
-                if (!addResponse.ok) {
-                    setSelectedPlayer("Failed to find user. Please check that your name and region are correct.");
+                const addBody = await addResponse.json().catch(() => null);
+
+                if (!addResponse.ok && addResponse.status !== 409) {
+                    setSelectedPlayer(
+                        addBody?.message ||
+                        "Failed to find user. Please check that your name and region are correct."
+                    );
                     setIsLoading(false);
                     return;
                 }
 
-                // try to find user after init
                 response = await fetch(
                     `${apiUrl}/users/by-riot-id/${displayName}/${tag}/${region}`
                 );
             }
-
 
             if (!response.ok) {
                 setSelectedPlayer("User could not be fetched after creation.");
@@ -86,6 +91,14 @@ function Home() {
             const result = await response.json();
             const { puuid, status } = result;
 
+            if (!puuid) {
+                setSelectedPlayer(
+                    "Registration didn't complete successfully. Please try again."
+                );
+                setIsLoading(false);
+                return;
+            }
+
             navigate(
                 status === "done"
                     ? `/player/${puuid}?year=${WRAP_YEAR}`
@@ -93,14 +106,11 @@ function Home() {
             );
         } catch (err) {
             console.error(err);
-            setSelectedPlayer(
-                "Unexpected error. Please try again later."
-            );
+            setSelectedPlayer("Unexpected error. Please try again later.");
         } finally {
             setIsLoading(false);
         }
     };
-
 
 
 

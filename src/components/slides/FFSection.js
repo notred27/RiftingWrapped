@@ -1,5 +1,6 @@
 import { useStatsResources } from "./../../resources/UserResourceContext.js";
 
+
 import StatCard from "../layout/StatCard.js";
 import StatGrid from "../layout/StatGrid.js";
 
@@ -15,18 +16,14 @@ export default function FFSection() {
     const estimatedFullDuration = avgFullGameDuration * (ffData["numSurrenders"]);
     const secondsSaved = estimatedFullDuration - ffData["totalSurrenderTime"];
     const hoursSaved = Math.floor(secondsSaved / 36) / 100;
- 
     const youFFd = ffData["numSurrenders"] - ffData["numSurrendersWon"];
     const enemiesFFd = ffData["numSurrendersWon"];
  
-
 
     return (
         <StatCard
             eyebrow="You ended some games early, but refused to end others"
         >
-
-            {/* <h1>TODO: INSERT SOME TYPE OF PIE CHART HERE</h1> */}
 
             <FFGraph youFFd={youFFd} enemiesFFd={enemiesFFd} />
             <StatGrid
@@ -40,10 +37,6 @@ export default function FFSection() {
                 ]}
             />
 
-
-            {/* <p className="subtitle" style={{ paddingTop: "30px" }}>
-                You saved at least <span className="emphasize-xlg">{hoursSaved} hours</span> from these early surrenders
-            </p> */}
         </StatCard>
     );
 }

@@ -4,7 +4,7 @@ import Kills from "./../../images/tmpKills.png"
 import Deaths from "./../../images/tmpDeaths.png"
 
 import { useStatsResources } from "../../resources/UserResourceContext.js";
-import { calcTopChamps } from "../../components/sections/ChampSection.js"
+import { calcTopChamps } from "./ChampSection.js"
 
 
 export default function SummaryCard({ year = "2025", totalPlaytime }) {

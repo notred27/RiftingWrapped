@@ -1,6 +1,6 @@
-import TableEntry from './../common/TableEntry.js';
-import KDAgraph from './../graphs/KDAgraph.js'
-import MapOverlay from './../graphs/MapOverlay.js';
+import TableEntry from '../common/TableEntry.js';
+import KDAgraph from '../graphs/KDAgraph.js'
+import MapOverlay from '../graphs/MapOverlay.js';
 
 import StatCard from '../layout/StatCard.js';
 import StatGrid from '../layout/StatGrid.js';

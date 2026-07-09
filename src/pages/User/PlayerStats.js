@@ -9,21 +9,27 @@ import ErrorBoundary from '../../components/error/ErrorBoundary.js';
 import StatDisplayError from '../../components/error/StatDisplayError.js';
 import UserError from '../../components/error/UserError.js';
 
-import UserIntro from '../../components/sections/UserIntro.js';
-import UserIntroFallback from '../../components/sections/UserIntroFallback.js';
+import UserIntro from '../../components/slides/UserIntro.js';
+import UserIntroFallback from '../../components/slides/UserIntroFallback.js';
 
-import ChampSection from '../../components/sections/ChampSection.js';
-import DamageSection from '../../components/sections/DamageSection.js';
-import DateSection from '../../components/sections/DateSection.js';
-import FFSection from '../../components/sections/FFSection.js';
-import KDAsection from '../../components/sections/KDAsection.js';
-import LaneSection from '../../components/sections/LaneSection.js';
-import TotalTimeBreakdown from '../../components/sections/TotalTimeBreakdown.js';
+import ChampSection from '../../components/slides/ChampSection.js';
+import DamageSection from '../../components/slides/DamageSection.js';
+import DateSection from '../../components/slides/DateSection.js';
+import FFSection from '../../components/slides/FFSection.js';
+import KDAsection from '../../components/slides/KDAsection.js';
+import LaneSection from '../../components/slides/LaneSection.js';
+import TotalTimeBreakdown from '../../components/slides/TotalTimeBreakdown.js';
 
 import './PlayerStats.css'
-import SummaryCard from "../../components/sections/SummaryCard.js";
+import SummaryCard from "../../components/slides/SummaryCard.js";
 
-import SlideDeck from "../../components/slide/SlideDeck.js";
+
+import SlideDeck from "../../components/layout/SlideDeck.js";
+
+import KillsSlide from "../../components/slides/KillsSlide.js";
+import DeathsSlide from "../../components/slides/DeathsSlide.js";
+import RoleSlide from "../../components/slides/RoleSlide.js";
+import CsSlide from "../../components/slides/CsSlide.js";
 
 
 const DEFAULT_YEAR = "2026";
@@ -51,16 +57,24 @@ function PlayerStats() {
 
 							<UserIntro year={year} />
 
-										{/* <div className="slide" style={{ '--slide-bg': '#2d5c52', '--slide-fg': '#0f0f0f' }}> */}
+										<div className="slide" style={{ '--slide-bg': '#2d5c52', '--slide-fg': '#0f0f0f' }}>
 										<DateSection />
-										{/* </div> */}
+										</div>
 										<FFSection />
 										<ChampSection />
 										<DamageSection />
+
+										<KillsSlide puuid={puuid} year={year} />
+										<DeathsSlide puuid={puuid} year={year} />
 										<KDAsection puuid={puuid} year={year} />
+
+										<RoleSlide puuid={puuid} />
+										<CsSlide puuid={puuid} />
+										
 										<LaneSection puuid={puuid} />
 										<TotalTimeBreakdown puuid={puuid} year={year} />
 									</SlideDeck>
+
 								</Suspense>
 							</div>
 
