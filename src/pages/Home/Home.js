@@ -125,7 +125,7 @@ function Home() {
                 <div className="heroText" style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "0px 30px", flexWrap: "wrap" }}>
                     <div style={{ width: "600px" }}>
 
-                        <h1>Your Year on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
+                        <h1 style={{fontSize:"3rem", marginBottom:"20px", textWrap:"wrap", fontWeight:"bold"}}>Your Year on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
                         <p>
                             Discover your top champions, stats, and trends of <strong>2026</strong> with a personalized recap of your <strong>League of Legends</strong> journey.
                         </p>
