@@ -173,18 +173,19 @@
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-3KJTMB7K3W"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
 
-  gtag('config', 'G-3KJTMB7K3W');
+    gtag('config', 'G-3KJTMB7K3W', {
+        send_page_view: false
+    });
 </script>
 
 
 <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!-- <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script> -->
 </body>
 
 
