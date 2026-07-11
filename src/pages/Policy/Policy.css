@@ -1,0 +1,89 @@
+/* Policy.css — shares tokens with FAQ.css so ToS/Privacy match the FAQ page */
+:root{
+  --bg-1: rgba(15,25,35,0.92);
+  --bg-2: rgba(0,0,0,0.86);
+  --muted: #cbd5e1;
+  --accent: rgba(0,112,187,0.9);
+  --card-gap: 12px;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+.policyContainer{
+  width: calc(100% - 32px);
+  max-width: 1100px;
+  margin: 20px auto;
+  padding: 18px;
+  color: #fff;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.policyHeader { text-align: center; margin-bottom: 12px; }
+.policyHeader h1 { font-size: 1.6rem; margin:0; font-weight:900; }
+.policySubtitle { margin-top:6px; color:var(--muted); font-size:0.95rem; }
+.policyUpdated { margin-top:4px; color:#8ea3bd; font-size:0.85rem; }
+
+.policyBody{
+  max-width: 800px;
+  margin: 24px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.policySection{
+  border-radius:12px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,0.04);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  padding: 16px 18px 20px;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.policySection:hover{ transform: translateY(-2px); box-shadow: 0 10px 30px rgba(2,6,23,0.6); }
+
+.policySection h2{
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 0 0 10px;
+  color: #dbefff;
+}
+
+.policySection p{
+  color: var(--muted);
+  margin: 0 0 10px;
+  line-height: 1.6;
+  font-size: 0.97rem;
+}
+.policySection p:last-child{ margin-bottom: 0; }
+
+.policySection ul{
+  margin: 0 0 10px;
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 0.97rem;
+}
+.policySection ul:last-child{ margin-bottom: 0; }
+.policySection li{ margin-bottom: 6px; }
+
+.policySection a{ color: #bcdffd; text-decoration: underline; }
+
+
+
+.policyFooter{ margin-top: 22px; text-align: center; color:#9fb7d8; font-size:0.94rem; }
+.policyContactLink{ color:#dbefff; text-decoration:underline; }
+
+@media (min-width: 700px){
+  .policyContainer{ padding:24px; margin:28px auto; }
+  .policyHeader h1{ font-size:1.9rem; }
+}
+
+@media (min-width: 1100px){
+  .policyContainer{ max-width:1200px; padding:28px; }
+  .policySection{ padding: 18px 20px 22px; }
+}
+
+.policySection h2:focus{ outline: none; }

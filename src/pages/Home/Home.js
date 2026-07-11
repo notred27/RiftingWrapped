@@ -10,7 +10,7 @@ import UserSearchBar from '../../components/common/UserSearchBar';
 
 import bg_image from '../../images/Jax_0.webp'
 import './Home.css';
-import PlayerMarquee from '../../components/slides/PlayerMarquee';
+import PlayerMarquee from '../../components/common/PlayerMarquee';
 
 import ErrorBoundary from '../../components/error/ErrorBoundary';
 import GenericSearch from '../../components/common/GenericSearch';

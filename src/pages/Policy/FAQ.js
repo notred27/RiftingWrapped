@@ -1,8 +1,6 @@
-import { useState } from "react";
-
 import { Helmet } from 'react-helmet-async';
 
-import "./FAQ.css"
+import "./Policy.css"
 const DEFAULT_FAQ = [
     {
         q: "What is Rifting Wrapped?",
@@ -52,56 +50,28 @@ const DEFAULT_FAQ = [
 
 
 export default function FAQ({ items = DEFAULT_FAQ }) {
-    const [openIndex, setOpenIndex] = useState(null);
-
     return (
         <>
             <Helmet>
-                <link rel="canonical" href={`https://www.riftingwrapped.com/`} />
+                <link rel="canonical" href={`https://www.riftingwrapped.com/faq`} />
             </Helmet>
 
-            <main className="faqContainer">
-                <header className="faqHeader">
+            <main className="policyContainer">
+                <header className="policyHeader">
                     <h1>FAQ</h1>
-                    <p className="faqSubtitle">Quick answers to frequently asked questions about Rifting Wrapped.</p>
+                    <p className="policySubtitle">Quick answers to frequently asked questions about Rifting Wrapped.</p>
                 </header>
 
-                <section className="faqList" aria-live="polite">
-
-                    {items.map((it, i) => {
-                        const isOpen = openIndex === i;
-                        return (
-                            <article key={i} className={`faqItem ${isOpen ? "open" : ""}`}>
-                                <button
-                                    id={`faq-q-${i}`}
-                                    aria-expanded={isOpen}
-                                    aria-controls={`faq-panel-${i}`}
-                                    className="faqQBtn"
-                                    onClick={() => setOpenIndex((prev) => (prev === i ? null : i))}
-                                >
-                                    <span className="faqQText">{it.q}</span>
-                                    <span className="faqChevron" aria-hidden>
-                                    </span>
-                                </button>
-
-                                <div
-                                    id={`faq-panel-${i}`}
-                                    role="region"
-                                    aria-labelledby={`faq-q-${i}`}
-                                    className="faqPanel"
-                                >
-                                    <div className="faqPanelInner">
-                                        <p className="faqA">{it.a}</p>
-                                    </div>
-                                </div>
-                            </article>
-                        );
-                    })}
+                <section className="policyBody">
+                    {items.map((it, i) => (
+                        <article key={i} className="policySection">
+                            <h2>{it.q}</h2>
+                            <p>{it.a}</p>
+                        </article>
+                    ))}
                 </section>
 
             </main>
-
-
         </>
     );
 }

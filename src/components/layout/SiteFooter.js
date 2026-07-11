@@ -8,7 +8,7 @@ export default function SiteFooter() {
         <footer style={{
             backgroundColor: "#1d1d1f",
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
             alignItems: "start",
             justifyContent: "space-between",
             gap: "24px",
@@ -21,26 +21,32 @@ export default function SiteFooter() {
                 alignItems: "flex-start",
                 gap: "8px"
             }}>
-                <span style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+
+                <Link className="site-header__title" to={"/"}>
                     <img src='/favicon-32x32.png' alt='Rifting Wrapped logo' style={{ width: "20px", height: "20px" }} />
                     <span style={{ fontWeight: "800", fontSize: "0.95rem", color: "#fff" }}>
-                        Rifting Wrapped 2026
+                        Rifting Wrapped
                     </span>
-                </span>
+                </Link>
 
-                {[["/", "Home"], ["/faq", "FAQ"], ["https://ko-fi.com/notred27", "Support Us"]].map(([to, label]) => (
-                    <Link key={to} to={to} className="footer-link" style={{ color: "#a0b4c8", textDecoration: "none", fontSize: "0.88rem", fontWeight: "600" }}>
+                {[["https://ko-fi.com/notred27", "Support Us!"], ["/privacy", "Privacy Policy"], ["/terms", "Terms of Service"], ["/faq", "FAQ"]].map(([to, label]) => (
+                    <Link key={to} to={to} className="footer-link" style={{ color: "#a0b4c8", textDecoration: "none", fontSize: "0.88rem", fontWeight: "600", margin: "4px" }}>
                         {label}
                     </Link>
                 ))}
             </div>
 
             <p style={{
-                fontSize: "0.78rem",
-                color: "#7a8a99",
-                lineHeight: "1.6",
-                margin: "0",
-                maxWidth: "1200px"
+                maxWidth: "1200px",
+                marginTop: "4px",
+                padding: "14px 16px",
+                borderRadius: "10px",
+                border: "1px solid rgba(255,255,255,0.06)",
+                background: " rgba(0,0,0,0.25)",
+                color: "#9fb7d8",
+                fontSize: "0.88rem",
+                lineHeight: "1.5",
+                textAlign: "left",
             }}>
                 All data used in Rifting Wrapped comes from the public League of Legends
                 matches a user has participated in. Rifting Wrapped isn't endorsed by Riot

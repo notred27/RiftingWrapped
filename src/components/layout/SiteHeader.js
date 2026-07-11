@@ -7,12 +7,12 @@ export default function SiteHeader() {
             <span style={{ display: "flex", gap: "5px", width: "max-content" }}>
 
                 <Link className="site-header__title" to="/">
-                    <img src='/favicon-32x32.png' alt='rifting wrapped logo' className="site-header__logo" />&nbsp;Rifting Wrapped 2026</Link>
+                    <img src='/favicon-32x32.png' alt='rifting wrapped logo' className="site-header__logo" />&nbsp;Rifting Wrapped</Link>
 
             </span>
-            <nav className="site-header__nav">
+            {/* <nav className="site-header__nav">
                 <Link to="/">Home</Link>
                 <Link to="/faq">FAQ</Link>
-            </nav>
+            </nav> */}
         </header>);
 }

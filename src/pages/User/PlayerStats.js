@@ -17,7 +17,7 @@ import DamageSection from '../../components/slides/DamageSection.js';
 import DateSection from '../../components/slides/DateSection.js';
 import FFSection from '../../components/slides/FFSection.js';
 import KDAsection from '../../components/slides/KDAsection.js';
-import LaneSection from '../../components/slides/LaneSection.js';
+import LaneSection from '../../components/slides/PingSlide.js';
 import TotalTimeBreakdown from '../../components/slides/TotalTimeBreakdown.js';
 
 import './PlayerStats.css'
@@ -30,6 +30,7 @@ import KillsSlide from "../../components/slides/KillsSlide.js";
 import DeathsSlide from "../../components/slides/DeathsSlide.js";
 import RoleSlide from "../../components/slides/RoleSlide.js";
 import CsSlide from "../../components/slides/CsSlide.js";
+import ObjectiveSlide from "../../components/slides/ObjectiveSlide.js";
 
 
 const DEFAULT_YEAR = "2026";
@@ -46,7 +47,7 @@ function PlayerStats() {
 			<UserResourceProvider puuid={puuid} year={year}>
 				<ErrorBoundary fallback={(err) => <UserError error={err} />}>
 					<Suspense fallback={<UserIntroFallback year={year} />}>
-	
+
 
 						<ErrorBoundary fallback={(err) => <StatDisplayError error={err} />} >
 
@@ -55,10 +56,10 @@ function PlayerStats() {
 								<Suspense fallback={<div style={{ height: "500px", width: "80vw" }} />}>
 									<SlideDeck>
 
-							<UserIntro year={year} />
+										<UserIntro year={year} />
 
 										<div className="slide" style={{ '--slide-bg': '#2d5c52', '--slide-fg': '#0f0f0f' }}>
-										<DateSection />
+											<DateSection />
 										</div>
 										<FFSection />
 										<ChampSection />
@@ -70,7 +71,8 @@ function PlayerStats() {
 
 										<RoleSlide puuid={puuid} />
 										<CsSlide puuid={puuid} />
-										
+										<ObjectiveSlide puuid={puuid} />
+
 										<LaneSection puuid={puuid} />
 										<TotalTimeBreakdown puuid={puuid} year={year} />
 									</SlideDeck>

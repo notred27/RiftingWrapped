@@ -8,7 +8,10 @@ import SiteFooter from './components/layout/SiteFooter.js';
 
 
 const Home = lazy(() => import('./pages/Home/Home.js'));
-const FAQ = lazy(() => import('./pages/FAQ/FAQ.js'));
+const FAQ = lazy(() => import('./pages/Policy/FAQ.js'));
+const TOS = lazy(() => import('./pages/Policy/TOS.js'));
+const Privacy = lazy(() => import('./pages/Policy/Privacy.js'));
+
 const About = lazy(() => import('./pages/About/About.js'));
 const Contact = lazy(() => import('./pages/Contact/Contact.js'));
 
@@ -28,6 +31,10 @@ function App() {
                         <Route path="/player/:puuid" element={<PlayerStats />} />
                         <Route path="/addPlayer/:puuid" element={<AddingPlayer />} />
                         <Route path="/faq" element={<FAQ />} />
+                        <Route path="/terms" element={<TOS />} />
+                        <Route path="/privacy" element={<Privacy />} />
+
+
                         {/* <Route path="/about" element={<About />} /> */}
                         {/* <Route path="/contact-us" element={<Contact />} /> */}
                     </Routes>
