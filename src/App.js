@@ -15,10 +15,10 @@ const PlayerStats = lazy(() => import('./pages/User/PlayerStats.js'));
 
 
 
-function App() {
+export default function App() {
     usePageTracking();
     return (
-        <Router>
+        <>
             {/* <div> */}
                 <SiteHeader />
 
@@ -35,7 +35,7 @@ function App() {
 
                 <SiteFooter />
             {/* </div> */}
-        </Router>
+        </>
     );
 }
 
