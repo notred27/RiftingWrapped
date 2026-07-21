@@ -9,11 +9,12 @@ export default function TermsOfService() {
         <>
             <Helmet defer={false}>
                 <title>Terms of Service | Rifting Wrapped</title>
-                <link rel="canonical" href={`https://www.riftingwrapped.com/terms-of-service`} />
+                <link rel="canonical" href={`https://www.riftingwrapped.com/terms`} />
             </Helmet>
 
             <main className="policyContainer">
                 <header className="policyHeader">
+                    <span className="policyEyebrow">Legal</span>
                     <h1>Terms of Service</h1>
                     <p className="policySubtitle">The rules for using Rifting Wrapped.</p>
                     <p className="policyUpdated">Last updated: {LAST_UPDATED}</p>
@@ -32,7 +33,7 @@ export default function TermsOfService() {
                         <h2>2. What Rifting Wrapped is</h2>
                         <p>
                             Rifting Wrapped generates a personalized, year-in-review style summary of a League of
-                            Legends player's public match history — things like top champions, hours played, and
+                            Legends player's public match history: things like top champions, hours played, and
                             highlight games. You don't need to create an account or link your Riot account to use it.
                             When you search for a Riot ID, we look up that account's public match history and add
                             it to our tracker so your stats can continue to update over time.
@@ -53,7 +54,7 @@ export default function TermsOfService() {
                         <h2>4. Public data only</h2>
                         <p>
                             Rifting Wrapped only processes gameplay data that is publicly available through Riot
-                            Games' official API — this includes match history, champion stats, and similar
+                            Games' official API. This includes match history, champion stats, and similar
                             in-game data tied to a public Riot ID. We do not access private account information,
                             payment details, or anything outside of what Riot's public API exposes.
                         </p>
@@ -61,7 +62,7 @@ export default function TermsOfService() {
                             Because League of Legends matches involve multiple players, looking up one Riot ID may
                             surface publicly available gameplay data connected to other players in the same match
                             (for example, in a highlight or heatmap). This is the same public match data Riot
-                            already exposes through its own in-client match history — we don't collect anything
+                            already exposes through its own in-client match history. We don't collect anything
                             beyond that.
                         </p>
                     </article>

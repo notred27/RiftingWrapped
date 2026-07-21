@@ -5,12 +5,15 @@ let cachedResource = null;
 let cachedForCount = null;
 
 export function createSpotlightResource(count = 8) {
+
+    const WRAP_YEAR = 2026;
+
     if (cachedResource && cachedForCount === count) {
         return cachedResource;
     }
 
     const promise = fetchCached(
-        `${process.env.REACT_APP_API_ENDPOINT}/users/spotlight?year=${process.env.REACT_APP_WRAP_YEAR}&count=${count}`,
+        `${process.env.REACT_APP_API_ENDPOINT}/users/spotlight?year=${WRAP_YEAR}&count=${count}`,
         `spotlight-${count}`
     );
 

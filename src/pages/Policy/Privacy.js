@@ -9,11 +9,12 @@ export default function PrivacyPolicy() {
         <>
             <Helmet defer={false}>
                 <title>Privacy Policy | Rifting Wrapped</title>
-                <link rel="canonical" href={`https://www.riftingwrapped.com/privacy-policy`} />
+                <link rel="canonical" href={`https://www.riftingwrapped.com/privacy`} />
             </Helmet>
 
             <main className="policyContainer">
                 <header className="policyHeader">
+                    <span className="policyEyebrow">Legal</span>
                     <h1>Privacy Policy</h1>
                     <p className="policySubtitle">How Rifting Wrapped handles data.</p>
                     <p className="policyUpdated">Last updated: {LAST_UPDATED}</p>
@@ -25,7 +26,7 @@ export default function PrivacyPolicy() {
                         <p>
                             Rifting Wrapped ("we", "us") respects your privacy. This policy explains what data we
                             collect, how we use it, and the choices you have. We only process public gameplay data
-                            available from Riot Games' API — we don't require an account, a login, or any private
+                            available from Riot Games' API. We don't require an account, a login, or any private
                             personal information to use the Site.
                         </p>
                     </article>
@@ -36,10 +37,10 @@ export default function PrivacyPolicy() {
                             request that account's publicly available match history, champion stats, and related
                             gameplay data from Riot's official API, and store it so your Wrapped can continue
                             updating. We do not collect private account details, payment information, or Riot
-                            account credentials — Rifting Wrapped never asks for your password and never requires
+                            account credentials. Rifting Wrapped never asks for your password and never requires
                             you to log in with your Riot account.</p>
                         <p><strong>Usage analytics.</strong> We use Google Analytics (GA4) to understand how
-                            visitors use the Site — for example, which pages are viewed and how people navigate
+                            visitors use the Site: for example, which pages are viewed and how people navigate
                             between them. Google Analytics may use cookies or similar technologies and may collect
                             standard technical information such as your approximate location (derived from IP
                             address), browser type, device type, and pages visited. We do not use this data to
@@ -73,9 +74,9 @@ export default function PrivacyPolicy() {
                         <h2>5. Third-party services</h2>
                         <p>We rely on a small number of third-party services to run Rifting Wrapped:</p>
                         <ul>
-                            <li><strong>Riot Games API</strong> — the source of all match and gameplay data</li>
-                            <li><strong>Google Analytics</strong> — for aggregate, anonymized usage statistics</li>
-                            <li><strong>Hosting and infrastructure providers</strong> — to run the Site and store match data</li>
+                            <li><strong>Riot Games API</strong>: the source of all match and gameplay data</li>
+                            <li><strong>Google Analytics</strong>: for aggregate, anonymized usage statistics</li>
+                            <li><strong>Hosting and infrastructure providers</strong>: to run the Site and store match data</li>
                         </ul>
                         <p>
                             Each of these providers has its own privacy practices governing any data they process

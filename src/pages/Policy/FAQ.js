@@ -60,7 +60,8 @@ export default function FAQ({ items = DEFAULT_FAQ }) {
 
             <main className="policyContainer">
                 <header className="policyHeader">
-                    <h1>FAQ</h1>
+                    <span className="policyEyebrow">Support</span>
+                    <h1>Frequently Asked Questions</h1>
                     <p className="policySubtitle">Quick answers to frequently asked questions about Rifting Wrapped.</p>
                 </header>
 
