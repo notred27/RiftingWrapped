@@ -9,15 +9,15 @@
 }
 
 #homePageLink {
-    background-color: #0f2331;
+    background-color: var(--second-bg-color);
     cursor: pointer;
 }
 
 #homePageLink:hover {
-    background-color: #1a3a51;
-    -webkit-transition: background-color 80ms linear;
-    -ms-transition: background-color 80ms linear;
-    transition: background-color 80ms linear;
+    filter: brightness(1.3);
+    -webkit-transition: filter 80ms linear;
+    -ms-transition: filter 80ms linear;
+    transition: filter 80ms linear;
 }
 
 @media (max-width: 768px) {
@@ -217,14 +217,14 @@ h4 {
 
 @media (max-width: 600px) {
     #SurrenderGrid h2 {
-        font-size: 14px;
+        font-size: var(--fs-xs);
         line-height: 1.3;
     }
 
 
 
     #SurrenderGrid+h2 {
-        font-size: 14px;
+        font-size: var(--fs-xs);
         line-height: 1.3;
     }
 
@@ -262,7 +262,7 @@ h4 {
 
 
     .champText h2 {
-        font-size: 16px;
+        font-size: var(--fs-sm);
     }
 
     #ChampHistogram {
@@ -311,7 +311,7 @@ h4 {
 
 .shareButtonRow button {
     width: 180px;
-    font-size: 12px;
+    font-size: var(--fs-2xs);
 
 }
 
@@ -339,7 +339,7 @@ h4 {
     .shareButtonRow button {
         width: 100%;
         padding: 12px;
-        font-size: 12px;
+        font-size: var(--fs-2xs);
         text-align: center;
         margin: 0px;
     }
@@ -360,19 +360,19 @@ h4 {
 
 
     h2 {
-        font-size: 1.2rem;
+        font-size: var(--fs-md);
     }
 
     h3 {
-        font-size: 1rem;
+        font-size: var(--fs-sm);
     }
 
     .champText h1 {
-        font-size: 28px;
+        font-size: var(--fs-xl);
     }
 
     .champText h2 {
-        font-size: 16px;
+        font-size: var(--fs-sm);
     }
 }
 
@@ -381,13 +381,13 @@ h4 {
 
 .shareButton {
     background-color: #696c70ff;
-    color: white;
+    color: var(--text-color);
     width: 200px;
     padding: 10px 20px;
     text-align: center;
     text-decoration: none;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: var(--fs-sm);
     border: none;
     cursor: pointer;
     display: inline-block;
@@ -473,9 +473,9 @@ h4 {
 
 
 .tableLabel {
-    font-size: 0.85rem;
+    font-size: var(--fs-xs);
     font-weight: 500;
-    color: #b0b0b0;
+    color: var(--text-muted-color);
     text-align: center;
     margin-top: 4px;
     margin-bottom: 12px;

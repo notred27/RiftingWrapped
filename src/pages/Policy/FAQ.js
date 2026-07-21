@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 
 import "./Policy.css"
+
 const DEFAULT_FAQ = [
     {
         q: "What is Rifting Wrapped?",

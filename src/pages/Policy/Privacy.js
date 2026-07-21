@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import "./Policy.css";
 
 const LAST_UPDATED = "July 11, 2026";
-const CONTACT_EMAIL = "your-email@riftingwrapped.com"; // TODO: replace with your real contact email
+const CONTACT_EMAIL = "support@riftingwrapped.com";
 
 export default function PrivacyPolicy() {
     return (
@@ -115,7 +115,7 @@ export default function PrivacyPolicy() {
                         <h2>9. Your choices</h2>
                         <p>
                             You can use most of Rifting Wrapped without providing any personal information.
-                            Riot IDs are public information, not personal account data. 
+                            Riot IDs are public information, not personal account data.
                             {/* If you provided an email for notifications, you can request that we delete it at any time.  */}
                             You can also disable analytics cookies through your browser.
                         </p>
@@ -138,10 +138,6 @@ export default function PrivacyPolicy() {
                     </article>
                 </section>
 
-                <p className="policyDisclaimer">
-                    Rifting Wrapped isn't endorsed by Riot Games and doesn't reflect the views or opinions of
-                    Riot Games or anyone officially involved in producing or managing League of Legends.
-                </p>
             </main>
         </>
     );

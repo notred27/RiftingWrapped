@@ -11,8 +11,8 @@ export default function PillPreviewCard({ username, icon, hoursPlayed, champName
                     alt={`${champName} splash`}
                     style={{ height: "150px", transform: "translateY(-10%)" }}
                 />
-                <div style={{ position: "absolute", bottom: "0", left: "0", width: "100%", height: "50px", backgroundColor: "#0f2331", boxShadow: "2px -2px 2px 2px #0f2331" }}>
-                    <p style={{ padding: "10px", margin: "0px", fontSize: "12px", textAlign: "left" }}><strong>
+                <div style={{ position: "absolute", bottom: "0", left: "0", width: "100%", height: "50px", backgroundColor: "var(--second-bg-color)", boxShadow: "2px -2px 2px 2px var(--second-bg-color)" }}>
+                    <p style={{ padding: "10px", margin: "0px", fontSize: "var(--fs-2xs)", textAlign: "left" }}><strong>
 
                         <img
                             src={icon}

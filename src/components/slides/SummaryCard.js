@@ -1,19 +1,28 @@
 import "./SummaryCard.css";
-import Roles from "./../../images/tmpRoles.png"
-import Kills from "./../../images/tmpKills.png"
-import Deaths from "./../../images/tmpDeaths.png"
 
 import { useStatsResources } from "../../resources/UserResourceContext.js";
 import { calcTopChamps } from "./ChampSection.js"
+import { filterByRole } from "./RoleSlide.js"
+import RoleGraph from "../graphs/RoleGraph.js"
+import MapOverlay from "../graphs/MapOverlay.js"
+import ObjectiveBubbleChart from "../graphs/ObjectiveBubbleChart.js"
 
-
-export default function SummaryCard({ year = "2025", totalPlaytime }) {
-    const { champ, user } = useStatsResources();
+export default function SummaryCard({ year = "2025" }) {
+    const { champ, user, role, combatTotals, timeBreakdownStats, objectives } = useStatsResources();
     const userInfo = user.read();
 
     const [sortedNames, sortedCounts] = calcTopChamps(champ.read())
     const topChampName = sortedNames[0]
     const topChampCount = sortedCounts[0];
+
+    const roleArr = filterByRole(role.read());
+    const topRole = roleArr[0];
+
+    const combatStats = combatTotals.read()[0];
+
+    const totalPlaytime = Math.floor((timeBreakdownStats.read()[0]?.totalPlaytime ?? 0) / 3600);
+
+    const objectiveArr = objectives.read()[0] || {};
 
     return (
         <div className="summary-wrapper">
@@ -65,14 +74,17 @@ export default function SummaryCard({ year = "2025", totalPlaytime }) {
 
 
                     <div id="game-mode-stats" className="stat-card">
-                        <div className="stat-label">Top Game Modes</div>
+                        <div className="stat-label">Top Objectives</div>
 
-                        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "100%", alignItems: "center" }}>
-
-                            <div className="stat-number">Swiftplay <div className="label">205 games</div></div>
-                            <div className="stat-number">Arena <div className="label">138 games</div></div>
-                            <div className="stat-number">Brawl <div className="label">27 games</div></div>
-                        </div>
+                        <ObjectiveBubbleChart objectives={{
+                            barons: objectiveArr["barons"],
+                            dragons: objectiveArr["dragons"],
+                            riftHeralds: objectiveArr["riftHeralds"],
+                            voidGrubs: objectiveArr["voidGrubs"],
+                            atakhan: objectiveArr["atakhans"],
+                            towers: objectiveArr["towers"],
+                            inhibitors: objectiveArr["inhibitors"]
+                        }} />
                     </div>
 
 
@@ -80,9 +92,9 @@ export default function SummaryCard({ year = "2025", totalPlaytime }) {
                         <div className="stat-label">Favorite Role</div>
                         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "100%", alignItems: "center", gap: "4px" }}>
 
-                            <img src={Roles} style={{ width: "80px" }} alt={`most played role: `} />
-                            <div className="stat-number">Jungle</div>
-                            <div className="label">138 games (50% WR)</div>
+                            <RoleGraph roles={roleArr} />
+                            <div className="stat-number">{topRole?.label || "Everywhere"}</div>
+                            <div className="label">{topRole?.games || 0} games ({topRole?.winRate || 0}% WR)</div>
                         </div>
 
                     </div>
@@ -90,22 +102,21 @@ export default function SummaryCard({ year = "2025", totalPlaytime }) {
 
                     <div id="kill-stats" className="big-stat">
                         <div className="big-stat__text">
-                            <div className="num">2,223</div>
+                            <div className="num">{(combatStats?.totalKills ?? 0).toLocaleString()}</div>
                             <div className="label" style={{ paddingBottom: "4px" }}>Kills</div>
                         </div>
 
-
-                        <img src={Kills} style={{ width: "90%", borderRadius: "6px" }} alt="kills heatmap" />
+                        <MapOverlay type="kills" />
 
                     </div>
 
                     <div id="death-stats" className="big-stat">
                         <div className="big-stat__text">
 
-                            <div className="num">3,342</div>
+                            <div className="num">{(combatStats?.totalDeaths ?? 0).toLocaleString()}</div>
                             <div className="label" style={{ paddingBottom: "4px" }}>Deaths</div>
                         </div>
-                        <img src={Deaths} style={{ width: "90%", borderRadius: "6px" }} alt="deaths heatmap" />
+                        <MapOverlay type="deaths" />
 
                     </div>
 

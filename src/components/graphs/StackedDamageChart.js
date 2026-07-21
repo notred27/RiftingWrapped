@@ -61,9 +61,9 @@ function StackedDamageChart({ damageDealt = [0, 0, 0], damageTaken = [0, 0, 0] }
       legend: { display: false },
       title: { display: false },
       tooltip: {
-        backgroundColor: '#1a1a19',
-        titleColor: '#fffce8',
-        bodyColor: '#fffce8',
+        backgroundColor: '#141a21',
+        titleColor: '#FFFFFF',
+        bodyColor: '#FFFFFF',
         padding: 8,
         callbacks: {
           label: (context) => {
@@ -90,7 +90,7 @@ function StackedDamageChart({ damageDealt = [0, 0, 0], damageTaken = [0, 0, 0] }
       },
       y: {
         stacked: true,
-        ticks: { color: '#fffce8', font: { size: 13 } },
+        ticks: { color: '#FFFFFF', font: { size: 13 } },
         grid: { display: false },
       },
     },
@@ -102,15 +102,15 @@ function StackedDamageChart({ damageDealt = [0, 0, 0], damageTaken = [0, 0, 0] }
         <Bar data={data} options={options} />
       </div>
       <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '12px' }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#aaa' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: 'var(--fs-2xs)', color: 'var(--text-muted-color)' }}>
           <span style={{ width: '10px', height: '10px', borderRadius: '3px', background: COLORS.physical, display: 'inline-block' }} />
           physical
         </span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#aaa' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: 'var(--fs-2xs)', color: 'var(--text-muted-color)' }}>
           <span style={{ width: '10px', height: '10px', borderRadius: '3px', background: COLORS.true, display: 'inline-block' }} />
           true
         </span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#aaa' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: 'var(--fs-2xs)', color: 'var(--text-muted-color)' }}>
           <span style={{ width: '10px', height: '10px', borderRadius: '3px', background: COLORS.magic, display: 'inline-block' }} />
           magic
         </span>

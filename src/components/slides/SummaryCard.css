@@ -13,9 +13,9 @@
 
 
 :root {
-  --bg-grad: linear-gradient(180deg, #0f1922 0%, #061015 100%);
-  --text: #ECE9D7;
-  --muted: #6C6C6C;
+  --bg-grad: var(--bg-color);
+  --text: var(--text-color);
+  --muted: var(--text-muted-color);
   --card-radius: 24px;
 }
 
@@ -34,7 +34,7 @@
   /* max-height: 98vh; */
   max-width: 90%;
   color: var(--text);
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-family: var(--font-body);
   text-align: center;
   background: var(--bg-grad);
   border-radius: var(--card-radius);
@@ -61,15 +61,16 @@
 }
 
 .username {
-  font-size: 36px;
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
   font-weight: 900;
   margin: 0;
   line-height: 1;
 }
 
 .username .tag {
-  color: #7E7E7E;
-  font-size: 28px;
+  color: var(--muted);
+  font-size: var(--fs-xl);
   margin-left: 6px;
   font-weight: 900;
 }
@@ -100,7 +101,7 @@
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(6px);
   font-weight: 800;
-  font-size: 16px;
+  font-size: var(--fs-sm);
 }
 
 .stats-grid {
@@ -124,15 +125,16 @@
 }
 
 .stat-label {
-  font-size: 16px;
-  color: #9DA3A6;
+  font-size: var(--fs-sm);
+  color: var(--muted);
   font-weight: 700;
   margin-bottom: 8px;
   text-decoration: underline;
 }
 
 .stat-number {
-  font-size: large;
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
   font-weight: 900;
   margin: 0;
 }
@@ -148,13 +150,14 @@
 }
 
 .big-stat .num {
-  font-size: x-large;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
   font-weight: 900;
 }
 
 .label {
-  font-size: 14px;
-  color: #9DA3A6;
+  font-size: var(--fs-xs);
+  color: var(--muted);
   font-weight: 700;
 }
 
@@ -174,7 +177,7 @@
 .appName {
   padding: 6px 10px;
   border-radius: 10px;
-  font-size: 12px;
+  font-size: var(--fs-2xs);
 }
 
 
@@ -203,7 +206,7 @@
   }
 
   .appName {
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     padding: 2px 4px;
     border-radius: 2px;
   }
@@ -219,11 +222,11 @@
   }
 
   .username {
-    font-size: 20px;
+    font-size: var(--fs-md);
   }
 
   .username .tag {
-    font-size: 14px;
+    font-size: var(--fs-xs);
     margin-left: 6px;
   }
 
@@ -236,7 +239,7 @@
     left: 4px;
     top: 4px;
     padding: 6px 8px;
-    font-size: 12px;
+    font-size: var(--fs-2xs);
     border-radius: 8px;
   }
 
@@ -254,34 +257,30 @@
   }
 
   .stat-card .label {
-    font-size: 12px;
+    font-size: var(--fs-2xs);
     margin-bottom: 10px;
     font-weight: normal;
-    color: #9DA3A6;
+    color: var(--muted);
   }
 
   .stat-label {
-    font-size: 12px;
+    font-size: var(--fs-2xs);
   }
 
   .stat-number {
-    font-size: large;
+    font-size: var(--fs-md);
   }
 
-
-  .big-stat .num {
-    font-size: 24px;
-  }
 
   .big-stat .label {
-    font-size: 12px;
+    font-size: var(--fs-2xs);
   }
 
 
   .card-footer {
     justify-content: center;
     padding-top: 10px;
-    font-size: 12px;
+    font-size: var(--fs-2xs);
     gap: 8px;
   }
 

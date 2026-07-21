@@ -108,10 +108,10 @@ export default function UserSearchBar() {
 
     function renderRow(user) {
         return (
-            <div style={{ color: "white", display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+            <div style={{ color: "var(--text-color)", display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
                 <img alt="user-icon" src={user.icon} style={{ width: "25px", height: "25px", borderRadius: "4px", marginRight: "4px" }} />
                 <span>{user.displayName}#{user.tag ?? ""}</span>
-                <span style={{ backgroundColor: "#201c3aff", color: "#aaa", marginLeft: "4px", padding: "2px 4px", borderRadius: "2px" }}> {user.region ?? ""}</span>
+                <span style={{ backgroundColor: "var(--second-bg-color)", color: "var(--text-muted-color)", marginLeft: "4px", padding: "2px 4px", borderRadius: "2px" }}> {user.region ?? ""}</span>
             </div>
         );
     }
@@ -159,9 +159,9 @@ export default function UserSearchBar() {
                                 width:"fit-content",
                                 minWidth:"300px",
                                 overflowY: "auto",
-                                border: "1px solid #ddd",
+                                border: "1px solid var(--second-bg-color)",
                                 borderRadius: 6,
-                                background: "white",
+                                background: "var(--second-bg-color)",
                                 margin: 0,
                                 padding: 0,
                                 listStyle: "none",
@@ -196,7 +196,7 @@ export default function UserSearchBar() {
                     ) : null)}
             </div>
 
-            <select defaultValue="NA1" aria-label="region select" id="regionSelect" style={{fontSize:"18px", width:"80px", height:"auto", cursor:"pointer", backgroundColor:"#201c3aff", padding:"none", borderRadius:"0px", border:"none", marginRight:"5px"}} >
+            <select defaultValue="NA1" aria-label="region select" id="regionSelect" style={{width:"80px", height:"auto", cursor:"pointer", backgroundColor:"var(--second-bg-color)", padding:"none", borderRadius:"0px", border:"none", marginRight:"5px"}} >
                 <option value="BR1">BR1</option>
                 <option value="EUN1">EUN1</option>
                 <option value="EUW1">EUW1</option>

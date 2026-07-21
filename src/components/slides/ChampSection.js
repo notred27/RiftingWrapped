@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useStatsResources } from "../../resources/UserResourceContext.js";
 
+import { useStatsResources } from "../../resources/UserResourceContext.js";
 
 import HorizontalBarChart from '../graphs/ChampGraph.js';
 import ChampGrid from '../graphs/ChampGrid.js';

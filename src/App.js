@@ -1,31 +1,24 @@
 import { lazy } from 'react';
 
-import { Link, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
-import SiteHeader from './components/layout/SiteHeader.js';
 import SiteFooter from './components/layout/SiteFooter.js';
-
-
+import SiteHeader from './components/layout/SiteHeader.js';
 
 const Home = lazy(() => import('./pages/Home/Home.js'));
 const FAQ = lazy(() => import('./pages/Policy/FAQ.js'));
 const TOS = lazy(() => import('./pages/Policy/TOS.js'));
 const Privacy = lazy(() => import('./pages/Policy/Privacy.js'));
-
-const About = lazy(() => import('./pages/About/About.js'));
-const Contact = lazy(() => import('./pages/Contact/Contact.js'));
-
 const AddingPlayer = lazy(() => import('./pages/User/AddingPlayer.js'));
 const PlayerStats = lazy(() => import('./pages/User/PlayerStats.js'));
 
-
-function App() {
+export default function App() {
     return (
-        <Router >
-            <div>
+        <Router>
+            {/* <div> */}
                 <SiteHeader />
 
-                <main style={{ minHeight: "80vh" }}>
+                <main>
                     <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/player/:puuid" element={<PlayerStats />} />
@@ -33,17 +26,12 @@ function App() {
                         <Route path="/faq" element={<FAQ />} />
                         <Route path="/terms" element={<TOS />} />
                         <Route path="/privacy" element={<Privacy />} />
-
-
-                        {/* <Route path="/about" element={<About />} /> */}
-                        {/* <Route path="/contact-us" element={<Contact />} /> */}
                     </Routes>
                 </main>
 
                 <SiteFooter />
-            </div>
+            {/* </div> */}
         </Router>
     );
 }
 
-export default App;

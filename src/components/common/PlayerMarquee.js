@@ -1,13 +1,9 @@
-import { Suspense, useMemo } from 'react';
+import { Suspense } from 'react';
 
-import Marquee from 'react-fast-marquee';
-
-import { createSpotlightResource } from '../../resources/SpotlightResource';
 import ErrorBoundary from '../error/ErrorBoundary';
-import PillPreviewCard from './PillPreviewCard';
-
 import SpotlightMarqueeContent from './SpotlightMarqueeContent.js'
 
+// import PillPreviewCard from './PillPreviewCard';
 // const demoCards = [ /* ...your existing fallback data... */ ];
 
 

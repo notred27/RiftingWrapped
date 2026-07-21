@@ -6,7 +6,7 @@ import StatCard from '../layout/StatCard.js';
 import './LaneSection.css';
 
 
-function filterByRole(arr) {
+export function filterByRole(arr) {
 
     // Filter games by role, should move to backend
     const roleDicts = {
@@ -57,8 +57,6 @@ export default function RoleSlide({ puuid }) {
     const roleArr = filterByRole(role.read());
     const playedRoles = roleArr.filter(r => r.games > 0).sort((a, b) => b.games - a.games);
     const unplayedRoles = roleArr.filter(r => r.games === 0);
-    const totalRoleGames = roleArr.reduce((sum, role) => sum + role.games, 0);
-
 
     return (
         <StatCard

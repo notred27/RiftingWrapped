@@ -1,26 +1,26 @@
-import { useState, useEffect, Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
-import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { useNavigate } from 'react-router-dom';
 
 import { PlayerListProvider } from '../../resources/PlayerListContext';
 import { fetchCached } from '../../resources/fetchCached';
 
 import UserSearchBar from '../../components/common/UserSearchBar';
-
-import bg_image from '../../images/Jax_0.webp'
-import './Home.css';
 import PlayerMarquee from '../../components/common/PlayerMarquee';
-
-import ErrorBoundary from '../../components/error/ErrorBoundary';
 import GenericSearch from '../../components/common/GenericSearch';
+import ErrorBoundary from '../../components/error/ErrorBoundary';
 
-function Home() {
-    const navigate = useNavigate();
 
-    const [numUsers, setNumUsers] = useState(140);
+import bg_image from '../../images/Jax_0.webp';
+import './Home.css';
+
+
+export default function Home() {
+    const [numUsers, setNumUsers] = useState(290);
     const [selectedPlayer, setSelectedPlayer] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
 
     const WRAP_YEAR = 2026;
 
@@ -150,9 +150,9 @@ function Home() {
                                 gap: "0px",
                                 alignItems: "center",
                                 width: "100%",
-                                backgroundColor: "#1c2a38",
+                                backgroundColor: "var(--second-bg-color)",
                                 padding: "4px",
-                                borderBottom: "4px solid #0070bb",
+                                borderBottom: "4px solid var(--accent-color)",
                                 borderRadius: "4px"
                             }}>
                                 <PlayerListProvider>
@@ -171,7 +171,7 @@ function Home() {
                         </form>
 
 
-                        {selectedPlayer && !isLoading && <p className="search-error" style={{ maxWidth: "400px", fontSize: "small" }}>{selectedPlayer}</p>}
+                        {selectedPlayer && !isLoading && <p className="search-error" style={{ maxWidth: "400px", fontSize: "var(--fs-xs)" }}>{selectedPlayer}</p>}
                         {isLoading &&
 
                             <p className="loading-text">
@@ -192,17 +192,16 @@ function Home() {
                 <h2 style={{
                     margin: "20px 0 30px",
                     maxWidth: "500px",
-                    fontSize: "16px",
+                    fontSize: "var(--fs-sm)",
                     fontWeight: "normal",
-                    color: "#ccc",
+                    color: "var(--text-muted-color)",
                     lineHeight: "1.6",
                     zIndex: "1"
                 }}>
-                    Don't see your username? Join over <span style={{ fontWeight: "700", color: "#4A9EFF" }}><i>{numUsers} players</i></span> in tracking your yearly <strong>LOL</strong> metrics!
+                    Don't see your username? Join over <span style={{ fontWeight: "700", color: "var(--accent-color)" }}><i>{numUsers} players</i></span> in tracking your yearly <strong>LOL</strong> metrics!
                 </h2>
             </div>
         </>
     );
 }
 
-export default Home;

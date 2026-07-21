@@ -2,7 +2,7 @@ import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
-const ACCENT = '#D4537E'; // top ping only
+const ACCENT = '#c52184'; // top ping only
 const MUTED = '#3a3a37';  // every other ping
 
 function PingGraph({ pings, labels }) {
@@ -35,15 +35,15 @@ function PingGraph({ pings, labels }) {
       },
       y: {
         grid: { display: false },
-        ticks: { color: '#fffce8', font: { size: 12 } },
+        ticks: { color: '#FFFFFF', font: { size: 12 } },
       },
     },
     plugins: {
       legend: { display: false }, // labels sit on the axis instead - no color-matching needed
       tooltip: {
-        backgroundColor: '#1a1a19',
-        titleColor: '#fffce8',
-        bodyColor: '#fffce8',
+        backgroundColor: '#141a21',
+        titleColor: '#FFFFFF',
+        bodyColor: '#FFFFFF',
         padding: 8,
         callbacks: {
           label: (tooltipItem) => ` ${tooltipItem.raw.toLocaleString()} pings`,

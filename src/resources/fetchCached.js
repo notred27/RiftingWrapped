@@ -3,7 +3,7 @@ export async function fetchCached(url, key, ttl = 30 * 60 * 1000) {
 	try {
 		cached = JSON.parse(localStorage.getItem(key) || 'null');
 	} catch (e) {
-		// corrupted cache => drop it
+		// corrupted cache drop
 		console.warn('fetchCached: bad cache for', key, e);
 		localStorage.removeItem(key);
 		cached = null;

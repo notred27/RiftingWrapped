@@ -76,7 +76,7 @@ function CalanderGraph({ dates }) {
       <span
         style={{
           marginTop: "6px",
-          fontSize: "0.7rem",
+          fontSize: "var(--fs-2xs)",
         }}
       >
         {bar.month.slice(0, 3)}

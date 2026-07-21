@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import "./Policy.css";
 
 const LAST_UPDATED = "July 11, 2026";
-const CONTACT_EMAIL = "your-email@riftingwrapped.com"; // TODO: replace with your real contact email
+const CONTACT_EMAIL = "support@riftingwrapped.com";
 
 export default function TermsOfService() {
     return (
@@ -133,9 +133,6 @@ export default function TermsOfService() {
                     </article>
                 </section>
 
-                <p className="policyDisclaimer">
-                    Rifting Wrapped isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
-                </p>
             </main>
         </>
     );

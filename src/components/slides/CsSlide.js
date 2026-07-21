@@ -1,17 +1,11 @@
 import { useStatsResources } from '../../resources/UserResourceContext.js';
 
-import RoleGraph from './../graphs/RoleGraph.js';
-import PingGraph from './../graphs/PingGraph.js';
-import ObjectiveBubbleChart from './../graphs/ObjectiveBubbleChart.js';
-
 import TableEntry from './../common/TableEntry.js';
-
-
-
 import StatCard from '../layout/StatCard.js';
-
-import './LaneSection.css'
 import StatGrid from '../layout/StatGrid.js';
+
+import './LaneSection.css';
+
 
 function filterByRole(arr) {
 
@@ -80,44 +74,44 @@ export default function CsSlide({ puuid }) {
 
 
     return (
-            <StatCard
-                eyebrow={"You stayed busy, with an average of"}
-                title={`${(Math.floor((csArr.stats[0].totalMinions + csArr.stats[0].totalJungleMinions) / csArr.stats[0].numGames * 10) / 10).toLocaleString()} CS `}
-                subtitle={"per game"}
-            >
+        <StatCard
+            eyebrow={"You stayed busy, with an average of"}
+            title={`${(Math.floor((csArr.stats[0].totalMinions + csArr.stats[0].totalJungleMinions) / csArr.stats[0].numGames * 10) / 10).toLocaleString()} CS `}
+            subtitle={"per game"}
+        >
 
-                <StatGrid items={[
-                    { label: "Minions Killed", value: `${csArr.stats[0].totalMinions.toLocaleString()}` },
-                    { label: "Jungle Monsters Killed", value: `${csArr.stats[0].totalJungleMinions.toLocaleString()}` },
+            <StatGrid items={[
+                { label: "Minions Killed", value: `${csArr.stats[0].totalMinions.toLocaleString()}` },
+                { label: "Jungle Monsters Killed", value: `${csArr.stats[0].totalJungleMinions.toLocaleString()}` },
 
-                ]} />
+            ]} />
 
-                <br />
+            <br />
 
-                <div>
-                    <p className='tableLabel'>Your Games With The Highest CS</p>
+            <div>
+                <p className='tableLabel'>Your Games With The Highest CS</p>
 
-                    {csArr.bestCs.map((game, idx) => <TableEntry key={`Highest_CS_Entry_${idx}`} puuid={puuid} match={game} />)}
+                {csArr.bestCs.map((game, idx) => <TableEntry key={`Highest_CS_Entry_${idx}`} puuid={puuid} match={game} />)}
 
-                </div>
+            </div>
 
-                <div >
-                    <h2>
-                        Games under 100CS
-                    </h2>
+            <div >
+                <h2>
+                    Games under 100CS
+                </h2>
 
-                    <p className='emphasize-lg'>{csArr.stats[0].lowCsGames.toLocaleString()} games</p>
-                    <p className='subtitle'>
-                        * This excludes special game modes, and games that lasted less than 15 minutes.
-                    </p>
-                </div>
+                <p className='emphasize-lg'>{csArr.stats[0].lowCsGames.toLocaleString()} games</p>
+                <p className='subtitle'>
+                    * This excludes special game modes, and games that lasted less than 15 minutes.
+                </p>
+            </div>
 
-                {/* <div>
+            {/* <div>
                         {csArr.worstCs.map((game, idx) => <TableEntry key={`Lowest_CS_Entry_${idx}`} puuid={puuid} match={game} />)}
                         <p className='tableLabel'>Your Games With The Lowest CS</p>
                     </div> */}
 
-            </StatCard>
+        </StatCard>
 
 
     );

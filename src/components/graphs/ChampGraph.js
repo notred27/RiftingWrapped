@@ -3,8 +3,8 @@ import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, Li
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 const MUTED = '#3a3a37';
-const ACCENT = '#d4537e';
-const TEXT_COLOR = '#fffce8';
+const ACCENT = '#c52184';
+const TEXT_COLOR = '#FFFFFF';
 const GRID_COLOR = 'rgba(255, 252, 232, 0.12)';
 
 const valueLabelPlugin = {
@@ -106,7 +106,7 @@ function HorizontalBarChart({ champs, values }) {
 				},
 			},
 			tooltip: {
-				backgroundColor: '#1a1a19',
+				backgroundColor: '#141a21',
 				titleColor: TEXT_COLOR,
 				bodyColor: TEXT_COLOR,
 				padding: 8,

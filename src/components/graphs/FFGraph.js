@@ -3,7 +3,7 @@ import { Chart as ChartJS, BarElement, Tooltip, CategoryScale, LinearScale } fro
 ChartJS.register(BarElement, Tooltip, CategoryScale, LinearScale);
 
 const MUTED = '#3a3a37';
-const ACCENT = '#D4537E';
+const ACCENT = '#c52184';
 
 export default function FFGraph({ youFFd, enemiesFFd }) {
     const data = {
@@ -30,15 +30,15 @@ export default function FFGraph({ youFFd, enemiesFFd }) {
             },
             y: {
                 grid: { display: false },
-                ticks: { color: '#fffce8', font: { size: 12 } },
+                ticks: { color: '#FFFFFF', font: { size: 12 } },
             },
         },
         plugins: {
             legend: { display: false },
             tooltip: {
-                backgroundColor: '#1a1a19',
-                titleColor: '#fffce8',
-                bodyColor: '#fffce8',
+                backgroundColor: '#141a21',
+                titleColor: '#FFFFFF',
+                bodyColor: '#FFFFFF',
                 padding: 8,
                 callbacks: {
                     label: (context) => `${context.raw.toLocaleString()} games`,

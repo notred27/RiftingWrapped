@@ -26,8 +26,8 @@ body,
 .heroContainer {
     position: relative;
     width: 100%;
-    background: linear-gradient(120deg, #0f1923 0%, #000 100%);
-    color: #fff;
+    background: linear-gradient(120deg, var(--bg-color) 0%, #000 100%);
+    color: var(--text-color);
     padding: clamp(40px, 8vh, 120px) clamp(16px, 5vw, 80px);
     display: flex;
     justify-content: center;
@@ -84,13 +84,14 @@ body,
 }
 
 .heroText h1 {
-    font-size: 3rem;
+    font-family: var(--font-display);
+    font-size: var(--fs-display-md);
     margin-bottom: 20px;
 }
 
 .heroText p {
-    font-size: 1.2rem;
-    color: #ccc;
+    font-size: var(--fs-md);
+    color: var(--text-muted-color);
     margin-bottom: 30px;
 }
 
@@ -108,21 +109,21 @@ body,
 #regionSelect {
 
     padding: 12px;
-    font-size: 1.5rem;
+    font-size: var(--fs-lg);
     border-radius: 6px;
     border: 1px solid #444;
-    background: #1c2a38;
-    color: #fff;
+    background: var(--second-bg-color);
+    color: var(--text-color);
 
 }
 
 
 #nameInput {
     padding: 10px;
-    font-size: 1.5rem;
+    font-size: var(--fs-lg);
     border: none;
-    background: #1c2a38;
-    color: #fff;
+    background: var(--second-bg-color);
+    color: var(--text-color);
     width: 100%;
     max-width: 100%;
     height: 54px;
@@ -133,9 +134,9 @@ body,
 
 #submitBtn {
     padding: 12px;
-    font-size: 1rem;
-    background: rgb(0, 112, 187);
-    color: #fff;
+    font-size: var(--fs-sm);
+    background: var(--accent-color);
+    color: var(--text-color);
     border: none;
     cursor: pointer;
     border-radius: 6px;
@@ -148,9 +149,9 @@ body,
 }
 
 #submitBtn:hover {
-    background: #1a8ae0;  /* lighter blue, not darker */
+    filter: brightness(1.15);  /* lighter, not darker */
     transform: translateY(-1px);  /* subtle lift */
-    transition: background .2s ease, transform .15s ease;
+    transition: filter .2s ease, transform .15s ease;
 }
 
 /* touch target hint */
@@ -262,12 +263,11 @@ iframe {
     }
 
     .heroText h1 {
-        font-size: 2.4rem;
         line-height: 1.05;
     }
 
     .heroText p {
-        font-size: 1.05rem;
+        font-size: var(--fs-sm);
     }
 }
 
@@ -281,7 +281,7 @@ iframe {
     }
 
     .siteHeader .logo {
-        font-size: 1.1rem;
+        font-size: var(--fs-sm);
         font-weight: 800;
     }
 
@@ -297,13 +297,8 @@ iframe {
         text-align: center;
     }
 
-    .heroText h1 {
-        font-size: 2rem;
-    }
-
     .heroText p {
-        font-size: .98rem;
-        color: #d0d7de;
+        color: var(--text-muted-color);
     }
 
     .searchForm {
@@ -312,25 +307,24 @@ iframe {
     }
 
     #nameInput {
-        font-size: 1rem;
+        font-size: var(--fs-sm);
         /* padding: 10px 12px; */
         /* border-radius: 8px; */
         max-width: 100%;
     }
 
-    
+
 
     #submitBtn {
         min-width: 0;
         padding: 12px;
-        font-size: 1rem;
         border-radius: 8px;
         margin-top: 0;
         width: 100%;
     }
 
     .loading-text {
-        font-size: 1.05rem;
+        font-size: var(--fs-sm);
     }
 
     .scrollContainer {
@@ -348,7 +342,7 @@ iframe {
     }
 
     #FooterNote {
-        font-size: .8rem;
+        font-size: var(--fs-2xs);
         padding: 12px 16px;
     }
 

@@ -24,8 +24,8 @@ const SharePreviewCard = ({ username, hoursPlayed, champName, shareUrl, style })
 
 const styles = {
   card: {
-    border: "1px solid #0f2331",
-    backgroundColor: "#0f2331",
+    border: "1px solid var(--second-bg-color)",
+    backgroundColor: "var(--second-bg-color)",
     borderRadius: 8,
     boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
     overflow: "hidden",
@@ -47,23 +47,23 @@ const styles = {
   },
   content: {
     padding: 12,
-    backgroundColor: "#0f2331",
+    backgroundColor: "var(--second-bg-color)",
   },
   title: {
     fontSize: 16,
     margin: "0 0 8px",
-    color: "white",
+    color: "var(--text-color)",
     fontWeight: "bold",
   },
   description: {
     fontSize: 13,
     margin: "0 0 6px",
-    color: "white",
+    color: "var(--text-color)",
     lineHeight: 1.4,
   },
   note: {
     fontSize: 12,
-    color: "#929292ff",
+    color: "var(--text-muted-color)",
   },
 };
 

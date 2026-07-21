@@ -6,7 +6,7 @@ import { UserResourceProvider } from "../../resources/UserResourceContext.js";
 import PlayerSEO from '../../components/common/PlayerSEO.js';
 
 import ErrorBoundary from '../../components/error/ErrorBoundary.js';
-import StatDisplayError from '../../components/error/StatDisplayError.js';
+
 import UserError from '../../components/error/UserError.js';
 
 import UserIntro from '../../components/slides/UserIntro.js';
@@ -21,7 +21,7 @@ import LaneSection from '../../components/slides/PingSlide.js';
 import TotalTimeBreakdown from '../../components/slides/TotalTimeBreakdown.js';
 
 import './PlayerStats.css'
-import SummaryCard from "../../components/slides/SummaryCard.js";
+
 
 
 import SlideDeck from "../../components/layout/SlideDeck.js";
@@ -31,7 +31,8 @@ import DeathsSlide from "../../components/slides/DeathsSlide.js";
 import RoleSlide from "../../components/slides/RoleSlide.js";
 import CsSlide from "../../components/slides/CsSlide.js";
 import ObjectiveSlide from "../../components/slides/ObjectiveSlide.js";
-
+import TimeSpentSlide from "../../components/slides/TimeSpentSlide.js";
+import SummaryCard from "../../components/slides/SummaryCard.js";
 
 const DEFAULT_YEAR = "2026";
 
@@ -41,50 +42,41 @@ function PlayerStats() {
 	const year = searchParams.get('year') || DEFAULT_YEAR;
 
 	return (
-		<div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: "fit-content" }}>
+		<>
 			<PlayerSEO puuid={puuid} year={year} />
 
 			<UserResourceProvider puuid={puuid} year={year}>
 				<ErrorBoundary fallback={(err) => <UserError error={err} />}>
 					<Suspense fallback={<UserIntroFallback year={year} />}>
 
+						<SlideDeck>
 
-						<ErrorBoundary fallback={(err) => <StatDisplayError error={err} />} >
+							<UserIntro year={year} />
 
-							<div className="fade-in" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
+							<ChampSection />
+							<DateSection />
+							<DamageSection />
 
-								<Suspense fallback={<div style={{ height: "500px", width: "80vw" }} />}>
-									<SlideDeck>
+							<KillsSlide puuid={puuid} year={year} />
+							<KDAsection puuid={puuid} year={year} />
+							<DeathsSlide puuid={puuid} year={year} />
+							<FFSection />
 
-										<UserIntro year={year} />
+							<RoleSlide puuid={puuid} />
+							<CsSlide puuid={puuid} />
+							<ObjectiveSlide puuid={puuid} />
 
-										<div className="slide" style={{ '--slide-bg': '#2d5c52', '--slide-fg': '#0f0f0f' }}>
-											<DateSection />
-										</div>
-										<FFSection />
-										<ChampSection />
-										<DamageSection />
+							<LaneSection puuid={puuid} />
+							<TimeSpentSlide puuid = {puuid} />
+							<TotalTimeBreakdown puuid={puuid} year={year} />
 
-										<KillsSlide puuid={puuid} year={year} />
-										<DeathsSlide puuid={puuid} year={year} />
-										<KDAsection puuid={puuid} year={year} />
+							<SummaryCard />
+						</SlideDeck>
 
-										<RoleSlide puuid={puuid} />
-										<CsSlide puuid={puuid} />
-										<ObjectiveSlide puuid={puuid} />
-
-										<LaneSection puuid={puuid} />
-										<TotalTimeBreakdown puuid={puuid} year={year} />
-									</SlideDeck>
-
-								</Suspense>
-							</div>
-
-						</ErrorBoundary>
 					</Suspense>
 				</ErrorBoundary>
 			</UserResourceProvider>
-		</div>
+		</>
 	);
 }
 

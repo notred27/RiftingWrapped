@@ -5,7 +5,7 @@ export default function UserIntroFallback({ year }) {
                 style={{
                     width: "200px",
                     height: "200px",
-                    backgroundColor: "#0f2331ff",
+                    backgroundColor: "var(--second-bg-color)",
                     margin: "0 auto",
                     borderRadius: "8px",
                 }}
@@ -15,7 +15,7 @@ export default function UserIntroFallback({ year }) {
 
                 className="emphasize loading-text"
                 style={{
-                    fontSize: "clamp(20px, 5vw, 36px)",
+                    fontSize: "var(--fs-display-md)",
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",

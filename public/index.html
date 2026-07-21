@@ -22,21 +22,47 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap"
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Bricolage+Grotesque:wght@600;700;800;900&display=swap"
         as="style" onload="this.rel='stylesheet'">
     <noscript>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Bricolage+Grotesque:wght@600;700;800;900&display=swap" rel="stylesheet">
     </noscript>
 
 
 
     <!-- Critical for render-blocking req -->
     <style>
+        :root {
+            --bg-color: #0a0e14;
+            --second-bg-color: #141a21;
+
+            --accent-color: #c52184;
+            --accent-background-color: #c5218426;
+            --text-color: #FFFFFF;
+            --text-muted-color: #9DA3A6;
+
+            --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            --font-display: "Bricolage Grotesque", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+
+            /* Type scale — fixed sizes for UI text, fluid clamp()s for the
+               slide-deck's big "flex" numbers and hero display moments. */
+            --fs-2xs: 12px;
+            --fs-xs: 14px;
+            --fs-sm: 16px;
+            --fs-md: 20px;
+            --fs-lg: 24px;
+            --fs-xl: 28px;
+            --fs-2xl: 36px;
+            --fs-display-sm: clamp(20px, 5vw, 32px);
+            --fs-display-md: clamp(28px, 7vw, 44px);
+            --fs-display-lg: clamp(40px, 12vw, 72px);
+        }
+
         body {
             margin: 0;
-            font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-            background-color: #1d1d1f; /*#0D1317;*/
-            color: #FFFCE8;
+            font-family: var(--font-body);
+            background-color: var(--bg-color);
+            color: var(--text-color);
             overflow-x: hidden;
             overscroll-behavior: none;
             font-display: swap;
@@ -61,107 +87,13 @@
             }
         }
 
-        .site-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background-color: #1d1d1f;
-            color: #fff;
-            position: relative;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .site-header__title {
-            font-size: 20px;
-            font-weight: 700;
-            color: #fff;
-            text-decoration: none;
-        }
-
-        .site-header__logo {
-            width: 20px;
-            height: 20px;
-        }
-
-        .site-header__nav a {
-            margin-left: 20px;
-            color: #ccc;
-            text-decoration: none;
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        .site-header__nav a:hover {
-            color: #fff;
-        }
-
-        .footer__disclaimer {
-            font-size: 12px;
-            color: #888;
-            max-width: 800px;
-            margin: 0px;
-            line-height: 1.6;
-            text-align: center;
-            padding: 0px;
-
-        }
-
-        .footer {
-            grid-template-columns: 2fr 1fr;
-            padding: 40px;
-        }
-
-
         .dropdownItem {
-            background-color: #090b11;
+            background-color: var(--second-bg-color);
         }
 
         .dropdownItem:hover {
-
-            background-color: #1d2338d7;
-        }
-
-        @media (max-width: 768px) {
-
-            .footer {
-                grid-template-columns: 1fr;
-                grid-template-rows: 1fr 1fr;
-                padding: 20px;
-
-            }
-
-
-            .site-header {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 12px 16px;
-            }
-
-            .site-header__nav {
-                margin-top: 8px;
-                width: 100%;
-                display: flex;
-                flex-direction: row;
-                justify-content: space-around;
-            }
-
-            .site-header__nav a {
-                font-size: 14px;
-                margin-left: 0;
-            }
-
-            .footer__disclaimer {
-                font-size: 11px;
-                padding: 0px;
-                max-width: 90vw;
-
-                grid-area: 2 / 1 / 3 / 2;
-                margin-top: 10px;
-                margin-bottom: 10px;
-
-            }
+            background-color: var(--second-bg-color);
+            filter: brightness(1.4);
         }
     </style>
 
