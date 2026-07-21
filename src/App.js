@@ -4,6 +4,7 @@ import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
 import SiteFooter from './components/layout/SiteFooter.js';
 import SiteHeader from './components/layout/SiteHeader.js';
+import { usePageTracking } from './resources/usePageTracking.js';
 
 const Home = lazy(() => import('./pages/Home/Home.js'));
 const FAQ = lazy(() => import('./pages/Policy/FAQ.js'));
@@ -12,7 +13,10 @@ const Privacy = lazy(() => import('./pages/Policy/Privacy.js'));
 const AddingPlayer = lazy(() => import('./pages/User/AddingPlayer.js'));
 const PlayerStats = lazy(() => import('./pages/User/PlayerStats.js'));
 
-export default function App() {
+
+
+function App() {
+    usePageTracking();
     return (
         <Router>
             {/* <div> */}

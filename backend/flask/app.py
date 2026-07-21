@@ -154,14 +154,23 @@ def add_by_display_name():
     tag = request.form.get('tag')
     region = request.form.get('region')
 
-    if not (displayName and tag):
-        return jsonify({"error": "Bad Request", "message": "Must provide a valid RIOT account displayName AND tag"}), 400
+    if not (displayName and tag and region):
+        return jsonify({"error": "Bad Request", "message": "Must provide a valid RIOT account displayName, tag, AND region"}), 400
 
     if len(displayName) > MAX_DISPLAYNAME_LEN or len(tag) > MAX_TAG_LEN:
         return jsonify({"error": "Bad Request", "message": "displayName or tag too long"}), 400
 
     displayName = displayName.strip()
     tag = tag.strip()
+    region = region.strip().upper()
+
+    # Reject garbage regions before spending a Riot API call on them.
+    VALID_REGIONS = {
+        "NA1", "BR1", "LA1", "LA2", "EUN1", "EUW1", "TR1", "RU", "ME1",
+        "KR", "JP1", "SG2", "OC1", "TW2", "VN2", "PH2", "TH2",
+    }
+    if region not in VALID_REGIONS:
+        return jsonify({"error": "Bad Request", "message": f"Unknown region '{region}'"}), 400
 
     riot_key = os.getenv("RIOT_API_KEY")
     if not riot_key:
@@ -171,8 +180,6 @@ def add_by_display_name():
     riot_url = f'https://{get_routing_region(region)}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{displayName}/{tag}'
 
     try:
-        # Header, not query param -- api keys in URLs end up in access logs,
-        # proxy logs, and browser/request history.
         r = requests.get(riot_url, headers={"X-Riot-Token": riot_key}, timeout=RIOT_TIMEOUT)
     except requests.RequestException:
         print("Riot API request failed")
@@ -184,28 +191,43 @@ def add_by_display_name():
     if r.status_code != 200:
         return jsonify({"error": "Bad Gateway", "message": "Riot API encountered an error"}), 502
 
-    # Player identity is global
     try:
         riot_data = r.json()
-
-        existing = player_collection.find_one({"puuid": riot_data["puuid"]}, {"_id": 0})
-        if existing:
-            return jsonify({"error": "Conflict", "message": "User exists", "user": existing}), 409
-
-        user_doc = {
-            "$set": {
-                "displayName": displayName,
-                "tag": tag,
-                "puuid": riot_data["puuid"],
-                "region": region.upper(),
-                "status": "starting",
-            },
-        }
-
-        result = player_collection.update_one({"puuid": riot_data["puuid"]}, user_doc, upsert=True)
-
+        puuid = riot_data["puuid"]
     except (ValueError, KeyError) as e:
         return jsonify({"error": "Bad Gateway", "message": f"Invalid Riot response format {str(e)}"}), 502
+
+    # Confirm the account actually lives on the region the user selected.
+    summoner_check_url = f'https://{region.lower()}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}'
+    try:
+        sr = requests.get(summoner_check_url, headers={"X-Riot-Token": riot_key}, timeout=RIOT_TIMEOUT)
+    except requests.RequestException:
+        return jsonify({"error": "Bad Gateway", "message": "Failed to contact Riot API"}), 502
+
+    if sr.status_code == 404:
+        return jsonify({
+            "error": "Not Found",
+            "message": f"{displayName}#{tag} was found, but has no account on region '{region}'. Double-check your region."
+        }), 404
+
+    if sr.status_code != 200:
+        return jsonify({"error": "Bad Gateway", "message": "Riot API encountered an error validating region"}), 502
+
+    existing = player_collection.find_one({"puuid": puuid}, {"_id": 0})
+    if existing:
+        return jsonify({"error": "Conflict", "message": "User exists", "user": existing}), 409
+
+    user_doc = {
+        "$set": {
+            "displayName": displayName,
+            "tag": tag,
+            "puuid": puuid,
+            "region": region,
+            "status": "starting",
+        },
+    }
+
+    result = player_collection.update_one({"puuid": puuid}, user_doc, upsert=True)
 
     try:
         GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -216,11 +238,7 @@ def add_by_display_name():
         }
         payload = {
             "ref": "master",
-            "inputs": {
-                "displayName": displayName,
-                "tag": tag,
-                "region": region
-            }
+            "inputs": {"displayName": displayName, "tag": tag, "region": region}
         }
         gh_resp = requests.post(url, headers=headers, json=payload, timeout=RIOT_TIMEOUT)
         if gh_resp.status_code == 204:
@@ -230,14 +248,12 @@ def add_by_display_name():
     except Exception as e:
         print(f"Failed to trigger GitHub Action: {e}")
 
-    if result.upserted_id:
-        status_code = 201
-        message = "User created successfully"
-    else:
-        status_code = 200
-        message = "User updated successfully"
+    status_code = 201 if result.upserted_id else 200
+    message = "User created successfully" if result.upserted_id else "User updated successfully"
 
     return jsonify({
+        "puuid": puuid,
+        "status": "starting",
         "matched_count": result.matched_count,
         "modified_count": result.modified_count,
         "upserted_id": str(result.upserted_id) if result.upserted_id else None,
