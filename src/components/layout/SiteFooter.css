@@ -1,0 +1,191 @@
+.site-footer {
+    background-color: var(--second-bg-color);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: clamp(24px, 4vh, 48px) clamp(16px, 5vw, 64px);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+        "brand cta"
+        "desc  cols"
+        "bottom bottom";
+    column-gap: 32px;
+    row-gap: 28px;
+    align-items: start;
+}
+
+/* ---------- Brand ---------- */
+.site-footer__brand {
+    grid-area: brand;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.site-footer__brand-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.site-footer__logo {
+    width: 20px;
+    height: 20px;
+}
+
+.site-footer__wordmark {
+    font-weight: 800;
+    font-size: var(--fs-sm);
+    color: var(--text-color);
+}
+
+.site-footer__tagline {
+    font-size: var(--fs-2xs);
+    color: var(--text-muted-color);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    line-height: 1.5;
+}
+
+/* ---------- Bracket CTA ---------- */
+.site-footer__cta {
+    grid-area: cta;
+    position: relative;
+    justify-self: end;
+    padding: 14px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-decoration: none;
+    min-width: 220px;
+}
+
+.site-footer__cta-label {
+    font-size: var(--fs-2xs);
+    font-weight: 700;
+    color: var(--text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.site-footer__cta-value {
+    font-size: var(--fs-xs);
+    color: var(--text-muted-color);
+}
+
+.site-footer__cta:hover .site-footer__cta-value {
+    color: var(--accent-color);
+}
+
+.site-footer__corner {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-color: var(--text-muted-color);
+}
+
+.site-footer__corner--tl { top: 0; left: 0; border-top: 1px solid; border-left: 1px solid; }
+.site-footer__corner--tr { top: 0; right: 0; border-top: 1px solid; border-right: 1px solid; }
+.site-footer__corner--bl { bottom: 0; left: 0; border-bottom: 1px solid; border-left: 1px solid; }
+.site-footer__corner--br { bottom: 0; right: 0; border-bottom: 1px solid; border-right: 1px solid; }
+
+/* ---------- Description ---------- */
+.site-footer__desc {
+    grid-area: desc;
+    max-width: 60ch;
+    margin: 0;
+    color: var(--text-muted-color);
+    font-size: var(--fs-xs);
+    line-height: 1.6;
+    text-align: left;
+}
+
+/* ---------- Link columns ---------- */
+.site-footer__cols {
+    grid-area: cols;
+    display: flex;
+    gap: 48px;
+    justify-self: end;
+}
+
+.site-footer__col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.site-footer__col-title {
+    font-size: var(--fs-2xs);
+    font-weight: 700;
+    color: var(--text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0 0 2px;
+}
+
+.site-footer__col a {
+    color: var(--text-muted-color);
+    text-decoration: none;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+}
+
+.site-footer__col a:hover {
+    color: var(--text-color);
+}
+
+/* ---------- Bottom bar ---------- */
+.site-footer__bottom {
+    grid-area: bottom;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: var(--fs-2xs);
+    color: var(--text-muted-color);
+}
+
+.site-footer__copyright {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.site-footer__copyright img {
+    width: 14px;
+    height: 14px;
+}
+
+.site-footer__bottom a {
+    color: var(--text-muted-color);
+    text-decoration: none;
+}
+
+.site-footer__bottom a:hover {
+    color: var(--text-color);
+}
+
+@media (max-width: 700px) {
+    .site-footer {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "brand"
+            "cta"
+            "cols"
+            "desc"
+            "bottom";
+    }
+
+    .site-footer__cta {
+        justify-self: stretch;
+    }
+
+    .site-footer__cols {
+        justify-self: start;
+    }
+
+    .site-footer__bottom {
+        flex-wrap: wrap;
+    }
+}

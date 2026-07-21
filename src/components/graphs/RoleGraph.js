@@ -35,7 +35,7 @@ const centerLabelPlugin = {
     ctx.textBaseline = 'middle';
 
     ctx.font = '600 22px sans-serif';
-    ctx.fillStyle = '#fffce8';
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillText(percentLabel, centerX, centerY - 8);
 
     ctx.font = '400 11px sans-serif';
@@ -80,9 +80,9 @@ export default function RoleGraph({ roles }) {
     plugins: {
       legend: { display: false }, // custom legend rendered by PositionBreakdown instead
       tooltip: {
-        backgroundColor: '#1a1a19',
-        titleColor: '#fffce8',
-        bodyColor: '#fffce8',
+        backgroundColor: '#141a21',
+        titleColor: '#FFFFFF',
+        bodyColor: '#FFFFFF',
         padding: 8,
         callbacks: {
           label: (context) => {

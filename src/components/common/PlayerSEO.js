@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { Helmet } from 'react-helmet-async';
 
-import ErrorBoundary from '../../components/Error/ErrorBoundary.js';
+import ErrorBoundary from '../error/ErrorBoundary.js';
 
 
 export default function PlayerSEO({ puuid, year }) {
@@ -26,7 +26,7 @@ export default function PlayerSEO({ puuid, year }) {
     return (
         <ErrorBoundary >
 
-            <Helmet>
+            <Helmet defer={false}>
                 <link rel="canonical" href={`https://www.riftingwrapped.com/player/${puuid}`} />
                 <link rel="preload" as="fetch" href={`${process.env.REACT_APP_API_ENDPOINT}/users/${puuid}`} crossOrigin="anonymous" />
 

@@ -1,18 +1,29 @@
 export default function PillPreviewCard({ username, icon, hoursPlayed, champName, shareUrl, style }) {
     return (
-        <div style={{ height: "160px", position: "relative", overflow: "hidden", borderRadius: "4px", margin: "10px" }} aria-label={`${username}'s Rifting Wrapped 2025 profile`} aria-hidden="false" >
+        <div
+            style={{
+                height: "160px",
+                position: "relative",
+                overflow: "hidden",
+                borderRadius: "4px",
+                margin: "10px",
+                ...style,
+            }}
+            aria-label={`${username}'s Rifting Wrapped 2025 profile`}
+            aria-hidden="false"
+        >
             <a
                 href={shareUrl}
-                style={{ textDecoration: "none", color: "inherit" }}
+                style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}
             >
                 <img
                     loading='lazy'
                     src={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champName}_0.jpg`}
                     alt={`${champName} splash`}
-                    style={{ height: "150px", transform: "translateY(-10%)" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 25%" }}
                 />
-                <div style={{ position: "absolute", bottom: "0", left: "0", width: "100%", height: "50px", backgroundColor: "#0f2331", boxShadow: "2px -2px 2px 2px #0f2331" }}>
-                    <p style={{ padding: "10px", margin: "0px", fontSize: "12px", textAlign: "left" }}><strong>
+                <div style={{ position: "absolute", bottom: "0", left: "0", width: "100%", height: "50px", backgroundColor: "var(--second-bg-color)", boxShadow: "2px -2px 2px 2px var(--second-bg-color)" }}>
+                    <p style={{ padding: "10px", margin: "0px", fontSize: "var(--fs-2xs)", textAlign: "left", textWrap:"pretty" }}><strong>
 
                         <img
                             src={icon}
@@ -20,7 +31,7 @@ export default function PillPreviewCard({ username, icon, hoursPlayed, champName
                             style={{ width: "14px", float: "left", marginRight: "4px", borderRadius: "2px" }}
                         />
 
-                        {username} </strong>spent <strong>{hoursPlayed}</strong> hours on the Rift this year.</p>
+                        {username} </strong>spent <strong>{hoursPlayed}</strong>hrs on the Rift this year.</p>
                 </div>
             </a>
         </div>

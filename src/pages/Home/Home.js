@@ -1,35 +1,35 @@
-import { useState, useEffect, Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
-import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { useNavigate } from 'react-router-dom';
 
 import { PlayerListProvider } from '../../resources/PlayerListContext';
 import { fetchCached } from '../../resources/fetchCached';
 
 import UserSearchBar from '../../components/common/UserSearchBar';
-
-import bg_image from '../../images/Jax_0.webp'
-import './Home.css';
-import PlayerMarquee from '../../components/sections/PlayerMarquee';
-
-import ErrorBoundary from '../../components/Error/ErrorBoundary';
+import PlayerMarquee from '../../components/common/PlayerMarquee';
 import GenericSearch from '../../components/common/GenericSearch';
+import ErrorBoundary from '../../components/error/ErrorBoundary';
 
-function Home() {
-    const navigate = useNavigate();
 
-    const [numUsers, setNumUsers] = useState(140);
+import bg_image from '../../images/Jax_0.webp';
+import './Home.css';
+
+
+export default function Home() {
+    const [numUsers, setNumUsers] = useState(290);
     const [selectedPlayer, setSelectedPlayer] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
 
     const WRAP_YEAR = 2026;
 
 
-        useEffect(() => {
-            fetchCached(`${process.env.REACT_APP_API_ENDPOINT}/users/count`, `user-count`)
-                .then((res) => setNumUsers(res.count))
-                .catch((err) => console.warn('Failed to fetch user count:', err));
-        }, [])
+    useEffect(() => {
+        fetchCached(`${process.env.REACT_APP_API_ENDPOINT}/users/count`, `user-count`)
+            .then((res) => setNumUsers(res.count))
+            .catch((err) => console.warn('Failed to fetch user count:', err));
+    }, [])
 
 
 
@@ -59,23 +59,28 @@ function Home() {
             );
 
             if (response.status === 404) {
+                setSelectedPlayer(`Registering ${displayName}... this can take a minute.`);
+
                 const addResponse = await fetch(`${apiUrl}/users`, {
                     method: "POST",
-                    body: new URLSearchParams({ displayName, tag, region}),
+                    body: new URLSearchParams({ displayName, tag, region }),
                 });
 
-                if (!addResponse.ok) {
-                    setSelectedPlayer("Failed to find user. Please check that your name and region are correct.");
+                const addBody = await addResponse.json().catch(() => null);
+
+                if (!addResponse.ok && addResponse.status !== 409) {
+                    setSelectedPlayer(
+                        addBody?.message ||
+                        "Failed to find user. Please check that your name and region are correct."
+                    );
                     setIsLoading(false);
                     return;
                 }
 
-                // try to find user after init
                 response = await fetch(
                     `${apiUrl}/users/by-riot-id/${displayName}/${tag}/${region}`
                 );
             }
-
 
             if (!response.ok) {
                 setSelectedPlayer("User could not be fetched after creation.");
@@ -86,6 +91,14 @@ function Home() {
             const result = await response.json();
             const { puuid, status } = result;
 
+            if (!puuid) {
+                setSelectedPlayer(
+                    "Registration didn't complete successfully. Please try again."
+                );
+                setIsLoading(false);
+                return;
+            }
+
             navigate(
                 status === "done"
                     ? `/player/${puuid}?year=${WRAP_YEAR}`
@@ -93,9 +106,7 @@ function Home() {
             );
         } catch (err) {
             console.error(err);
-            setSelectedPlayer(
-                "Unexpected error. Please try again later."
-            );
+            setSelectedPlayer("Unexpected error. Please try again later.");
         } finally {
             setIsLoading(false);
         }
@@ -103,13 +114,18 @@ function Home() {
 
 
 
-
     return (
         <>
-            <Helmet>
+            <Helmet defer={false}>
                 <link rel="canonical" href={`https://www.riftingwrapped.com/`} />
                 <title>Rifting Wrapped 2026 | Your League of Legends Year in Review</title>
                 <meta name="description" content={`Get a detailed year-end summary of your League of Legends gameplay! Discover your top champions, stats, and trends with a personalized LoL experience.`} />
+
+                <meta property="og:title" content="Rifting Wrapped 2026 | Your League of Legends Year in Review" />
+                <meta property="og:description" content="See your top champion, your best (and worst) games, and exactly how many hours you spent on the Rift this year." />
+                <meta property="og:image" content="https://www.riftingwrapped.com/android-chrome-512x512.png" />
+                <meta property="og:url" content="https://www.riftingwrapped.com/" />
+                <meta name="twitter:card" content="summary_large_image" />
 
                 <link
                     rel="preload"
@@ -120,48 +136,48 @@ function Home() {
                 />
             </Helmet>
 
-            <div className="heroContainer" >
+            <div className="heroContainer">
                 <img className="heroOverlay" src={bg_image} alt="Hero Overlay" />
-                <div className="heroText" style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "0px 30px", flexWrap: "wrap" }}>
-                    <div style={{ width: "600px" }}>
-
-                        <h1 style={{fontSize:"3rem", marginBottom:"20px", textWrap:"wrap", fontWeight:"bold"}}>Your Year on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
-                        <p>
-                            Discover your top champions, stats, and trends of <strong>2026</strong> with a personalized recap of your <strong>League of Legends</strong> journey.
+                <div className="heroText">
+                    <div className="hero-copy">
+                        <span className="hero-eyebrow">{WRAP_YEAR} SEASON RECAP</span>
+                        <h1>Your Year on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
+                        <p style={{maxWidth:"760px", textWrap:"pretty"}}>
+                            See your <strong>{WRAP_YEAR}</strong> <strong>League of Legends</strong> year for what it really was: your main, your best (and worst) games, and exactly how many hours you lost to the Rift.
                         </p>
                     </div>
 
 
-                    <div>
+                    <div className="hero-form-wrap">
 
                         <form onSubmit={fetchPlayer} className="searchForm">
-                            <span style={{
-                                display: "flex",
-                                gap: "0px",
-                                alignItems: "center",
-                                width: "100%",
-                                backgroundColor: "#1c2a38",
-                                padding: "4px",
-                                borderBottom: "4px solid #0070bb",
-                                borderRadius: "4px"
-                            }}>
-                                <PlayerListProvider>
-                                    <ErrorBoundary fallback={(err) => <GenericSearch error={err} />}>
-                                        <Suspense fallback={<GenericSearch />}>
-                                            <UserSearchBar />
-                                        </Suspense>
-                                    </ErrorBoundary>
-                                </PlayerListProvider>
+                            <label className="hero-search-eyebrow" htmlFor="nameInput">Find Your Wrapped</label>
 
-                            </span>
+                            <div className="hero-search-row">
+                                <span className="hero-search-box">
+                                    {/* <span className="hero-search-corner hero-search-corner--tl" />
+                                    <span className="hero-search-corner hero-search-corner--tr" />
+                                    <span className="hero-search-corner hero-search-corner--bl" />
+                                    <span className="hero-search-corner hero-search-corner--br" /> */}
+                                    <PlayerListProvider>
+                                        <ErrorBoundary fallback={(err) => <GenericSearch error={err} />}>
+                                            <Suspense fallback={<GenericSearch />}>
+                                                <UserSearchBar />
+                                            </Suspense>
+                                        </ErrorBoundary>
+                                    </PlayerListProvider>
+                                </span>
 
-                            <button type="submit" id="submitBtn">
-                                Fetch My Stats!
-                            </button>
+                                <button type="submit" id="submitBtn">
+                                    Unwrap My Year!
+                                </button>
+                            </div>
+
+                            {/* <p className="hero-search-note">No login required. We only use your public match history.</p> */}
                         </form>
 
 
-                        {selectedPlayer && !isLoading && <p className="search-error" style={{ maxWidth: "400px", fontSize: "small" }}>{selectedPlayer}</p>}
+                        {selectedPlayer && !isLoading && <p className="search-error">{selectedPlayer}</p>}
                         {isLoading &&
 
                             <p className="loading-text">
@@ -177,22 +193,24 @@ function Home() {
 
                 </div>
 
-                <PlayerMarquee />
+                <div className="marquee-section">
+                    <span className="hero-eyebrow">Other Players' Wraps</span>
+                    <div className="marquee-frame">
+                        <span className="marquee-corner marquee-corner--tl" />
+                        <span className="marquee-corner marquee-corner--tr" />
+                        <span className="marquee-corner marquee-corner--bl" />
+                        <span className="marquee-corner marquee-corner--br" />
+                        <div className="marquee-clip">
+                            <PlayerMarquee />
+                        </div>
+                    </div>
+                </div>
 
-                <h2 style={{
-                    margin: "20px 0 30px",
-                    maxWidth: "500px",
-                    fontSize: "16px",
-                    fontWeight: "normal",
-                    color: "#ccc",
-                    lineHeight: "1.6",
-                    zIndex: "1"
-                }}>
-                    Don't see your username? Join over <span style={{ fontWeight: "700", color: "#4A9EFF" }}><i>{numUsers} players</i></span> in tracking your yearly <strong>LOL</strong> metrics!
+                <h2 className="hero-join-line">
+                    Don't see your name? Join <span style={{ fontWeight: "700", color: "var(--accent-color)" }}><i>{numUsers}+ players</i></span> who've already gotten their <strong>Wraps</strong>.
                 </h2>
             </div>
         </>
     );
 }
 
-export default Home;

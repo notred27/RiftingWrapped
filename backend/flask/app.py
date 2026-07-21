@@ -909,3 +909,19 @@ def get_card_preview(puuid):
         "username": data["username"]["displayName"],
         "hoursPlayed": data["hours_played"],
     })
+
+
+
+
+@app.route('/users/spotlight', methods=['GET'])
+def get_spotlight_players():
+    year_param = require_year_param()
+    count = request.args.get('count', default=8, type=int)
+    count = max(1, min(count, 10))
+
+    cached = db["spotlight-cache"].find_one({"_id": f"spotlight-{year_param}"})
+    if not cached or not cached.get("cards"):
+        return jsonify([])
+
+    import random
+    return jsonify(random.sample(cached["cards"], min(count, len(cached["cards"]))))
