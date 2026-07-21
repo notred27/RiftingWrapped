@@ -1,0 +1,23 @@
+customHeaders:
+  - pattern: '**/*'
+    headers:
+      - key: 'X-Frame-Options'
+        value: 'SAMEORIGIN'
+      - key: 'X-Content-Type-Options'
+        value: 'nosniff'
+      - key: 'Strict-Transport-Security'
+        value: 'max-age=31536000; includeSubDomains'
+      - key: 'X-XSS-Protection'
+        value: '1; mode=block'
+      - key: 'Content-Security-Policy'
+        value: >-
+          default-src 'self';
+          script-src 'self' https://www.googletagmanager.com;
+          style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+          font-src 'self' https://fonts.gstatic.com;
+          img-src 'self' data: https://ddragon.leagueoflegends.com https://cdn.mobalytics.gg https://wiki.leagueoflegends.com;
+          connect-src 'self' https://riftingwrapped.onrender.com https://ddragon.leagueoflegends.com https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com;
+          frame-ancestors 'self';
+          base-uri 'self';
+          form-action 'self';
+          object-src 'none';

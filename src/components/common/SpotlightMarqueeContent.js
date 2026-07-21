@@ -16,7 +16,7 @@ export default function SpotlightMarqueeContent() {
     return (
         <Marquee speed={30} gradient={false} pauseOnHover={true} autoFill={true}>
             {players.map(card => (
-                <PillPreviewCard key={card.username} {...card} style={{ marginRight: "1rem", width: "300px", height: "300px", maxWidth: "20vw" }} />
+                <PillPreviewCard key={card.username} {...card} style={{ marginRight: "1rem", width: "180px", height: "180px" }} />
             ))}
         </Marquee>
     );

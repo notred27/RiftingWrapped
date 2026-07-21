@@ -116,10 +116,16 @@ export default function Home() {
 
     return (
         <>
-            <Helmet>
+            <Helmet defer={false}>
                 <link rel="canonical" href={`https://www.riftingwrapped.com/`} />
                 <title>Rifting Wrapped 2026 | Your League of Legends Year in Review</title>
                 <meta name="description" content={`Get a detailed year-end summary of your League of Legends gameplay! Discover your top champions, stats, and trends with a personalized LoL experience.`} />
+
+                <meta property="og:title" content="Rifting Wrapped 2026 | Your League of Legends Year in Review" />
+                <meta property="og:description" content="See your top champion, your best (and worst) games, and exactly how many hours you spent on the Rift this year." />
+                <meta property="og:image" content="https://www.riftingwrapped.com/android-chrome-512x512.png" />
+                <meta property="og:url" content="https://www.riftingwrapped.com/" />
+                <meta name="twitter:card" content="summary_large_image" />
 
                 <link
                     rel="preload"
@@ -132,46 +138,46 @@ export default function Home() {
 
             <div className="heroContainer">
                 <img className="heroOverlay" src={bg_image} alt="Hero Overlay" />
-                <div className="heroText" style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "0px 30px", flexWrap: "wrap" }}>
-                    <div style={{ width: "600px" }}>
-
+                <div className="heroText">
+                    <div className="hero-copy">
+                        <span className="hero-eyebrow">{WRAP_YEAR} SEASON RECAP</span>
                         <h1>Your Year on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
-                        <p>
-                            Discover your top champions, stats, and trends of <strong>2026</strong> with a personalized recap of your <strong>League of Legends</strong> journey.
+                        <p style={{maxWidth:"760px", textWrap:"pretty"}}>
+                            See your <strong>{WRAP_YEAR}</strong> <strong>League of Legends</strong> year for what it really was: your main, your best (and worst) games, and exactly how many hours you lost to the Rift.
                         </p>
                     </div>
 
 
-                    <div>
+                    <div className="hero-form-wrap">
 
                         <form onSubmit={fetchPlayer} className="searchForm">
-                            <span style={{
-                                display: "flex",
-                                gap: "0px",
-                                alignItems: "center",
-                                width: "100%",
-                                backgroundColor: "var(--second-bg-color)",
-                                padding: "4px",
-                                borderBottom: "4px solid var(--accent-color)",
-                                borderRadius: "4px"
-                            }}>
-                                <PlayerListProvider>
-                                    <ErrorBoundary fallback={(err) => <GenericSearch error={err} />}>
-                                        <Suspense fallback={<GenericSearch />}>
-                                            <UserSearchBar />
-                                        </Suspense>
-                                    </ErrorBoundary>
-                                </PlayerListProvider>
+                            <label className="hero-search-eyebrow" htmlFor="nameInput">Find Your Wrapped</label>
 
-                            </span>
+                            <div className="hero-search-row">
+                                <span className="hero-search-box">
+                                    {/* <span className="hero-search-corner hero-search-corner--tl" />
+                                    <span className="hero-search-corner hero-search-corner--tr" />
+                                    <span className="hero-search-corner hero-search-corner--bl" />
+                                    <span className="hero-search-corner hero-search-corner--br" /> */}
+                                    <PlayerListProvider>
+                                        <ErrorBoundary fallback={(err) => <GenericSearch error={err} />}>
+                                            <Suspense fallback={<GenericSearch />}>
+                                                <UserSearchBar />
+                                            </Suspense>
+                                        </ErrorBoundary>
+                                    </PlayerListProvider>
+                                </span>
 
-                            <button type="submit" id="submitBtn">
-                                Fetch My Stats!
-                            </button>
+                                <button type="submit" id="submitBtn">
+                                    Unwrap My Year!
+                                </button>
+                            </div>
+
+                            {/* <p className="hero-search-note">No login required. We only use your public match history.</p> */}
                         </form>
 
 
-                        {selectedPlayer && !isLoading && <p className="search-error" style={{ maxWidth: "400px", fontSize: "var(--fs-xs)" }}>{selectedPlayer}</p>}
+                        {selectedPlayer && !isLoading && <p className="search-error">{selectedPlayer}</p>}
                         {isLoading &&
 
                             <p className="loading-text">
@@ -187,18 +193,21 @@ export default function Home() {
 
                 </div>
 
-                <PlayerMarquee />
+                <div className="marquee-section">
+                    <span className="hero-eyebrow">Other Players' Wraps</span>
+                    <div className="marquee-frame">
+                        <span className="marquee-corner marquee-corner--tl" />
+                        <span className="marquee-corner marquee-corner--tr" />
+                        <span className="marquee-corner marquee-corner--bl" />
+                        <span className="marquee-corner marquee-corner--br" />
+                        <div className="marquee-clip">
+                            <PlayerMarquee />
+                        </div>
+                    </div>
+                </div>
 
-                <h2 style={{
-                    margin: "20px 0 30px",
-                    maxWidth: "500px",
-                    fontSize: "var(--fs-sm)",
-                    fontWeight: "normal",
-                    color: "var(--text-muted-color)",
-                    lineHeight: "1.6",
-                    zIndex: "1"
-                }}>
-                    Don't see your username? Join over <span style={{ fontWeight: "700", color: "var(--accent-color)" }}><i>{numUsers} players</i></span> in tracking your yearly <strong>LOL</strong> metrics!
+                <h2 className="hero-join-line">
+                    Don't see your name? Join <span style={{ fontWeight: "700", color: "var(--accent-color)" }}><i>{numUsers}+ players</i></span> who've already gotten their <strong>Wraps</strong>.
                 </h2>
             </div>
         </>

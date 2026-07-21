@@ -8,11 +8,18 @@ import SpotlightMarqueeContent from './SpotlightMarqueeContent.js'
 
 
 
+const placeholderStyle = {
+    textAlign: 'center',
+    color: 'var(--text-muted-color)',
+    fontSize: 'var(--fs-xs)',
+    padding: '20px 0',
+};
+
 export default function PlayerMarquee() {
     return (
         <div className='marqueeContainer'>
-            <ErrorBoundary fallback={() => <div>ERROR </div>}>
-                <Suspense fallback={<div>FALLBACK </div>}>
+            <ErrorBoundary fallback={() => <div style={placeholderStyle}>Couldn't load player spotlights.</div>}>
+                <Suspense fallback={<div style={placeholderStyle}>Loading player spotlights...</div>}>
                     <SpotlightMarqueeContent />
                 </Suspense>
             </ErrorBoundary>

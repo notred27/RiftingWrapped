@@ -111,7 +111,16 @@ export default function UserSearchBar() {
             <div style={{ color: "var(--text-color)", display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
                 <img alt="user-icon" src={user.icon} style={{ width: "25px", height: "25px", borderRadius: "4px", marginRight: "4px" }} />
                 <span>{user.displayName}#{user.tag ?? ""}</span>
-                <span style={{ backgroundColor: "var(--second-bg-color)", color: "var(--text-muted-color)", marginLeft: "4px", padding: "2px 4px", borderRadius: "2px" }}> {user.region ?? ""}</span>
+                <span style={{
+                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                    color: "var(--text-muted-color)",
+                    marginLeft: "6px",
+                    padding: "2px 5px",
+                    borderRadius: "3px",
+                    fontSize: "var(--fs-2xs)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                }}>{user.region ?? ""}</span>
             </div>
         );
     }
@@ -152,15 +161,15 @@ export default function UserSearchBar() {
                             style={{
                                 position: "absolute",
                                 top: "calc(100% + 6px)",
-                                // left: 0,
                                 left: 0,
                                 right:0,
                                 maxHeight: 260,
                                 width:"fit-content",
                                 minWidth:"300px",
                                 overflowY: "auto",
-                                border: "1px solid var(--second-bg-color)",
-                                borderRadius: 6,
+                                border: "1px solid rgba(255, 255, 255, 0.08)",
+                                borderTop: "2px solid var(--accent-color)",
+                                borderRadius: 4,
                                 background: "var(--second-bg-color)",
                                 margin: 0,
                                 padding: 0,
@@ -196,7 +205,7 @@ export default function UserSearchBar() {
                     ) : null)}
             </div>
 
-            <select defaultValue="NA1" aria-label="region select" id="regionSelect" style={{width:"80px", height:"auto", cursor:"pointer", backgroundColor:"var(--second-bg-color)", padding:"none", borderRadius:"0px", border:"none", marginRight:"5px"}} >
+            <select defaultValue="NA1" aria-label="region select" id="regionSelect" style={{width:"80px", height:"auto", cursor:"pointer", backgroundColor:"var(--second-bg-color)", marginRight:"5px"}} >
                 <option value="BR1">BR1</option>
                 <option value="EUN1">EUN1</option>
                 <option value="EUW1">EUW1</option>

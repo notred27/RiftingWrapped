@@ -7,7 +7,7 @@ const CONTACT_EMAIL = "support@riftingwrapped.com";
 export default function PrivacyPolicy() {
     return (
         <>
-            <Helmet>
+            <Helmet defer={false}>
                 <title>Privacy Policy | Rifting Wrapped</title>
                 <link rel="canonical" href={`https://www.riftingwrapped.com/privacy-policy`} />
             </Helmet>

@@ -2,7 +2,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px clamp(16px, 5vw, 24px);
+    padding: 12px clamp(16px, 5vw, 64px);
     background-color: var(--second-bg-color);
     color: var(--text-color);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -78,7 +78,8 @@
     }
 
     .site-header__nav {
-        width: 100%;
-        justify-content: space-around;
+        display: none;
+        /* width: 100%;
+        justify-content: space-around; */
     }
 }

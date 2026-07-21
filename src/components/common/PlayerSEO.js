@@ -26,7 +26,7 @@ export default function PlayerSEO({ puuid, year }) {
     return (
         <ErrorBoundary >
 
-            <Helmet>
+            <Helmet defer={false}>
                 <link rel="canonical" href={`https://www.riftingwrapped.com/player/${puuid}`} />
                 <link rel="preload" as="fetch" href={`${process.env.REACT_APP_API_ENDPOINT}/users/${puuid}`} crossOrigin="anonymous" />
 

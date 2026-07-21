@@ -53,7 +53,8 @@ const DEFAULT_FAQ = [
 export default function FAQ({ items = DEFAULT_FAQ }) {
     return (
         <>
-            <Helmet>
+            <Helmet defer={false}>
+                <title>FAQ | Rifting Wrapped</title>
                 <link rel="canonical" href={`https://www.riftingwrapped.com/faq`} />
             </Helmet>
 

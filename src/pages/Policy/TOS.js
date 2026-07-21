@@ -7,7 +7,7 @@ const CONTACT_EMAIL = "support@riftingwrapped.com";
 export default function TermsOfService() {
     return (
         <>
-            <Helmet>
+            <Helmet defer={false}>
                 <title>Terms of Service | Rifting Wrapped</title>
                 <link rel="canonical" href={`https://www.riftingwrapped.com/terms-of-service`} />
             </Helmet>
