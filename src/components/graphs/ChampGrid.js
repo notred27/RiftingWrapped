@@ -56,7 +56,11 @@ export default function ChampGrid({
     };
   }, []);
 
-  const scrollByPage = (direction) => {
+  // Stop these clicks from bubbling up to SlideDeck, which treats a click anywhere
+  // in the outer 30% of the deck as "go to next/previous slide" - without this, using
+  // the arrows (which sit right in that zone) or the checkbox would also navigate away.
+  const scrollByPage = (e, direction) => {
+    e.stopPropagation();
     const el = scrollRef.current;
     if (!el) return;
     el.scrollBy({ left: direction * el.clientWidth, behavior: 'smooth' });
@@ -64,13 +68,13 @@ export default function ChampGrid({
 
   return (
     <div className="champion-grid-wrapper">
-      
+
 
       <div className="champion-grid-container">
         <button
           type="button"
           className="champion-grid-nav champion-grid-nav-left"
-          onClick={() => scrollByPage(-1)}
+          onClick={(e) => scrollByPage(e, -1)}
           disabled={!canScrollLeft}
           aria-label="Show previous champions"
         >
@@ -101,7 +105,7 @@ export default function ChampGrid({
         <button
           type="button"
           className="champion-grid-nav champion-grid-nav-right"
-          onClick={() => scrollByPage(1)}
+          onClick={(e) => scrollByPage(e, 1)}
           disabled={!canScrollRight}
           aria-label="Show more champions"
         >
@@ -110,7 +114,7 @@ export default function ChampGrid({
       </div>
 
 
-	  <label className="champion-grid-toggle">
+	  <label className="champion-grid-toggle" onClick={(e) => e.stopPropagation()}>
         <input
           type="checkbox"
           checked={showUnplayed}

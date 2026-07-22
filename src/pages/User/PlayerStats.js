@@ -13,6 +13,7 @@ import UserIntro from '../../components/slides/UserIntro.js';
 import UserIntroFallback from '../../components/slides/UserIntroFallback.js';
 
 import ChampSection from '../../components/slides/ChampSection.js';
+import ChampRosterSection from '../../components/slides/ChampRosterSection.js';
 import DamageSection from '../../components/slides/DamageSection.js';
 import DateSection from '../../components/slides/DateSection.js';
 import FFSection from '../../components/slides/FFSection.js';
@@ -54,6 +55,7 @@ function PlayerStats() {
 							<UserIntro year={year} />
 
 							<ChampSection />
+							<ChampRosterSection />
 							<DateSection />
 							<DamageSection />
 

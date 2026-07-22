@@ -1,25 +1,3 @@
-.position-breakdown-card {
-    max-width: 480px;
-    margin: 0 auto;
-    background: var(--second-bg-color, #141a21);
-    border-radius: 16px;
-    padding: 28px 24px;
-    text-align: center;
-}
-
-.position-breakdown-eyebrow {
-    font-size: var(--fs-xs, 14px);
-    color: var(--text-muted-color, #9DA3A6);
-    margin: 0 0 4px;
-}
-
-.position-breakdown-title {
-    font-size: var(--fs-lg, 24px);
-    font-weight: 500;
-    margin: 0 0 20px;
-    color: var(--text-color, #FFFFFF);
-}
-
 .position-breakdown-body {
     display: flex;
     align-items: center;
@@ -65,7 +43,8 @@
 }
 
 .position-breakdown-swatch-muted {
-    background: #3a3a37;
+    background: var(--text-muted-color, #9DA3A6);
+    opacity: 0.4;
 }
 
 .position-breakdown-stats {
@@ -77,7 +56,8 @@
 
 .position-breakdown-row-muted .position-breakdown-role,
 .position-breakdown-row-muted .position-breakdown-stats {
-    color: #777;
+    color: var(--text-muted-color, #9DA3A6);
+    opacity: 0.6;
 }
 
 @media (max-width: 480px) {

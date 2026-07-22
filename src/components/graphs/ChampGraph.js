@@ -10,17 +10,30 @@ const GRID_COLOR = 'rgba(255, 252, 232, 0.12)';
 const valueLabelPlugin = {
 	id: 'valueLabel',
 	afterDatasetsDraw(chart) {
-		const { ctx } = chart;
+		const { ctx, chartArea } = chart;
 		const meta = chart.getDatasetMeta(0);
 		const values = chart.data.datasets[0].data;
 
 		ctx.save();
 		ctx.font = '600 12px sans-serif';
-		ctx.fillStyle = TEXT_COLOR;
 		ctx.textBaseline = 'middle';
 
 		meta.data.forEach((bar, i) => {
-			ctx.fillText(values[i], bar.x + 6, bar.y);
+			const label = `${values[i]}`;
+			const labelWidth = ctx.measureText(label).width;
+
+			// Default: draw just outside the bar. If that would run past the
+			// chart's right edge (narrow/mobile widths), flip it inside the
+			// bar instead so it never gets clipped.
+			if (bar.x + 6 + labelWidth <= chartArea.right) {
+				ctx.fillStyle = TEXT_COLOR;
+				ctx.textAlign = 'left';
+				ctx.fillText(label, bar.x + 6, bar.y);
+			} else {
+				ctx.fillStyle = TEXT_COLOR;
+				ctx.textAlign = 'right';
+				ctx.fillText(label, bar.x - 6, bar.y);
+			}
 		});
 		ctx.restore();
 	},

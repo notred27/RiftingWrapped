@@ -1,5 +1,4 @@
 import { useStatsResources } from "./../../resources/UserResourceContext.js";
-import './UserIntro.css'
 import './styles.css'
 import StatCard from "../layout/StatCard.js";
 
@@ -9,27 +8,30 @@ export default function UserIntro({ year }) {
 
     return (
         <StatCard className="intro-card">
-            <p className="intro-eyebrow">Hey there</p>
+            {/* <span className="intro-badge">
+                <span className="capsule">Rifting Wrapped {year}</span>
+            </span> */}
 
-            <div className="intro-identity">
+            <div className="intro-avatar-wrap">
                 <img
                     src={userInfo.icon}
                     alt="user icon"
-                    className="intro-icon"
+                    className="intro-avatar"
                 />
-                <div className="intro-name-block">
-                    <h1 className="intro-name">{userInfo.displayName}</h1>
-                    <p className="subtitle intro-tag">
-                        #{userInfo.tag} · level {userInfo.level}
-                    </p>
-                </div>
+                <span className="intro-level-badge">Lvl {userInfo.level}</span>
             </div>
 
-            <h2 className="intro-headline">
-                Let's dive into your League of Legends performance in {year}
-            </h2>
+            <p className="intro-eyebrow">Hey there</p>
+            <h1 className="intro-name">{userInfo.displayName}#{userInfo.tag}</h1>
 
-            <span className="capsule">Rifting Wrapped {year}</span>
+            <p className="intro-headline">
+                Let's dive into your <strong>League of Legends</strong> performance in <strong>{year}</strong>!
+            </p>
+
+            <span className="intro-swipe-cue">
+                Swipe to continue
+                <span className="intro-swipe-cue__chevron" aria-hidden="true">›</span>
+            </span>
         </StatCard>
     );
 }

@@ -380,21 +380,29 @@ h4 {
 
 
 .shareButton {
-    background-color: #696c70ff;
+    background-color: var(--accent-color);
     color: var(--text-color);
     width: 200px;
     padding: 10px 20px;
     text-align: center;
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 700;
     font-size: var(--fs-sm);
     border: none;
     cursor: pointer;
     display: inline-block;
-    border-radius: 5px;
+    border-radius: 6px;
     margin: 5px;
 }
 
+.shareButton:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+    transition: filter .2s ease, transform .15s ease;
+}
+
+/* Twitter/Facebook/Reddit keep their own brand colors rather than the site accent -
+   these three are recognizable by color, so re-tinting them would hurt, not help. */
 .shareButton.twitter {
     background-color: #186ac7ff;
 }

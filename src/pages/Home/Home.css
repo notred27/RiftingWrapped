@@ -171,7 +171,7 @@ body,
 
     padding: 12px;
     font-size: var(--fs-lg);
-    border-radius: 6px;
+    /* border-radius: 4px; */
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: var(--second-bg-color);
     color: var(--text-color);
@@ -200,7 +200,7 @@ body,
     color: var(--text-color);
     border: none;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 4px;
     transition: background .2s ease;
     white-space: nowrap;
     flex: 0 0 auto;
@@ -454,7 +454,7 @@ iframe {
     #submitBtn {
         min-width: 0;
         padding: 12px;
-        border-radius: 8px;
+        border-radius: 4px;
         margin-top: 0;
         width: 100%;
     }
