@@ -48,3 +48,35 @@
 	color: var(--text-muted-color, #9DA3A6);
 	flex-shrink: 0;
 }
+
+/* Match entries repeat 3-4x per slide, so their per-row height drives the
+   overall slide height more than anything else on these screens. Long queue
+   names ("Ranked Solo") also overflowed their column at this width. */
+@media (max-width: 640px) {
+	.compact-entry {
+		gap: 8px;
+		padding: 6px 8px;
+		border-radius: 8px;
+		margin: 3px 0;
+	}
+
+	.champion-icon-table {
+		width: 28px;
+		height: 28px;
+		border-radius: 6px;
+	}
+
+	.compact-entry-date {
+		font-size: 11px;
+	}
+
+	.compact-entry-kda {
+		font-size: var(--fs-2xs, 12px);
+	}
+
+	.compact-entry-meta > span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}

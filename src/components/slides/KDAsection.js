@@ -28,8 +28,8 @@ export default function KDAsection({ puuid, year }) {
         <StatCard>
             <KDAgraph kills={killFreqArr} deaths={deathFreqArr} />
 
-            <div style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", width: "100%", justifyContent: "center", textAlign: "left" }}>
-                <div style={{ width: "50%" }}>
+            <div className='kda-split'>
+                <div className='kda-split__col'>
                     <p>
                         Of the <span className='emphasize'>{combatStats.totalPositiveGames}</span> games where you went positive,<br /> you won <span className='emphasize'>{Math.floor(combatStats.positiveWR / combatStats.totalPositiveGames * 10000) / 100}%</span> of the time.
                     </p>
@@ -37,7 +37,7 @@ export default function KDAsection({ puuid, year }) {
                     <p className='tableLabel'>Your best KDA game</p>
                 </div>
 
-                <div style={{ width: "50%" }}>
+                <div className='kda-split__col'>
                     <p>
                         Of the <span className='emphasize'>{combatStats.totalNegativeGames}</span> games that you went negative,<br /> you won <span className='emphasize'>{Math.floor(combatStats.negativeWR / combatStats.totalNegativeGames * 10000) / 100}%</span> of the time.
                     </p>

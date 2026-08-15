@@ -92,6 +92,27 @@
   transform: translateY(-8%);
 }
 
+/* Champion splash banner across the top of the stats grid. Height is set here
+   (not inline) so the mobile block below can shrink it, and the image fills the
+   box rather than being a fixed 300px that overflowed the card. */
+.summary-splash {
+  grid-area: 1 / 1 / 2 / 3;
+  position: relative;
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.summary-splash img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+  border-radius: 2px;
+}
+
 .overlay-badge {
   position: absolute;
   left: 4px;
@@ -107,7 +128,9 @@
 .stats-grid {
   margin-top: 10px;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
+  /* minmax(0, ...) so a wide child (splash art, charts) can't floor a track and
+     make the columns uneven */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   align-items: center;
 }
@@ -201,8 +224,13 @@
     width: 386px;
     height: fit-content;
     /* max-height: 94vh; */
-    padding: 18px;
+    padding: 12px;
     border-radius: 12px;
+  }
+
+  .summary-splash {
+    height: 96px;
+    margin-bottom: 6px;
   }
 
   .appName {
@@ -244,9 +272,22 @@
   }
 
   .stats-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
     margin-top: 4px;
+  }
+
+  /* The two heatmaps are square, so at a ~120px column they set the row height.
+     Cap the square itself (not its wrapper) so the caption keeps full width. */
+  .big-stat .kill-detail-map > div {
+    max-width: 96px;
+    margin: 0 auto;
+  }
+
+  /* The card already labels these "Kills" / "Deaths", so the heatmap's own
+     "Kill Locations" caption is redundant here and doesn't fit the column. */
+  .big-stat .tableLabel {
+    display: none;
   }
 
   .stat-card {

@@ -58,6 +58,19 @@
             --fs-display-lg: clamp(40px, 12vw, 72px);
         }
 
+        /* Border-box reset. This lives here, with the tokens, because this block
+           is the only stylesheet guaranteed to load before any route's CSS chunk.
+           It used to be declared only in Home.css and Policy.css, which are
+           lazy-loaded - so routes that never load those chunks (the player slide
+           deck, AddingPlayer) fell back to content-box, and every
+           "width: 100%" element with padding overflowed its container by exactly
+           its padding. */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             font-family: var(--font-body);

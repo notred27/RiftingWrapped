@@ -2,12 +2,12 @@ import "./SummaryCard.css";
 
 import { useStatsResources } from "../../resources/UserResourceContext.js";
 import { calcTopChamps } from "./ChampSection.js"
-import { filterByRole } from "./RoleSlide.js"
+import { filterByRole } from "../../resources/roles.js"
 import RoleGraph from "../graphs/RoleGraph.js"
 import MapOverlay from "../graphs/MapOverlay.js"
 import ObjectiveBubbleChart from "../graphs/ObjectiveBubbleChart.js"
 
-export default function SummaryCard({ year = "2025" }) {
+export default function SummaryCard({ year }) {
     const { champ, user, role, combatTotals, timeBreakdownStats, objectives } = useStatsResources();
     const userInfo = user.read();
 
@@ -46,27 +46,10 @@ export default function SummaryCard({ year = "2025" }) {
                 </div>
 
                 <div className="stats-grid">
-                    <div
-                        style={{
-                            height: "140px",
-                            width: "100%",
-                            overflowY: "hidden",
-                            position: "relative",
-                            borderRadius: "10px",
-                            marginBottom: "10px",
-                            gridArea: "1 / 1 / 2 / 3"
-                        }}
-                    >
+                    <div className="summary-splash">
                         <img
                             src={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${topChampName}_0.jpg`}
                             alt={`most played champ :${topChampName}`}
-                            style={{
-                                width: "300px",
-                                // height: "100px",
-                                borderRadius: "2px",
-                                objectFit: "cover",
-                                transform: "translateY(-10%)"
-                            }}
                         />
                         <div className="overlay-badge">{topChampName.toUpperCase()} • {topChampCount} Games</div>
 

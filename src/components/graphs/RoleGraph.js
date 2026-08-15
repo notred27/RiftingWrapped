@@ -7,16 +7,10 @@ import {
   ArcElement,
   CategoryScale,
 } from 'chart.js';
-ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale);
 
-// Role-specific colors
-const ROLE_COLORS = {
-  Top: '#D5896F',
-  Mid: '#DAB785',
-  Jungle: '#70A288',
-  ADC: '#04395E',
-  Support: '#031D44',
-};
+import { ROLE_COLORS, ROLE_COLOR_UNPLAYED } from '../../resources/roles.js';
+
+ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale);
 
 // Center-of-donut text plugin: draws the dominant role's % and name in the hole
 const centerLabelPlugin = {
@@ -51,7 +45,7 @@ export default function RoleGraph({ roles }) {
   const labels = roles.map(role => role.label);
   const dataValues = roles.map(role => role.games);
   const winCounts = roles.map(role => role.wins);
-  const backgroundColors = labels.map(label => ROLE_COLORS[label] || '#3a3a37');
+  const backgroundColors = labels.map(label => ROLE_COLORS[label] || ROLE_COLOR_UNPLAYED);
 
   const totalGames = dataValues.reduce((sum, g) => sum + g, 0);
   const topRole = roles.reduce((max, r) => (r.games > (max?.games ?? -1) ? r : max), null);
@@ -97,8 +91,10 @@ export default function RoleGraph({ roles }) {
     },
   };
 
+  // Square, but allowed to shrink below 140px - this also renders inside the
+  // summary card's ~122px grid column, where a fixed 140px overflowed.
   return (
-    <div style={{ position: 'relative', width: '140px', height: '140px' }}>
+    <div style={{ position: 'relative', width: '100%', maxWidth: '140px', aspectRatio: '1 / 1' }}>
       <Doughnut data={data} options={options} />
     </div>
   );

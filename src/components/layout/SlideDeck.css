@@ -1,15 +1,42 @@
 /* components/common/SlideDeck.css */
+
+/* SiteHeader measures itself and publishes --site-header-h on :root; the value
+   here is only the fallback used before that first measurement lands. The deck
+   reserves that height so a slide can occupy the rest of the screen without the
+   page needing to scroll. */
+:root {
+    --site-header-allowance: var(--site-header-h, 56px);
+    /* One screen minus the header. Every slide is exactly this tall. */
+    --slide-deck-h: calc(100dvh - var(--site-header-allowance));
+}
+
 .slide-deck {
     position: relative;
     width: 100%;
     flex: 1 1 auto;
-    min-height: 90dvh;
+    /* Pinning min and max to the same value makes the deck exactly one screen
+       below the header, so every slide is the same size no matter which ones are
+       currently mounted or how tall their content is. Content taller than this
+       scrolls inside its own slide (.slide is overflow-y: auto) rather than
+       being clipped or stretching the page. */
+    min-height: var(--slide-deck-h);
+    max-height: var(--slide-deck-h);
     overflow: hidden;
+    /* Vertical panning stays with the browser (native page/slide scrolling);
+       horizontal gestures are ours to interpret as slide changes. */
+    touch-action: pan-y;
 }
 
+/* Absolutely positioned rather than height: 100%. A percentage height can't
+   resolve against a parent whose own height comes from min-height, so the track
+   silently fell back to its content height - which, once slides are lazily
+   mounted, is just the tallest of the two or three mounted slides. That made
+   slide height jump around during navigation and left the content sitting above
+   centre. inset: 0 ties the track to the deck's real box instead. */
 .slide-track {
+    position: absolute;
+    inset: 0;
     display: flex;
-    height: 100%;
     transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -45,4 +72,68 @@
     height: 100%;
     background: var(--accent-color);
     transition: width 0.2s;
+}
+
+/* Visually hidden, but still in the tab order and readable by assistive tech. */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Keyboard navigation controls. Hidden until focused so they don't take layout
+   space or sit on top of in-slide controls, then shown as a normal button. */
+.slide-nav {
+    position: absolute;
+    top: 50%;
+    z-index: 30;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    border: none;
+    background: var(--second-bg-color);
+    color: var(--text-color);
+    font-size: var(--fs-lg);
+    line-height: 1;
+    cursor: pointer;
+}
+
+.slide-nav--prev { left: 8px; }
+.slide-nav--next { right: 8px; }
+
+.slide-nav:focus-visible {
+    width: 44px;
+    height: 44px;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    clip-path: none;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+.slide-nav:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* Give slide content back the horizontal room the desktop gutters take up -
+   at 375px those 24px gutters were enough to push several charts and grids
+   past their container. */
+@media (max-width: 640px) {
+    .slide {
+        padding: 12px;
+    }
 }

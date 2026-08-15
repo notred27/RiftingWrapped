@@ -9,10 +9,11 @@ import './LaneSection.css';
 export default function LaneSection({ puuid }) {
     const { pings } = useStatsResources();
 
-    const pingArr = pings.read()[0];
-    delete pingArr['Command Ping']
+    // Copy rather than delete off the cached object - this data is shared with
+    // every other slide that reads `pings`.
+    const { 'Command Ping': _commandPing, ...pingArr } = pings.read()[0] ?? {};
 
-    const totalPings = Object.values(pingArr).reduce((a, c) => parseInt(a) + parseInt(c), 0);
+    const totalPings = Object.values(pingArr).reduce((sum, count) => sum + (parseInt(count, 10) || 0), 0);
     const maxPing = Object.keys(pingArr).reduce((a, b) => pingArr[a] > pingArr[b] ? a : b);
 
 

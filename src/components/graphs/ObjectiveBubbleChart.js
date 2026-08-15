@@ -81,10 +81,21 @@ export default function ObjectiveBubbleChart({ objectives }) {
       .text(d => d.data.value.toLocaleString());
   }, [objectives]);
 
+  // The SVG scales via its viewBox, so the container only needs to hold the
+  // chart's aspect ratio. A fixed HEIGHT here made this 320px tall even when
+  // rendered into a ~130px-wide column on the summary card, which set the row
+  // height for the whole grid.
   return (
     <div
       ref={containerRef}
-      style={{ width: '100%', maxWidth: WIDTH, height: HEIGHT, margin: '0 auto', position: 'relative' }}
+      style={{
+        width: '100%',
+        maxWidth: WIDTH,
+        aspectRatio: `${WIDTH} / ${HEIGHT}`,
+        maxHeight: HEIGHT,
+        margin: '0 auto',
+        position: 'relative',
+      }}
     />
   );
 }

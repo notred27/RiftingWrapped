@@ -16,11 +16,9 @@
   min-width: 0;
 }
 
-@media (max-width: 768px) {
-  .champion-grid-container {
-    padding-left: 10px;
-  }
-}
+/* No mobile padding override here: combined with width: 100% it pushed this
+   row past its container on pages where the global border-box reset (declared
+   in Home.css) hasn't been loaded by the route's CSS chunk. */
 
 /* Scrolling viewport - height is locked to exactly 4 rows of icons + gaps */
 .champion-grid-scroll {

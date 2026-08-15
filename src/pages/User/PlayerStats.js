@@ -50,7 +50,7 @@ function PlayerStats() {
 				<ErrorBoundary fallback={(err) => <UserError error={err} />}>
 					<Suspense fallback={<UserIntroFallback year={year} />}>
 
-						<SlideDeck>
+						<SlideDeck renderFallback={() => <UserIntroFallback year={year} />}>
 
 							<UserIntro year={year} />
 
@@ -72,7 +72,7 @@ function PlayerStats() {
 							<TimeSpentSlide puuid = {puuid} />
 							<TotalTimeBreakdown puuid={puuid} year={year} />
 
-							<SummaryCard />
+							<SummaryCard year={year} />
 						</SlideDeck>
 
 					</Suspense>

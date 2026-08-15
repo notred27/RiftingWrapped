@@ -27,7 +27,7 @@ export default function DateSection() {
 
     return (
         <StatCard
-            eyebrow="you visited the Rift during"
+            eyebrow="You visited the Rift during"
             title={`${totalGames} Games!`} >
 
             <StatGrid

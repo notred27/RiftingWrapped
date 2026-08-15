@@ -12,7 +12,7 @@ export default function StatCard({ eyebrow, title, subtitle, children, className
     return (
         <ErrorBoundary fallback={(err) => <StatDisplayError error={err} />}>
             <Suspense fallback={<div />}>
-                <section className={`${className}`}>
+                <section className={`slide-card ${className}`.trim()}>
                     {eyebrow && <h2 className="subtitle">{eyebrow}</h2>}
                     {title && <h1 className='emphasize-xlg'>{title}</h1>}
                     {subtitle && <p className="subtitle">{subtitle}</p>}

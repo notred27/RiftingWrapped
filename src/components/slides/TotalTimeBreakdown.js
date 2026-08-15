@@ -24,7 +24,7 @@ export default function TotalTimeBreakdown({ puuid, year }) {
             title={"Share your Wrapped!"}
 
         >
-            <div style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: "10px" }}>
+            <div className="slide-split">
 
                 <div >
                     <SharePreviewCard

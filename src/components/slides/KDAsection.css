@@ -3,10 +3,24 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
     width: 100%;
-    
+
     margin: 0 auto;
     margin-top: 4px;
     align-items: start;
+}
+
+/* Best-KDA / worst-KDA pair. minmax(0, 1fr) keeps the columns from being
+   floored by their content's min-width the way the old inline width: 50% was. */
+.kda-split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    width: 100%;
+    text-align: left;
+}
+
+.kda-split__col {
+    min-width: 0;
 }
 
 .kill-detail-map {
@@ -20,10 +34,14 @@
 }
 
 /* Below this width, stack both children full-width instead of forcing the
-   1-column / 2-column split - this is the "fill the empty space" behavior */
+   1-column / 2-column split - this is the "fill the empty space" behavior.
+   The stacked map is capped well below the old 80% because a square that wide
+   made these the two tallest slides in the deck, and the deck sizes every
+   slide to its tallest member. */
 @media (max-width: 640px) {
     .kill-detail-row {
         grid-template-columns: 1fr;
+        gap: 4px;
     }
     .kill-detail-games {
         grid-column: 1 / -1;
@@ -31,7 +49,19 @@
 
     .kill-detail-map {
         grid-column: 1 / -1;
-        width: 80%;
+        width: 100%;
+        max-width: 150px;
         margin: 0 auto;
+    }
+
+    .kill-detail-map .tableLabel {
+        margin-top: 2px;
+        margin-bottom: 6px;
+    }
+
+    /* Two ~163px columns left no usable room for a match row plus its copy. */
+    .kda-split {
+        grid-template-columns: 1fr;
+        gap: 4px;
     }
 }

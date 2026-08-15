@@ -36,11 +36,11 @@ export default function TimeSpentSlide({ puuid, year }) {
     return (
 
         <StatCard
-            eyebrow={"In Total, You spent"}
+            eyebrow={"In total, you spent"}
             title={`${totalTime.toLocaleString()} hours`}
             subtitle={"playing League this year!"}
         >
-            <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center", flexWrap: "wrap", textAlign: "left" }}>
+            <div className="slide-split" style={{ textAlign: "left" }}>
                 <TotalTimeGraph times={timeBreakdown} labels={timeLabels}></TotalTimeGraph>
 
                 <div>

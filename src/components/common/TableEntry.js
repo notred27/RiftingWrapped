@@ -36,6 +36,30 @@ const QUEUE_ID_MAP = {
 };
 
 
+/* Match ids are "<PLATFORM>_<number>" (e.g. "EUN1_1234567890"), so the platform
+   the game was played on comes from the id itself. Without this every match link
+   pointed at /na/ regardless of where the player actually plays. */
+const PLATFORM_TO_REGION = {
+	NA1: "na",
+	EUW1: "euw",
+	EUN1: "eune",
+	KR: "kr",
+	BR1: "br",
+	JP1: "jp",
+	LA1: "lan",
+	LA2: "las",
+	OC1: "oce",
+	OC2: "oce",
+	TR1: "tr",
+	RU: "ru",
+	PH2: "ph",
+	SG2: "sg",
+	TH2: "th",
+	TW2: "tw",
+	VN2: "vn",
+	ME1: "me",
+};
+
 const ROLE_ICON = {
 	TOP: "https://cdn.mobalytics.gg/assets/common/icons/lol-roles/16-top-bright.svg",
 	BOTTOM: "https://cdn.mobalytics.gg/assets/common/icons/lol-roles/16-bot-bright.svg",
@@ -83,8 +107,13 @@ function TableEntryInner({ puuid, match, variant = "kills" }) {
 	}, [match, stats]);
 
 	const openMatch = () => {
-		const matchId = stats.matchId.split("_")[1];
-		window.open(`https://mobalytics.gg/lol/match/na/${stats.riotIdGameName}-${stats.riotIdTagline}/${matchId}`, "_blank");
+		const [platform, matchNumber] = String(stats.matchId).split("_");
+		const region = PLATFORM_TO_REGION[String(platform).toUpperCase()] || "na";
+		window.open(
+			`https://mobalytics.gg/lol/match/${region}/${stats.riotIdGameName}-${stats.riotIdTagline}/${matchNumber}`,
+			"_blank",
+			"noopener,noreferrer"
+		);
 	};
 
 	return (
