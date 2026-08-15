@@ -2,7 +2,7 @@
 <div align="center">
 
 
-<h1><img src = "public/favicon-32x32.png" /> Rifting Wrapped 2025</h1>
+<h1><img src = "public/favicon-32x32.png" /> Rifting Wrapped 2026</h1>
 
 **Join _over 200_ other users in reliving your best League of Legends matches and stats from this past year!**
 
