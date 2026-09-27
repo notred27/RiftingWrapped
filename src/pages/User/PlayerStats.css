@@ -290,39 +290,13 @@
 
 
 
-.shareButtonRow {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 8px;
-    justify-items: stretch;
-    align-items: center;
-    width: 100%;
-    max-width: 250px;
-}
-
-.shareButtonRow button {
-    font-size: var(--fs-2xs);
-}
 
 
 
-@media (max-width: 768px) {
-    /* minmax(0, 1fr) rather than 1fr: a plain 1fr track floors at the button's
-       min-content width, which pushed this grid ~170px past the slide. */
-    .shareButtonRow {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        max-width: 100%;
-    }
 
-    .shareButtonRow button,
-    .shareButtonRow .shareButton {
-        padding: 12px 8px;
-        font-size: var(--fs-2xs);
-        text-align: center;
-        margin: 0px;
-    }
 
-}
+
+
 
 
 
@@ -357,44 +331,16 @@
 
 
 
-.shareButton {
-    background-color: var(--accent-color);
-    color: var(--text-color);
-    width: 100%;
-    max-width: 200px;
-    min-width: 0;
-    box-sizing: border-box;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: var(--fs-sm);
-    border: none;
-    cursor: pointer;
-    display: inline-block;
-    border-radius: 6px;
-    margin: 0;
-}
 
-.shareButton:hover {
-    filter: brightness(1.15);
-    transform: translateY(-1px);
-    transition: filter .2s ease, transform .15s ease;
-}
 
-/* Twitter/Facebook/Reddit keep their own brand colors rather than the site accent -
-   these three are recognizable by color, so re-tinting them would hurt, not help. */
-.shareButton.twitter {
-    background-color: #186ac7ff;
-}
 
-.shareButton.facebook {
-    background-color: #094a94ff;
-}
 
-.shareButton.reddit {
-    background-color: #ce280aff;
-}
+
+
+
+
+
+
 
 @media (max-width: 768px) {
     .splitColumn {

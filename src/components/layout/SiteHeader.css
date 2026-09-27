@@ -61,7 +61,8 @@
     position: absolute;
     width: 8px;
     height: 8px;
-    border-color: var(--text-muted-color);
+    /* border shorthands below use currentColor */
+    color: var(--text-muted-color);
 }
 
 .site-header__corner--tl { top: 0; left: 0; border-top: 1px solid; border-left: 1px solid; }

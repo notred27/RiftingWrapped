@@ -44,13 +44,19 @@
     flex: 0 0 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    padding: 32px 24px;
+    /* Centred with auto margins on the child (below) rather than
+       justify-content: center - with overflow-y: auto, centring pushes the top
+       of a tall slide above the scroll origin where it can't be scrolled to. */
+    padding: 40px 32px 32px;
     box-sizing: border-box;
     background: var(--slide-bg, var(--bg-color));
     color: var(--slide-fg, var(--text-color));
     transition: background 0.3s;
     overflow-y: auto;
+}
+
+.slide > * {
+    margin-block: auto;
 }
 .progress-bar {
     position: absolute;
@@ -64,7 +70,7 @@
 .progress-segment {
     flex: 1;
     height: 3px;
-    background: rgba(255,255,255,0.25);
+    background: var(--border-strong);
     border-radius: 2px;
     overflow: hidden;
 }
@@ -134,6 +140,7 @@
    past their container. */
 @media (max-width: 640px) {
     .slide {
-        padding: 12px;
+        /* Top padding clears the progress bar pinned at the top of the deck. */
+        padding: 28px 16px 16px;
     }
 }

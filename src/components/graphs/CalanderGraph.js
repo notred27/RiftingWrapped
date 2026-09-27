@@ -1,89 +1,34 @@
-import { useEffect, useState } from "react";
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-function CalanderGraph({ dates }) {
-  const [bars, setBars] = useState([]);
-
-  const MONTHS = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
-  ];
-
-  const START_COLOR = "#292f56";
-  const END_COLOR = "#fa7970";
-
-  function lerp(a, b, t) {
-    return Math.round(a + (b - a) * t);
-  }
-
-  function interpolateColor(hexA, hexB, t) {
-    const a = [1, 3, 5].map(i => parseInt(hexA.slice(i, i + 2), 16));
-    const b = [1, 3, 5].map(i => parseInt(hexB.slice(i, i + 2), 16));
-
-    const rgb = a.map((v, i) => lerp(v, b[i], t));
-    return `rgb(${rgb.join(",")})`;
-  }
-
-  useEffect(() => {
-    if (!dates) return;
-
-    const newBars = dates.map((value, i) => ({
-      month: MONTHS[i],
-      value,
-      color: interpolateColor(
-        START_COLOR,
-        END_COLOR,
-        i / (MONTHS.length - 1)
-      ),
-    }));
-
-    setBars(newBars);
-  }, [dates]);
+/**
+ * Days played per month. Same "highlight the top one" treatment as the other
+ * single-series bar charts: the busiest month in accent, the rest muted, with
+ * values labelled directly so no axis is needed.
+ */
+function CalanderGraph({ dates = [] }) {
+  const max = Math.max(...dates, 1);
+  const topIndex = dates.indexOf(Math.max(...dates));
 
   return (
-    <div
-  style={{
-    display: "flex",
-    alignItems: "flex-end", // Bars grow upward
-    width: "100%",
-    height: "180px",
-    gap: "6px",
-  }}
->
-  {bars.map((bar) => (
-    <div
-      key={bar.month}
-      style={{
-        flex: 1, // Every month gets the same width
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "flex-end",
-        alignItems: "center",
-        height:"100%"
-      }}
-    >
-      {bar.value > 0? `${bar.value}` :""}
-      <div
-        title={`${bar.month}: ${bar.value} day${bar.value === 1 ? "" : "s"}`}
-        style={{
-          width: "100%",
-          height: `${(bar.value / Math.max(...dates, 1)) * 100}%`,
-          background: bar.color,
-          borderRadius: "4px 4px 0 0",
-          minHeight: bar.value > 0 ? "4px" : "0",
-          transition: "height 0.3s ease",
-        }}
-      />
-      <span
-        style={{
-          marginTop: "6px",
-          fontSize: "var(--fs-2xs)",
-        }}
-      >
-        {bar.month.slice(0, 3)}
-      </span>
+    <div className="month-chart" role="img" aria-label={`Days played per month: ${MONTHS.map((m, i) => `${m} ${dates[i] || 0}`).join(', ')}`}>
+      {MONTHS.map((month, i) => {
+        const value = dates[i] || 0;
+        const isTop = i === topIndex && value > 0;
+        return (
+          <div className="month-chart__col" key={month} title={`${month}: ${value} day${value === 1 ? "" : "s"}`}>
+            <div className="month-chart__track">
+              <span className={`month-chart__value${isTop ? " is-top" : ""}`}>{value > 0 ? value : ""}</span>
+              {/* 85% leaves headroom for the value label above the tallest bar */}
+              <div
+                className={`month-chart__bar${isTop ? " is-top" : ""}`}
+                style={{ height: `${(value / max) * 85}%` }}
+              />
+            </div>
+            <span className="month-chart__label">{month}</span>
+          </div>
+        );
+      })}
     </div>
-  ))}
-</div>
   );
 }
 

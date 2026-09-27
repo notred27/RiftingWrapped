@@ -1,41 +1,22 @@
-import { Doughnut } from 'react-chartjs-2';
-import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 
-ChartJS.register(Title, Tooltip, Legend, ArcElement);
+import { rankedBarData, rankedBarOptions, valueLabelPlugin } from './ChampGraph.js';
 
-const COLORS = ['#292f56', '#4c3a6b', '#72437a', '#994b82', '#bf5582', '#e0637c', '#fa7970'];
-
+/** Where some of the player's hours went, largest first. (Was a 7-slice
+ *  doughnut whose slices were too similar in colour and size to read.) */
 function TotalTimeGraph({ times, labels }) {
-  const data = {
-    labels,
-    datasets: [
-      {
-        data: times,
-        backgroundColor: COLORS,
-        borderColor: '#131013',
-        borderWidth: 2,
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'right',
-        labels: { color: '#71816D', boxWidth: 12, font: { size: 12 } },
-      },
-      tooltip: {
-        callbacks: {
-          label: (ctx) => `${ctx.label}: ${ctx.raw} hrs`,
-        },
-      },
-    },
-  };
+  const sorted = labels
+    .map((label, i) => ({ label, value: times[i] || 0 }))
+    .filter(d => d.value > 0)
+    .sort((a, b) => b.value - a.value);
 
   return (
-    <div style={{ width: '360px', margin: '0 auto' }}>
-      <Doughnut data={data} options={options} />
+    <div style={{ position: 'relative', height: `${sorted.length * 28 + 8}px` }}>
+      <Bar
+        data={rankedBarData(sorted.map(d => d.label), sorted.map(d => d.value))}
+        options={rankedBarOptions('hrs')}
+        plugins={[valueLabelPlugin]}
+      />
     </div>
   );
 }

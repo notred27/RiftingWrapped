@@ -5,6 +5,7 @@ import { useStatsResources } from "../../resources/UserResourceContext.js";
 import ChampGrid from '../graphs/ChampGrid.js';
 import StatCard from '../layout/StatCard.js';
 import { calcTopChamps } from './ChampSection.js';
+import EmptySlide from '../layout/EmptySlide.js';
 
 
 export default function ChampRosterSection() {
@@ -40,10 +41,14 @@ export default function ChampRosterSection() {
 		? Math.round((playedChamps.length / allChampions.length) * 1000) / 10
 		: 0;
 
+	if (playedChamps.length === 0) {
+		return <EmptySlide eyebrow="Your champion pool" />;
+	}
+
 	return (
 		<StatCard
-			eyebrow="You also played as"
-			title={`${playedChamps.length} Champions`}
+			eyebrow={playedChamps.length === 1 ? "You stuck with just" : "You also played as"}
+			title={playedChamps.length === 1 ? '1 champion' : `${playedChamps.length} champions`}
 			subtitle={`of ${allChampions.length} total · that's ${rosterPercent}% of the roster`}
 		>
 

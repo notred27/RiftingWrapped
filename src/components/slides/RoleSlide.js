@@ -3,6 +3,7 @@ import { ROLE_COLORS, ROLE_COLOR_UNPLAYED, filterByRole } from '../../resources/
 
 import RoleGraph from './../graphs/RoleGraph.js';
 import StatCard from '../layout/StatCard.js';
+import EmptySlide from '../layout/EmptySlide.js';
 
 import './LaneSection.css';
 
@@ -13,15 +14,19 @@ export default function RoleSlide({ puuid }) {
     const playedRoles = roleArr.filter(r => r.games > 0).sort((a, b) => b.games - a.games);
     const unplayedRoles = roleArr.filter(r => r.games === 0);
 
+    if (playedRoles.length === 0) {
+        return <EmptySlide eyebrow="Out of all the lanes" title="No lane to call home" message="You didn't play any Summoner's Rift games with an assigned role this year." />;
+    }
+
     return (
         <StatCard
             eyebrow={"Out of all the lanes"}
-            title={`${roleArr[0]?.label || "EVERYWHERE"}`}
+            title={playedRoles[0].label}
             subtitle={"was your home"}
         >
 
             <div className="position-breakdown-body">
-                <RoleGraph roles={roleArr} />
+                <RoleGraph roles={roleArr} maxSize={200} />
 
                 <div className="position-breakdown-legend">
                     {playedRoles.map(role => (
@@ -34,7 +39,7 @@ export default function RoleSlide({ puuid }) {
                                 {role.label}
                             </span>
                             <span className="position-breakdown-stats">
-                                {role.games} games · <span style={{ color: ROLE_COLORS[role.label], fontWeight: 500 }}>{role.winRate}% WR</span>
+                                {role.games} games · <span className="position-breakdown-wr">{role.winRate}% WR</span>
                             </span>
                         </div>
                     ))}

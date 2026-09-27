@@ -9,6 +9,8 @@ import RoleGraph from "../graphs/RoleGraph.js"
 import MapOverlay from "../graphs/MapOverlay.js"
 import ObjectiveBubbleChart from "../graphs/ObjectiveBubbleChart.js"
 import SaveCardImage from "../common/SaveCardImage.js"
+import EmptySlide from "../layout/EmptySlide.js"
+import { plural } from "../../resources/theme.js"
 
 export default function SummaryCard({ year }) {
     const { champ, user, role, combatTotals, timeBreakdownStats, objectives, pings } = useStatsResources();
@@ -18,6 +20,10 @@ export default function SummaryCard({ year }) {
     const [sortedNames, sortedCounts] = calcTopChamps(champ.read())
     const topChampName = sortedNames[0]
     const topChampCount = sortedCounts[0];
+
+    if (!topChampName) {
+        return <EmptySlide eyebrow={`Rifting Wrapped ${year}`} title="Your summary card is waiting" message="Once you have some games this year, your shareable summary card shows up here." />;
+    }
 
     const roleArr = filterByRole(role.read());
     const topRole = roleArr[0];
@@ -61,7 +67,7 @@ export default function SummaryCard({ year }) {
                             src={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${topChampName}_0.jpg`}
                             alt={`most played champ :${topChampName}`}
                         />
-                        <div className="overlay-badge">{topChampName.toUpperCase()} • {topChampCount} Games</div>
+                        <div className="overlay-badge">{topChampName.toUpperCase()} • {plural(topChampCount, 'game')}</div>
 
                     </div>
 
@@ -86,8 +92,8 @@ export default function SummaryCard({ year }) {
                         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "100%", alignItems: "center", gap: "4px" }}>
 
                             <RoleGraph roles={roleArr} />
-                            <div className="stat-number">{topRole?.label || "Everywhere"}</div>
-                            <div className="label">{topRole?.games || 0} games ({topRole?.winRate || 0}% WR)</div>
+                            <div className="stat-number">{topRole?.games ? topRole.label : "No lane"}</div>
+                            <div className="label">{topRole?.games ? `${plural(topRole.games, 'game')} (${topRole.winRate}% WR)` : "Other modes only"}</div>
                         </div>
 
                     </div>
@@ -120,7 +126,7 @@ export default function SummaryCard({ year }) {
 
                     <div id="hour-stats" className="stat-card">
                         <div className="stat-label">Hours Played</div>
-                        <div className="stat-number">{totalPlaytime} hrs</div>
+                        <div className="stat-number">{totalPlaytime === 1 ? "1 hr" : `${totalPlaytime.toLocaleString()} hrs`}</div>
                     </div>
 
                 </div>

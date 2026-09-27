@@ -2,6 +2,8 @@ import { useStatsResources } from "../../resources/UserResourceContext.js";
 
 import HorizontalBarChart from '../graphs/ChampGraph.js';
 import StatCard from '../layout/StatCard.js';
+import EmptySlide from '../layout/EmptySlide.js';
+import { plural } from '../../resources/theme.js';
 
 
 
@@ -36,28 +38,28 @@ export default function ChampSection() {
 	const topChamp = sortedNames[0]
 	const topCount = sortedCounts[0]
 
+	if (!topChamp) {
+		return <EmptySlide eyebrow="Your go-to champion" title="No games yet" />;
+	}
 
 	return (
-		<StatCard>
-
-			<div className="champ-hero">
+		<StatCard
+			lead={
 				<img
-					className="champ-hero__portrait"
-					alt={`${topChamp} portrait`}
+					className="champ-hero__splash"
+					alt={`${topChamp} splash art`}
 					src={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${topChamp}_0.jpg`}
 				/>
-				<div className="champ-hero__text">
-					<p className="subtitle">Your go-to champion was</p>
-					<h1 className="champ-hero__name">{topChamp.toUpperCase()}</h1>
-					<p className="subtitle">{topCount} games · {Math.round((topCount / totalGames) * 100)}% of your games</p>
-				</div>
-			</div>
-
-			<HorizontalBarChart
-				champs={sortedNames}
-				values={sortedCounts}
-			/>
-
-		</StatCard>
-		);
+			}
+			eyebrow="Your go-to champion was"
+			title={topChamp.toUpperCase()}
+			subtitle={<><strong>{plural(topCount, 'game')}</strong> · {Math.round((topCount / totalGames) * 100)}% of everything you played</>}
+			media={
+				<>
+					<p className="slide-label">Most played champions</p>
+					<HorizontalBarChart champs={sortedNames} values={sortedCounts} />
+				</>
+			}
+		/>
+	);
 }

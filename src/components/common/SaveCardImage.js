@@ -120,11 +120,11 @@ export default function SaveCardImage({ targetRef, username, year }) {
         // edge-tap navigation.
         <div className="save-card-actions" onClick={(e) => e.stopPropagation()}>
             {canShareFiles &&
-                <button type="button" className="shareButton" onClick={onShare} disabled={busy}>
+                <button type="button" className="btn btn--primary" onClick={onShare} disabled={busy}>
                     {busy ? "Preparing…" : "Share image"}
                 </button>
             }
-            <button type="button" className="shareButton" onClick={onDownload} disabled={busy}>
+            <button type="button" className={`btn ${canShareFiles ? "btn--secondary" : "btn--primary"}`} onClick={onDownload} disabled={busy}>
                 {busy && !canShareFiles ? "Preparing…" : "Save image"}
             </button>
             {error && <p className="save-card-error" role="alert">{error}</p>}

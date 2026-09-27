@@ -170,8 +170,7 @@ body,
 #regionSelect {
 
     padding: 12px;
-    font-size: var(--fs-lg);
-    /* border-radius: 4px; */
+    font-size: var(--fs-md);
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: var(--second-bg-color);
     color: var(--text-color);
@@ -180,8 +179,8 @@ body,
 
 
 #nameInput {
-    padding: 10px;
-    font-size: var(--fs-lg);
+    padding: 10px 14px;
+    font-size: var(--fs-md);
     border: none;
     background: var(--second-bg-color);
     color: var(--text-color);
@@ -200,7 +199,7 @@ body,
     color: var(--text-color);
     border: none;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     transition: background .2s ease;
     white-space: nowrap;
     flex: 0 0 auto;
@@ -211,9 +210,14 @@ body,
 }
 
 #submitBtn:hover {
-    filter: brightness(1.15);  /* lighter, not darker */
-    transform: translateY(-1px);  /* subtle lift */
-    transition: filter .2s ease, transform .15s ease;
+    background: var(--accent-hover);
+}
+
+/* The name input sets outline: none, so show focus on its container instead -
+   keyboard users otherwise get no indication the search box is focused. */
+.hero-search-box:focus-within {
+    outline: 2px solid var(--accent-text);
+    outline-offset: 2px;
 }
 
 /* touch target hint */

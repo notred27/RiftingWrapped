@@ -25,6 +25,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    color: var(--text-color);
+    text-decoration: none;
 }
 
 .site-footer__logo {
@@ -48,6 +50,7 @@
 
 /* ---------- Bracket CTA ---------- */
 .site-footer__cta {
+    color: var(--text-color);
     grid-area: cta;
     position: relative;
     justify-self: end;
@@ -80,7 +83,9 @@
     position: absolute;
     width: 10px;
     height: 10px;
-    border-color: var(--text-muted-color);
+    /* The border shorthands below use currentColor, so set it here - inside
+       the Ko-fi link it otherwise inherits the browser's default link blue. */
+    color: var(--text-muted-color);
 }
 
 .site-footer__corner--tl { top: 0; left: 0; border-top: 1px solid; border-left: 1px solid; }

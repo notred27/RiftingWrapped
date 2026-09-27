@@ -1,0 +1,61 @@
+/* Shared UI primitives. Loaded once from src/index.js so every route gets the
+   same buttons; tokens come from the :root block in public/index.html. */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    padding: 0 var(--space-5);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: progress;
+    transform: none;
+}
+
+.btn--primary {
+    background: var(--accent-color);
+    color: #fff;
+}
+
+.btn--primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+}
+
+.btn--secondary {
+    background: var(--second-bg-color);
+    border-color: var(--border-strong);
+    color: var(--text-color);
+}
+
+.btn--secondary:hover:not(:disabled) {
+    background: var(--surface-2);
+}
+
+.btn--block {
+    width: 100%;
+}
+
+.btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+}

@@ -39,14 +39,8 @@
   width: 100%;
 }
 
-.save-card-actions .shareButton {
-  width: auto;
-  min-width: 140px;
-}
-
-.save-card-actions .shareButton:disabled {
-  opacity: 0.6;
-  cursor: progress;
+.save-card-actions .btn {
+  min-width: 150px;
 }
 
 .save-card-error {
@@ -165,8 +159,9 @@
 }
 
 .stat-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
-  border-radius: 14px;
+  background: var(--second-bg-color);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   padding: 18px;
   height: 100%;
   /* min-height: 100px; */
@@ -177,11 +172,12 @@
 }
 
 .stat-label {
-  font-size: var(--fs-sm);
+  font-size: var(--fs-2xs);
   color: var(--muted);
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   margin-bottom: 8px;
-  text-decoration: underline;
 }
 
 .stat-number {
@@ -194,8 +190,9 @@
 
 .big-stat {
   flex: 1;
-  background: rgba(0, 0, 0, 0.18);
-  border-radius: 14px;
+  background: var(--second-bg-color);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   padding: 6px;
   padding-top: 10px;
   text-align: center;
@@ -241,6 +238,14 @@
   gap: 4px;
 }
 
+
+@media (max-width: 640px) {
+  /* The slide already has side padding; don't add more around the card. */
+  .summary-wrapper {
+    padding: 0;
+    gap: 10px;
+  }
+}
 
 @media (max-width: 900px) {
   .big-stat__text {

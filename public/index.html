@@ -22,24 +22,69 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Bricolage+Grotesque:wght@600;700;800;900&display=swap"
-        as="style" onload="this.rel='stylesheet'">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@600;700;800;900&display=swap"
+        as="style" crossorigin="anonymous" onload="this.rel='stylesheet'">
     <noscript>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Bricolage+Grotesque:wght@600;700;800;900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@600;700;800;900&display=swap" rel="stylesheet" crossorigin="anonymous">
     </noscript>
 
 
 
     <!-- Critical for render-blocking req -->
     <style>
+        /* ---------------------------------------------------------------
+           Design tokens. Everything visual should come from here: pages and
+           components consume these rather than hard-coding values, and the
+           chart palette is read from here by src/resources/theme.js.
+           --------------------------------------------------------------- */
         :root {
-            --bg-color: #0a0e14;
-            --second-bg-color: #141a21;
+            color-scheme: dark;
 
+            /* Surfaces, darkest to lightest */
+            --bg-color: #0a0e14;
+            --second-bg-color: #141a21;   /* card / tile surface */
+            --surface-2: #1c232c;         /* raised: hover, nested tiles */
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-strong: rgba(255, 255, 255, 0.16);
+
+            /* Brand accent. --accent-color is for fills (buttons, bars) where
+               white text sits on top; --accent-text is the same hue lifted to
+               ~5:1 so pink text stays readable on the dark background. */
             --accent-color: #c52184;
+            --accent-hover: #d6308f;
+            --accent-text: #e0428f;
             --accent-background-color: #c5218426;
+
             --text-color: #FFFFFF;
             --text-muted-color: #9DA3A6;
+
+            /* Chart palette - validated for colour-blind separation and >= 3:1
+               contrast on both background surfaces. Kills/deaths, damage types
+               and roles each keep one colour everywhere they appear. */
+            --chart-1: #3987e5;           /* blue */
+            --chart-2: #d95926;           /* orange */
+            --chart-3: #199e70;           /* aqua */
+            --chart-4: #c98500;           /* yellow */
+            --chart-5: #d55181;           /* magenta */
+            --chart-violet: #9085e9;
+            --chart-kills: var(--chart-2);
+            --chart-deaths: var(--chart-1);
+            --chart-muted: #4a515c;       /* non-highlighted bars */
+            --chart-grid: rgba(255, 255, 255, 0.07);
+            --chart-axis: #9DA3A6;
+
+            /* Shape and spacing */
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-pill: 999px;
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 24px;
+            --space-6: 32px;
+            --space-7: 48px;
 
             --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
             --font-display: "Bricolage Grotesque", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
@@ -58,6 +103,19 @@
             --fs-display-lg: clamp(40px, 12vw, 72px);
         }
 
+        /* Wider screens get a larger type scale so slides don't read as a
+           phone layout floating in empty space. */
+        @media (min-width: 1024px) {
+            :root {
+                --fs-xs: 15px;
+                --fs-sm: 17px;
+                --fs-md: 22px;
+                --fs-display-sm: 36px;
+                --fs-display-md: 52px;
+                --fs-display-lg: 84px;
+            }
+        }
+
         /* Border-box reset. This lives here, with the tokens, because this block
            is the only stylesheet guaranteed to load before any route's CSS chunk.
            It used to be declared only in Home.css and Policy.css, which are
@@ -69,6 +127,21 @@
         *::before,
         *::after {
             box-sizing: border-box;
+        }
+
+        /* Form controls don't inherit the page font by default, which left the
+           search box, region picker and every button in the system font. */
+        button,
+        input,
+        select,
+        textarea {
+            font: inherit;
+            color: inherit;
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--accent-text);
+            outline-offset: 2px;
         }
 
         body {

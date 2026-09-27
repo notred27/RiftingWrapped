@@ -6,16 +6,22 @@
  * renders a role should import from here.
  */
 
+// Validated as a set (colour-blind separation + contrast on the dark
+// background) for the donut's fixed lane order below, including the
+// Support -> Top wrap-around. Change them together, not one at a time.
 export const ROLE_COLORS = {
-	Top: '#D5896F',
-	Mid: '#DAB785',
-	Jungle: '#70A288',
-	ADC: '#04395E',
-	Support: '#031D44',
+	Top: '#c98500',
+	Jungle: '#3987e5',
+	Mid: '#d95926',
+	ADC: '#199e70',
+	Support: '#9085e9',
 };
 
+/** Fixed order for anything that draws roles next to each other (the donut). */
+export const ROLE_ORDER = ['Top', 'Jungle', 'Mid', 'ADC', 'Support'];
+
 /** Colour used for a role the player never queued for. */
-export const ROLE_COLOR_UNPLAYED = '#3a3a37';
+export const ROLE_COLOR_UNPLAYED = '#4a515c';
 
 const ROLE_LABELS = ['Top', 'Mid', 'Jungle', 'ADC', 'Support'];
 

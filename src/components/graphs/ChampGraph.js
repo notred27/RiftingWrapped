@@ -1,13 +1,14 @@
 import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
+import { Chart as ChartJS, Tooltip, BarElement, CategoryScale, LinearScale } from 'chart.js';
 
-const MUTED = '#3a3a37';
-const ACCENT = '#c52184';
-const TEXT_COLOR = '#FFFFFF';
-const GRID_COLOR = 'rgba(255, 252, 232, 0.12)';
+import { theme } from './chartTheme.js';
+import { highlightColors } from '../../resources/theme.js';
 
-const valueLabelPlugin = {
+ChartJS.register(Tooltip, BarElement, CategoryScale, LinearScale);
+
+/** Draws each bar's value at its end (inside the bar if it would be clipped),
+ *  so the chart needs no x axis. */
+export const valueLabelPlugin = {
 	id: 'valueLabel',
 	afterDatasetsDraw(chart) {
 		const { ctx, chartArea } = chart;
@@ -15,22 +16,17 @@ const valueLabelPlugin = {
 		const values = chart.data.datasets[0].data;
 
 		ctx.save();
-		ctx.font = '600 12px sans-serif';
+		ctx.font = `600 12px ${theme.fontBody}`;
 		ctx.textBaseline = 'middle';
+		ctx.fillStyle = theme.text;
 
 		meta.data.forEach((bar, i) => {
-			const label = `${values[i]}`;
+			const label = Number(values[i]).toLocaleString();
 			const labelWidth = ctx.measureText(label).width;
-
-			// Default: draw just outside the bar. If that would run past the
-			// chart's right edge (narrow/mobile widths), flip it inside the
-			// bar instead so it never gets clipped.
 			if (bar.x + 6 + labelWidth <= chartArea.right) {
-				ctx.fillStyle = TEXT_COLOR;
 				ctx.textAlign = 'left';
 				ctx.fillText(label, bar.x + 6, bar.y);
 			} else {
-				ctx.fillStyle = TEXT_COLOR;
 				ctx.textAlign = 'right';
 				ctx.fillText(label, bar.x - 6, bar.y);
 			}
@@ -39,100 +35,49 @@ const valueLabelPlugin = {
 	},
 };
 
-function HorizontalBarChart({ champs, values }) {
-	const maxIndex = values.indexOf(Math.max(...values));
-	const maxValue = Math.max(...values);
-
-	const data = {
-		labels: champs,
-		datasets: [
-			{
-				label: 'Games',
-				data: values,
-				backgroundColor: values.map((_, i) => (i === maxIndex ? ACCENT : MUTED)),
-				borderWidth: 0,
-				borderRadius: 4,
-				barThickness: 16,
-			},
-		],
-	};
-
-	const options = {
+/** Shared options for the ranked horizontal bar charts (champions, pings,
+ *  time breakdown): top bar in accent, the rest muted, values labelled. */
+export function rankedBarOptions(unit) {
+	return {
 		indexAxis: 'y',
 		responsive: true,
 		maintainAspectRatio: false,
-		layout: {
-			padding: {
-				right: 24,
-			},
-		},
+		layout: { padding: { right: 36 } },
 		scales: {
-			x: {
-				beginAtZero: true,
-				display: true,
-				// whole-number ticks only, and don't overcrowd small ranges
-				ticks: {
-					color: TEXT_COLOR,
-					font: { size: 11 },
-					stepSize: Math.max(1, Math.ceil(maxValue / 6)),
-					precision: 0,
-				},
-				grid: {
-					color: GRID_COLOR,
-				},
-				border: {
-					display: false,
-				},
-			},
+			x: { display: false, beginAtZero: true },
 			y: {
-				grid: {
-					display: false,
-				},
-				ticks: {
-					color: TEXT_COLOR,
-					font: {
-						size: 12,
-					},
-					display: true,
-				},
-				border: {
-					display: false,
-				},
+				grid: { display: false },
+				border: { display: false },
+				ticks: { color: theme.text, font: { size: 12 } },
 			},
 		},
 		plugins: {
-			legend: {
-				display: false,
-			},
-			title: {
-				display: true,
-				text: 'Most played champions',
-				position: 'bottom',
-				color: TEXT_COLOR,
-				font: {
-					size: 15,
-					weight: 'bold',
-				},
-				padding: {
-					top: 8,
-					bottom: 0,
-				},
-			},
+			legend: { display: false },
 			tooltip: {
-				backgroundColor: '#141a21',
-				titleColor: TEXT_COLOR,
-				bodyColor: TEXT_COLOR,
-				padding: 8,
-				callbacks: {
-					label: (ctx) => `${ctx.raw} games`,
-				},
+				displayColors: false,
+				callbacks: { label: (ctx) => `${Number(ctx.raw).toLocaleString()} ${unit}` },
 			},
 		},
 	};
+}
 
+export function rankedBarData(labels, values) {
+	return {
+		labels,
+		datasets: [{
+			data: values,
+			backgroundColor: highlightColors(values),
+			borderRadius: 4,
+			borderSkipped: 'start',
+			barThickness: 16,
+		}],
+	};
+}
+
+function HorizontalBarChart({ champs, values }) {
 	return (
-		<div style={{ position: 'relative', height: `${champs.length * 32 + 40}px`, zIndex: "2" }}>
-			<Bar data={data} options={options} plugins={[valueLabelPlugin]} />
+		<div style={{ position: 'relative', height: `${champs.length * 28 + 8}px` }}>
+			<Bar data={rankedBarData(champs, values)} options={rankedBarOptions('games')} plugins={[valueLabelPlugin]} />
 		</div>
 	);
 }
