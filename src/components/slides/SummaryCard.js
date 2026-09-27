@@ -1,15 +1,19 @@
 import "./SummaryCard.css";
 
+import { useRef } from "react";
+
 import { useStatsResources } from "../../resources/UserResourceContext.js";
 import { calcTopChamps } from "./ChampSection.js"
 import { filterByRole } from "../../resources/roles.js"
 import RoleGraph from "../graphs/RoleGraph.js"
 import MapOverlay from "../graphs/MapOverlay.js"
 import ObjectiveBubbleChart from "../graphs/ObjectiveBubbleChart.js"
+import SaveCardImage from "../common/SaveCardImage.js"
 
 export default function SummaryCard({ year }) {
     const { champ, user, role, combatTotals, timeBreakdownStats, objectives, pings } = useStatsResources();
     const userInfo = user.read();
+    const cardRef = useRef(null);
 
     const [sortedNames, sortedCounts] = calcTopChamps(champ.read())
     const topChampName = sortedNames[0]
@@ -32,7 +36,7 @@ export default function SummaryCard({ year }) {
 
     return (
         <div className="summary-wrapper">
-            <div className="summary-card">
+            <div className="summary-card" ref={cardRef}>
                 <div className="top-row">
                     <img
                         className="avatar"
@@ -128,6 +132,8 @@ export default function SummaryCard({ year }) {
                     <div>RIFTINGWRAPPED.COM</div>
                 </div>
             </div>
+
+            <SaveCardImage targetRef={cardRef} username={userInfo.displayName} year={year} />
         </div>
     );
 }
