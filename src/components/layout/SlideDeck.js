@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect, Children, Suspense } from 're
 import ProgressBar from './ProgressBar.js';
 import ErrorBoundary from '../error/ErrorBoundary.js';
 import StatDisplayError from '../error/StatDisplayError.js';
+import { trackEvent } from '../../resources/analytics.js';
 import './SlideDeck.css';
 
 // Fraction of the deck's width, on each side, that counts as a "tap to navigate" zone.
@@ -83,6 +84,15 @@ export default function SlideDeck({ children, renderFallback }) {
         }
     };
 
+
+    // Which slide people reach tells us where they drop off.
+    useEffect(() => {
+        trackEvent('slide_view', {
+            slide_index: index,
+            slide_total: slides.length,
+            is_last: index === lastIndex,
+        });
+    }, [index, slides.length, lastIndex]);
 
     useEffect(() => {
         const handler = (e) => {

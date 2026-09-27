@@ -8,7 +8,7 @@ import MapOverlay from "../graphs/MapOverlay.js"
 import ObjectiveBubbleChart from "../graphs/ObjectiveBubbleChart.js"
 
 export default function SummaryCard({ year }) {
-    const { champ, user, role, combatTotals, timeBreakdownStats, objectives } = useStatsResources();
+    const { champ, user, role, combatTotals, timeBreakdownStats, objectives, pings } = useStatsResources();
     const userInfo = user.read();
 
     const [sortedNames, sortedCounts] = calcTopChamps(champ.read())
@@ -23,6 +23,12 @@ export default function SummaryCard({ year }) {
     const totalPlaytime = Math.floor((timeBreakdownStats.read()[0]?.totalPlaytime ?? 0) / 3600);
 
     const objectiveArr = objectives.read()[0] || {};
+
+    const { 'Command Ping': _commandPing, ...pingCounts } = pings.read()[0] ?? {};
+    const topPing = Object.keys(pingCounts).reduce(
+        (best, name) => (best === null || (pingCounts[name] || 0) > (pingCounts[best] || 0) ? name : best),
+        null
+    );
 
     return (
         <div className="summary-wrapper">
@@ -105,7 +111,7 @@ export default function SummaryCard({ year }) {
 
                     <div id="ping-stats" className="stat-card">
                         <div className="stat-label">Most Used Ping</div>
-                        <div className="stat-number">On My Way</div>
+                        <div className="stat-number">{topPing ?? "None"}</div>
                     </div>
 
                     <div id="hour-stats" className="stat-card">

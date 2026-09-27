@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 function getContentGroup(pathname) {
 	if (pathname.startsWith('/addPlayer/')) return 'Add Player';
-	if (pathname.startsWith('/players/')) return 'Player Profile';
+	if (pathname.startsWith('/player/')) return 'Player Profile';
 	return 'Other';
 }
 

@@ -17,7 +17,7 @@ export default class ErrorBoundary extends React.Component {
 			}
 
 			return (
-				<span class="generic-error">
+				<span className="generic-error">
 					{this.state.error.message || "Unknown error"}
 				</span>
 			);

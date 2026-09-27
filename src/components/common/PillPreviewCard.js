@@ -9,7 +9,7 @@ export default function PillPreviewCard({ username, icon, hoursPlayed, champName
                 margin: "10px",
                 ...style,
             }}
-            aria-label={`${username}'s Rifting Wrapped 2025 profile`}
+            aria-label={`${username}'s Rifting Wrapped profile`}
             aria-hidden="false"
         >
             <a
