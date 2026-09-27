@@ -28,7 +28,13 @@
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
-  gtag('config', 'G-3KJTMB7K3W');
+  // Report a generic path so GA groups every share page together instead of
+  // creating one row per player ID.
+  gtag('config', 'G-3KJTMB7K3W', {
+    page_location: 'https://riftingwrapped.onrender.com/share/:puuid',
+    page_title: 'Share Redirect',
+    content_group: 'Share Redirect'
+  });
 </script>
 
 
