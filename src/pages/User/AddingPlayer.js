@@ -150,7 +150,7 @@ export default function AddingPlayer() {
                     <p className="subtitle">
                         You don't need to keep this tab open. Save this link and come back once your matches are processed.
                     </p>
-                    <button type="button" className="shareButton" onClick={copyReturnLink}>
+                    <button type="button" className="btn btn--secondary" onClick={copyReturnLink}>
                         {copied ? "Link copied!" : "Copy link to this page"}
                     </button>
                 </div>

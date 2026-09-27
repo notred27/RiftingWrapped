@@ -5,16 +5,18 @@ const SharePreviewCard = ({ username, hoursPlayed, champName, shareUrl, year = 2
         href={shareUrl}
         style={{ textDecoration: "none", color: "inherit" }}
       >
-        <img
-          loading='lazy'
-          src={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champName}_0.jpg`}
-          alt={`${champName} splash`}
-          style={styles.image}
-        />
+        {champName && (
+          <img
+            loading='lazy'
+            src={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champName}_0.jpg`}
+            alt={`${champName} splash`}
+            style={styles.image}
+          />
+        )}
         <div style={styles.content}>
           <h2 style={styles.title}>{username}'s Rifting Wrapped {year}</h2>
           <p style={styles.description}>
-            {username} spent <strong>{hoursPlayed}</strong> hours on the Rift this year. Check out their top stats!
+            {username} spent <strong>{hoursPlayed}</strong> {hoursPlayed === 1 ? 'hour' : 'hours'} on the Rift this year. Check out their top stats!
           </p>
         </div>
       </a>
@@ -24,18 +26,16 @@ const SharePreviewCard = ({ username, hoursPlayed, champName, shareUrl, year = 2
 
 const styles = {
   card: {
-    border: "1px solid var(--second-bg-color)",
+    border: "1px solid var(--border-subtle)",
     backgroundColor: "var(--second-bg-color)",
-    borderRadius: 8,
-    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+    borderRadius: "var(--radius-lg)",
+    boxShadow: "0 12px 32px rgba(0, 0, 0, 0.35)",
     overflow: "hidden",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     cursor: "pointer",
     transition: "transform 0.2s ease",
     width: "100%",
-    maxWidth: 400,
-    minWidth: 320,
-    margin: "12px auto",
+    maxWidth: 440,
+    margin: "0 auto",
     display: "block",
     textAlign: "left",
   },
@@ -46,19 +46,20 @@ const styles = {
     objectFit: "cover",
   },
   content: {
-    padding: 12,
+    padding: "14px 16px",
     backgroundColor: "var(--second-bg-color)",
   },
   title: {
-    fontSize: 16,
+    fontFamily: "var(--font-display)",
+    fontSize: "var(--fs-sm)",
     margin: "0 0 8px",
     color: "var(--text-color)",
     fontWeight: "bold",
   },
   description: {
-    fontSize: 13,
-    margin: "0 0 6px",
-    color: "var(--text-color)",
+    fontSize: "var(--fs-2xs)",
+    margin: 0,
+    color: "var(--text-muted-color)",
     lineHeight: 1.4,
   },
   note: {

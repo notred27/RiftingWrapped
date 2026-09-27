@@ -12,7 +12,7 @@ export default function TotalTimeBreakdown({ puuid, year }) {
     const cardInfo = cardPreview.read();
     const timeArr = timeBreakdownStats.read()[0];
 
-    const totalTime = Math.floor(timeArr["totalPlaytime"] / 3600);
+    const totalTime = Math.floor((timeArr?.totalPlaytime ?? 0) / 3600);
 
 
 
@@ -43,96 +43,64 @@ export default function TotalTimeBreakdown({ puuid, year }) {
         }
     };
 
+    const popup = (url, height = 500, width = 600) => (e) => {
+        e.preventDefault();
+        window.open(url, '', `menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=${height},width=${width}`);
+    };
+
+    const networks = [
+        { method: 'reddit', label: 'Reddit', url: `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`, h: 600, w: 800 },
+        { method: 'twitter', label: 'X / Twitter', url: `https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}` },
+        { method: 'facebook', label: 'Facebook', url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}` },
+    ];
+
     return (
-
         <StatCard
-            eyebrow={"Impressed with your stats?"}
-            title={"Share your Wrapped!"}
-
+            eyebrow="Impressed with your stats?"
+            title="Share your Wrapped"
+            subtitle="Send your recap to friends, or post it for the world to see."
+            media={
+                <SharePreviewCard
+                    username={cardInfo["username"]}
+                    hoursPlayed={cardInfo["hoursPlayed"]}
+                    champName={cardInfo["champName"]}
+                    shareUrl={shareUrl}
+                    year={year}
+                />
+            }
         >
-            <div className="slide-split">
-
-                <div >
-                    <SharePreviewCard
-                        username={cardInfo["username"]}
-                        hoursPlayed={cardInfo["hoursPlayed"]}
-                        champName={cardInfo["champName"]}
-                        shareUrl={shareUrl}
-                        year={year}
-                    />
-                </div>
-
-                <div className="shareButtonRow" onClick={(e) => e.stopPropagation()}>
+            {/* stopPropagation: taps here must not also trigger the deck's edge-tap navigation */}
+            <div className="share-actions" onClick={(e) => e.stopPropagation()}>
+                <div className="share-actions__primary">
                     {canNativeShare &&
-                        <button type="button" className="shareButton" onClick={nativeShare}>
+                        <button type="button" className="btn btn--primary" onClick={nativeShare}>
                             Share
                         </button>
                     }
-                    <button type="button" className="shareButton" onClick={copyLink} aria-live="polite">
-                        {copied ? "Copied!" : "Copy Link"}
+                    <button type="button" className={`btn ${canNativeShare ? 'btn--secondary' : 'btn--primary'}`} onClick={copyLink} aria-live="polite">
+                        {copied ? "Link copied!" : "Copy link"}
                     </button>
-
-                    <a
-                        href={`https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            trackEvent('share', { method: 'reddit' });
-                            window.open(
-                                `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`,
-                                '',
-                                'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=800'
-                            );
-                        }}
-                        className="shareButton reddit"
-                        target="_blank"
-                        rel="noopener nofollow noreferrer"
-                    >
-                        Share on Reddit
-                    </a>
-
-                    <a
-                        href={`https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            trackEvent('share', { method: 'twitter' });
-                            window.open(
-                                `https://twitter.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
-                                '',
-                                'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
-                            );
-                        }}
-                        className="shareButton twitter"
-                        target="_blank"
-                        rel="noopener nofollow noreferrer"
-                    >
-                        Share on Twitter
-                    </a>
-
-                    <a
-                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            trackEvent('share', { method: 'facebook' });
-                            window.open(
-                                `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-                                '',
-                                'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=600'
-                            );
-                        }}
-                        className="shareButton facebook"
-                        target="_blank"
-                        rel="noopener nofollow noreferrer"
-                    >
-                        Share on Facebook
-                    </a>
                 </div>
+
+                <div className="share-actions__networks">
+                    {networks.map(n => (
+                        <a
+                            key={n.method}
+                            href={n.url}
+                            className="btn btn--secondary"
+                            target="_blank"
+                            rel="noopener nofollow noreferrer"
+                            onClick={(e) => { trackEvent('share', { method: n.method }); popup(n.url, n.h, n.w)(e); }}
+                        >
+                            {n.label}
+                        </a>
+                    ))}
+                </div>
+
+                <p className="slide-note">
+                    Want to see your own recap? <a className="text-link" href="/" onClick={() => trackEvent('viral_cta_click', { from: 'share_slide' })}>Get your Rifting Wrapped</a>
+                </p>
             </div>
-            <br />
-
-
-            <h2 className="subtitle">Want to see your own recap? <a className="emphasize" style={{ textDecoration: "underline", cursor: "pointer" }} href="/" onClick={() => trackEvent('viral_cta_click', { from: 'share_slide' })}>Try Rifting Wrapped out now!</a></h2>
-
         </StatCard>
-
     )
 }

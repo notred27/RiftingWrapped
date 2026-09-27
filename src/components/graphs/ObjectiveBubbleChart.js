@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
+import { theme } from '../../resources/theme.js';
+
 const OBJECTIVE_LABELS = {
   voidGrubs: 'Void Grubs',
   dragons: 'Dragons',
@@ -27,11 +29,12 @@ export default function ObjectiveBubbleChart({ objectives }) {
 
     if (entries.length === 0) return;
 
-    const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
-    const colorScale = d3
-      .scaleLinear()
-      .domain([d3.min(entries, d => d.value), d3.max(entries, d => d.value)])
-      .range(isDark ? ['#0F6E56', '#5DCAA5'] : ['#9FE1CB', '#0F6E56']);
+    // Same "highlight the top one" treatment as the bar charts. (This used to
+    // pick colours from the OS light/dark setting even though the site is
+    // always dark, so light-mode visitors got a different, washed-out chart.)
+    const topValue = d3.max(entries, d => d.value);
+    const fill = d => (d.data.value === topValue ? theme.accent : theme.surface2);
+    const stroke = d => (d.data.value === topValue ? theme.accent : 'rgba(255, 255, 255, 0.16)');
 
     const root = d3
       .pack()
@@ -60,13 +63,17 @@ export default function ObjectiveBubbleChart({ objectives }) {
     node
       .append('circle')
       .attr('r', d => d.r)
-      .attr('fill', d => colorScale(d.data.value));
+      .attr('fill', fill)
+      .attr('stroke', stroke)
+      .attr('stroke-width', 1);
 
     node
+      .filter(d => d.r >= 24)
       .append('text')
       .attr('text-anchor', 'middle')
       .attr('dy', '-0.3em')
-      .attr('fill', '#04342C')
+      .attr('fill', d => (d.data.value === topValue ? 'rgba(255, 255, 255, 0.85)' : theme.textMuted))
+      .style('font-family', theme.fontBody)
       .style('font-size', d => `${Math.max(10, Math.min(14, d.r / 3.2))}px`)
       .style('font-weight', 500)
       .text(d => d.data.name);
@@ -74,8 +81,9 @@ export default function ObjectiveBubbleChart({ objectives }) {
     node
       .append('text')
       .attr('text-anchor', 'middle')
-      .attr('dy', '1em')
-      .attr('fill', '#04342C')
+      .attr('dy', d => (d.r >= 24 ? '1em' : '0.35em'))
+      .attr('fill', theme.text)
+      .style('font-family', theme.fontBody)
       .style('font-size', d => `${Math.max(10, Math.min(15, d.r / 2.8))}px`)
       .style('font-weight', 600)
       .text(d => d.data.value.toLocaleString());

@@ -11,50 +11,219 @@
    the summary poster (height: 100%, display: flex). Reusing that name here made
    every slide's section stretch to fill its slide, pinning content to the top. */
 .slide-card {
+    --slide-gap: var(--space-5);
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--slide-gap);
+    align-content: center;
+
+    width: 100%;
+    max-width: 720px;
+    min-width: 0;
     margin: 0 auto;
 
     color: var(--text-color);
     text-align: center;
-    background: var(--bg-color);
-    border-radius: 8px;
-    width: 100%;
-    max-width: 1000px;
-    min-width: 0;
-    position: relative;
-    overflow: hidden;
 }
 
+/* ---------- Header: eyebrow / title / subtitle ---------- */
+.slide-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+}
 
+.slide-lead {
+    width: 100%;
+    margin-bottom: var(--space-2);
+}
 
+.slide-eyebrow {
+    margin: 0;
+    max-width: 36ch;
+    color: var(--text-muted-color);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    line-height: 1.35;
+    text-wrap: balance;
+}
 
-/* StatGrid. --cols is set by the component; on narrow screens we ignore it and
-   auto-fit instead, so a 3-up grid becomes 2+1 rather than three cramped columns
-   whose labels wrap to three lines each. */
+.slide-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--fs-display-lg);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--accent-text);
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+}
+
+.slide-title--quiet {
+    font-size: var(--fs-display-md);
+    color: var(--text-color);
+}
+
+.slide-subtitle {
+    margin: 0;
+    max-width: 44ch;
+    color: var(--text-muted-color);
+    font-size: var(--fs-xs);
+    line-height: 1.45;
+    text-wrap: pretty;
+}
+
+.slide-subtitle strong,
+.slide-eyebrow strong {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+/* ---------- Media + body ---------- */
+.slide-media,
+.slide-body {
+    min-width: 0;
+    width: 100%;
+}
+
+.slide-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+/* Small caption above a chart or list, e.g. "Your games with the most kills" */
+.slide-label {
+    margin: 0 0 var(--space-2);
+    color: var(--text-muted-color);
+    font-size: var(--fs-2xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.slide-note {
+    margin: 0;
+    color: var(--text-muted-color);
+    font-size: var(--fs-2xs);
+    line-height: 1.4;
+}
+
+.slide-body p {
+    margin: 0;
+}
+
+/* The intro slide has no header - its content lives in the body, centred. */
+.intro-card .slide-body {
+    align-items: center;
+}
+
+.intro-card .intro-headline {
+    margin: 0 0 var(--space-2);
+}
+
+.slide-card--empty {
+    max-width: 560px;
+}
+
+/* ---------- Desktop: two-column split for slides with a chart ---------- */
+@media (min-width: 960px) {
+    .slide-card {
+        --slide-gap: var(--space-6);
+        max-width: 1120px;
+    }
+
+    .slide-card--split {
+        grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+        grid-template-areas:
+            "head media"
+            "body media";
+        grid-template-rows: auto 1fr;
+        column-gap: var(--space-7);
+        row-gap: var(--space-5);
+        align-items: start;
+        text-align: left;
+    }
+
+    .slide-card--split .slide-head {
+        grid-area: head;
+        align-items: flex-start;
+        align-self: end;
+    }
+
+    .slide-card--split .slide-media {
+        grid-area: media;
+        align-self: center;
+    }
+
+    .slide-card--split .slide-body {
+        grid-area: body;
+    }
+
+    .slide-card--split .slide-label {
+        text-align: left;
+    }
+
+    /* A slide with only a header and detail (no chart) stays centred but gets
+       a comfortable reading width rather than stretching to 1120px. */
+    .slide-card:not(.slide-card--split) {
+        max-width: 880px;
+    }
+}
+
+/* StatGrid tiles. --cols is set by the component; on narrow screens we ignore
+   it and auto-fit instead, so a 3-up grid becomes 2+1 rather than three
+   cramped columns whose labels wrap to three lines each. */
 .subsection-row {
     display: grid;
     grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr));
     width: 100%;
-    gap: 8px;
-    margin-top: 12px;
+    gap: var(--space-2);
 }
 
 .subsection {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-1);
     background: var(--second-bg-color);
-    border-radius: 12px;
-    padding: 16px 12px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--space-4) var(--space-3);
     text-align: center;
     min-width: 0;
 }
 
+.subsection__label {
+    margin: 0;
+    color: var(--text-muted-color);
+    font-size: var(--fs-2xs);
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.subsection__value {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--fs-md);
+    font-weight: 700;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+}
+
 /* Shared "chart beside its copy" layout. Wraps to a single column when the
-   pieces no longer fit, with the gap tightened on mobile by the block below. */
+   pieces no longer fit. */
 .slide-split {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    gap: 16px;
+    gap: var(--space-4);
     width: 100%;
     min-width: 0;
 }
@@ -66,54 +235,27 @@
 .capsule {
     display: inline-block;
     background: var(--accent-background-color);
-    color: var(--accent-color);
+    color: var(--accent-text);
     font-size: var(--fs-2xs);
     font-weight: 500;
     padding: 4px 12px;
-    border-radius: 20px;
+    border-radius: var(--radius-pill);
 }
 
-
+/* Legacy text helpers still used inside a few slides and the share card. */
 .subtitle {
-    margin: 0 0 12px;
+    margin: 0;
     color: var(--text-muted-color);
     font-size: var(--fs-xs);
     font-weight: 400;
 }
 
-/* h1 {
-    font-size: clamp(20px, 5vw, 26px);
-    margin: 10px 16px 2px 16px;
-    white-space: nowrap;
-    font-weight: 500;
-    text-transform: capitalize;
-    text-wrap: pretty;
-} */
-
-/* No text-transform here on purpose: capitalizing every word turned
-   sentence-case copy into "You Helped Take Down Tons Of Objectives, Averaging",
-   which reads as broken title case and fights the site's plain voice. Slide copy
-   is written in the casing it should render in. */
-
-
-.slide-card hr {
-    color: #3b3b3b;
-}
-
-
 .slide-card p {
-    padding: 0;
-    margin: 1rem;
-    text-wrap:pretty;
+    text-wrap: pretty;
 }
 
 .emphasize {
     color: var(--text-color);
-    font-weight: 600;
-    letter-spacing: -0.01em;
-}
-
-.emphasize {
     font-weight: 600;
 }
 
@@ -124,7 +266,6 @@
 .emphasize-md {
     font-size: var(--fs-md);
     font-weight: 600;
-
 }
 
 .emphasize-lg {
@@ -136,9 +277,9 @@
 .emphasize-xlg {
     font-family: var(--font-display);
     font-size: var(--fs-display-lg);
-    font-weight: 900;
+    font-weight: 800;
     line-height: 1;
-    color: var(--accent-color);
+    color: var(--accent-text);
 }
 
 
@@ -230,6 +371,25 @@
     50% { transform: translateX(4px); }
 }
 
+/* Champion splash used as the lead visual on the go-to champion slide. */
+.champ-hero__splash {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 7;
+    object-fit: cover;
+    object-position: center 22%;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-subtle);
+    background: var(--second-bg-color);
+}
+
+@media (max-width: 640px) {
+    .champ-hero__splash {
+        aspect-ratio: 16 / 8;
+        border-radius: var(--radius-md);
+    }
+}
+
 .champ-hero {
     display: flex;
     align-items: center;
@@ -262,7 +422,7 @@
     font-family: var(--font-display);
     font-size: var(--fs-display-sm);
     font-weight: 900;
-    color: var(--accent-color);
+    color: var(--accent-text);
     line-height: 1;
     margin: 0 0 6px;
 }
@@ -280,72 +440,34 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Standardized mobile layer for the slide deck.
-
-   Every slide is one screen in a swipeable deck, so the goal on small screens is
-   to keep a slide's content within one viewport rather than letting it grow into
-   a scrolling page. The deck sizes itself to its TALLEST slide, so trimming the
-   worst offenders shortens every slide's dead space too.
-
-   Rules applied here (rather than per-slide) so new slides inherit them:
-     - tighter vertical rhythm (paragraph margins, card padding, rule spacing)
-     - StatGrid auto-fits instead of honoring desktop column counts
-     - nothing is allowed to set a fixed px width that can exceed the viewport
+   Phones. Every slide is one screen in a swipeable deck, so tighten the
+   vertical rhythm to keep each slide's content within one viewport.
    --------------------------------------------------------------------------- */
 @media (max-width: 640px) {
-    /* The single biggest vertical cost across the deck: every <p> in a slide
-       carries a 1rem margin on all four sides. */
-    .slide-card p {
-        margin: 0.5rem 0;
+    .slide-card {
+        --slide-gap: var(--space-4);
     }
 
-    .slide-card hr {
-        margin: 8px 0;
+    .slide-title {
+        font-size: clamp(34px, 11vw, 48px);
     }
 
-    /* Headline block: the eyebrow / big number / subtitle stack repeats on every
-       slide, so trimming its margins pays back once per slide. */
-    .slide-card h1 {
-        margin-top: 0;
-        margin-bottom: 4px;
-        line-height: 1.05;
+    .slide-title--quiet {
+        font-size: clamp(26px, 8vw, 34px);
     }
 
-    .slide-card h2 {
-        margin: 4px 0;
-    }
-
-    /* Slightly smaller than the 12vw display size so the hero number stops
-       eating a fifth of the screen on a phone. */
-    .emphasize-xlg {
-        font-size: clamp(32px, 10vw, 44px);
+    .slide-eyebrow {
+        font-size: var(--fs-xs);
     }
 
     /* Ignore the requested desktop column count and fit what actually
        fits - 3-up grids become 2+1 instead of three columns of wrapped text. */
     .subsection-row {
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        margin-top: 6px;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     }
 
     .subsection {
-        padding: 10px 8px;
-        border-radius: 8px;
-    }
-
-    .subsection .subtitle {
-        font-size: var(--fs-2xs);
-        margin-bottom: 2px;
-    }
-
-    /* Slides lay out big numbers with <br> spacers between blocks; at mobile
-       widths those stack up into a lot of empty space. */
-    .slide-card br {
-        line-height: 0.5;
-    }
-
-    .slide-split {
-        gap: 8px;
+        padding: var(--space-3) var(--space-2);
     }
 }
 
@@ -357,4 +479,158 @@
 @keyframes intro-fade-up {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+}
+/* ---------- Days-per-month bar chart (CalanderGraph) ---------- */
+.month-chart {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: end;
+    gap: 4px;
+    height: 200px;
+    width: 100%;
+}
+
+.month-chart__col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    min-width: 0;
+}
+
+.month-chart__track {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    min-height: 0;
+}
+
+.month-chart__bar {
+    width: 100%;
+    max-width: 36px;
+    min-height: 2px;
+    background: var(--chart-muted);
+    border-radius: 4px 4px 0 0;
+    transition: height 0.4s ease;
+}
+
+.month-chart__bar.is-top {
+    background: var(--accent-color);
+}
+
+.month-chart__value {
+    margin-bottom: 4px;
+    color: var(--text-muted-color);
+    font-size: var(--fs-2xs);
+    font-variant-numeric: tabular-nums;
+}
+
+.month-chart__value.is-top {
+    color: var(--text-color);
+    font-weight: 700;
+}
+
+.month-chart__label {
+    margin-top: 6px;
+    color: var(--text-muted-color);
+    font-size: var(--fs-2xs);
+}
+
+@media (max-width: 400px) {
+    .month-chart__value,
+    .month-chart__label {
+        font-size: 10px;
+    }
+}
+
+/* ---------- Shared HTML chart legend ---------- */
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2) var(--space-4);
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--text-muted-color);
+    font-size: var(--fs-2xs);
+}
+
+.chart-legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.chart-legend__swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+}
+
+/* ---------- Share slide ---------- */
+.share-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.share-actions__primary,
+.share-actions__networks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--space-2);
+}
+
+.text-link {
+    color: var(--accent-text);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.text-link:hover {
+    color: var(--text-color);
+}
+
+.kda-chart {
+    height: 280px;
+}
+
+/* ---------- Short phones (iPhone SE and similar) ----------
+   Tighten everything a notch so most slides still fit in one screen. */
+@media (max-width: 640px) and (max-height: 700px) {
+    .slide-card {
+        --slide-gap: var(--space-3);
+    }
+
+    .slide-title {
+        font-size: clamp(30px, 9.5vw, 38px);
+    }
+
+    .slide-media .kill-detail-map {
+        max-width: 150px;
+    }
+
+    .champ-hero__splash {
+        aspect-ratio: 16 / 6;
+    }
+
+    .kda-chart {
+        height: 200px;
+    }
+
+    .subsection {
+        padding: var(--space-2);
+    }
+
+    /* Match lists show their top two games only - the rest are one tap away
+       on desktop, and here they pushed the slide past one screen. */
+    .slide-body .compact-entry:nth-of-type(n + 3) {
+        display: none;
+    }
 }

@@ -1,48 +1,47 @@
 import TableEntry from './../common/TableEntry.js';
-import KDAgraph from './../graphs/KDAgraph.js'
 import MapOverlay from './../graphs/MapOverlay.js';
 
 import StatCard from '../layout/StatCard.js';
 import StatGrid from '../layout/StatGrid.js';
+import EmptySlide from '../layout/EmptySlide.js';
 
 import { useStatsResources } from '../../resources/UserResourceContext.js';
 
 import './KDAsection.css'
 
-export default function DeathsSlide({ puuid, year }) {
-    const {
-        highestDeathGames,
-        combatTotals,
-    } = useStatsResources();
+function formatTimeDead(seconds) {
+    const minutes = Math.round(seconds / 60);
+    return minutes < 300 ? `${minutes} min` : `${Math.round(seconds / 360) / 10} hrs`;
+}
+
+export default function DeathsSlide({ puuid }) {
+    const { highestDeathGames, combatTotals } = useStatsResources();
+
+    const combatStats = combatTotals.read()[0];
+    if (!combatStats || !combatStats.numGames) {
+        return <EmptySlide eyebrow="Deaths" />;
+    }
 
     const highestDeathGamesData = highestDeathGames.read().slice(0, 4);
-    const combatStats = combatTotals.read()[0];
-
-    if (!combatStats) return null;
 
     return (
-        <StatCard>
-            <div style={{ textAlign: "left" }}>
-                <p>Total Deaths</p>
-                <h1 className='emphasize-xlg'>{combatStats.totalDeaths.toLocaleString()}</h1>
-            </div>
-
+        <StatCard
+            eyebrow="But you also died"
+            title={combatStats.totalDeaths.toLocaleString()}
+            subtitle="times, and here's where it kept happening"
+            media={<MapOverlay type="deaths" />}
+        >
             <StatGrid
                 items={[
-                    { label: "Avg. Deaths Per Game", value: `${Math.floor(combatStats.totalDeaths / combatStats.numGames * 100) / 100}` },
-                    { label: "Total Time Dead", value: `${Math.round(combatStats.totalTimeDead / 60) < 300 ? `${Math.round(combatStats.totalTimeDead / 60)} minutes ` : `${Math.round(combatStats.totalTimeDead / 360) / 10} hrs`}` },
-                    // { label: " ", value: ` ` },
+                    { label: "Deaths per game", value: (Math.round(combatStats.totalDeaths / combatStats.numGames * 100) / 100).toLocaleString() },
+                    { label: "Time spent dead", value: formatTimeDead(combatStats.totalTimeDead) },
                 ]}
             />
 
-            <div className='kill-detail-row'>
-                <MapOverlay puuid={puuid} year={year} type='deaths' />
-                <div className='kill-detail-games'>
-                    {highestDeathGamesData.map((game, idx) => <TableEntry key={`Highest_Death_Entry_${idx}`} puuid={puuid} match={game} />)}
-                    <p className='tableLabel'>Your Games With The Most Deaths</p>
-                </div>
+            <div>
+                <p className="slide-label">Your games with the most deaths</p>
+                {highestDeathGamesData.map((game, idx) => <TableEntry key={`Highest_Death_Entry_${idx}`} puuid={puuid} match={game} />)}
             </div>
         </StatCard>
-
     );
 }

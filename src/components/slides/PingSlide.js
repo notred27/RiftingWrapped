@@ -2,11 +2,10 @@ import { useStatsResources } from '../../resources/UserResourceContext.js';
 
 import PingGraph from '../graphs/PingGraph.js';
 import StatCard from '../layout/StatCard.js';
+import EmptySlide from '../layout/EmptySlide.js';
 
-import './LaneSection.css';
 
-
-export default function LaneSection({ puuid }) {
+export default function LaneSection() {
     const { pings } = useStatsResources();
 
     // Copy rather than delete off the cached object - this data is shared with
@@ -14,26 +13,25 @@ export default function LaneSection({ puuid }) {
     const { 'Command Ping': _commandPing, ...pingArr } = pings.read()[0] ?? {};
 
     const totalPings = Object.values(pingArr).reduce((sum, count) => sum + (parseInt(count, 10) || 0), 0);
-    const pingNames = Object.keys(pingArr);
-    // reduce() without a seed throws on an empty array, which took the whole
-    // slide down for players with no recorded pings.
-    const maxPing = pingNames.length ? pingNames.reduce((a, b) => pingArr[a] > pingArr[b] ? a : b) : null;
-    const maxPingShare = totalPings > 0 && maxPing ? Math.floor(pingArr[maxPing] / totalPings * 100) : 0;
+    if (totalPings === 0) {
+        return <EmptySlide eyebrow="Pings" title="The strong, silent type" message="No pings recorded this year. Your team must have loved you." />;
+    }
 
+    const pingNames = Object.keys(pingArr);
+    const maxPing = pingNames.reduce((a, b) => pingArr[a] > pingArr[b] ? a : b);
+    const maxPingShare = Math.round(pingArr[maxPing] / totalPings * 100);
 
     return (
         <StatCard
-            eyebrow={"You loved to alert your teammates, with a total of"}
+            eyebrow="You loved to alert your teammates, with a total of"
             title={`${totalPings.toLocaleString()} pings`}
-            subtitle={maxPing ? `"${maxPing}" was your favorite · ${maxPingShare}% of all pings` : "Strong, silent type."}
-        >
-
-            {pingArr && <PingGraph pings={Object.values(pingArr)} labels={Object.keys(pingArr)} />}
-
-
-            <br />
-            <p className='subtitle'>Let's just hope they listened.</p>
-        </StatCard>
-
+            subtitle={<><strong>"{maxPing}"</strong> was your favorite, at {maxPingShare}% of all pings. Let's hope they listened.</>}
+            media={
+                <>
+                    <p className="slide-label">Pings by type</p>
+                    <PingGraph pings={Object.values(pingArr)} labels={pingNames} />
+                </>
+            }
+        />
     );
 }

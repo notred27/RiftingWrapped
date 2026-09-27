@@ -1,110 +1,61 @@
 import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
+import { Chart as ChartJS, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
+import { theme } from './chartTheme.js';
 
-const TEXT_COLOR = '#FFFCE8';
-const GRID_COLOR = 'rgba(255, 252, 232, 0.08)';
+ChartJS.register(Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
-function KDAgraph({ kills, deaths }) {
+/** How many games ended with N kills vs N deaths. Kills/deaths keep the same
+ *  colours they have on the heatmaps and everywhere else. */
+function KDAgraph({ kills = [], deaths = [] }) {
   const largest = Math.max(kills.length, deaths.length);
-  const labels = new Array(largest).fill(0).map((_, index) => index);
+  const labels = Array.from({ length: largest }, (_, i) => i);
+
+  const bar = { borderRadius: 3, maxBarThickness: 18, categoryPercentage: 0.8, barPercentage: 0.9 };
 
   const data = {
     labels,
     datasets: [
-      {
-        label: 'Kills',
-        data: kills,
-        backgroundColor: '#fa7970',
-        borderRadius: 4,
-        maxBarThickness: 28,
-      },
-      {
-        label: 'Deaths',
-        data: deaths,
-        backgroundColor: '#5b63a6',
-        borderRadius: 4,
-        maxBarThickness: 28,
-      },
+      { label: 'Kills', data: kills, backgroundColor: theme.kills, ...bar },
+      { label: 'Deaths', data: deaths, backgroundColor: theme.deaths, ...bar },
     ],
   };
 
   const options = {
     responsive: true,
     maintainAspectRatio: false,
-    interaction: {
-      mode: 'index',
-      intersect: false,
-    },
+    interaction: { mode: 'index', intersect: false },
     scales: {
       x: {
-        grid: {
-          display: false,
-        },
-        border: {
-          color: GRID_COLOR,
-        },
-        ticks: {
-          color: TEXT_COLOR,
-          font: { size: 12 },
-        },
-        title: {
-          display: true,
-          text: 'Number of Kills / Deaths',
-          font: { size: 14, weight: '600' },
-          color: TEXT_COLOR,
-        },
+        grid: { display: false },
+        border: { color: theme.grid },
+        ticks: { autoSkip: true, maxRotation: 0 },
+        title: { display: true, text: 'Kills / deaths in a game', color: theme.axis },
       },
       y: {
         beginAtZero: true,
-        grid: {
-          color: GRID_COLOR,
-        },
-        border: {
-          display: false,
-        },
-        ticks: {
-          color: TEXT_COLOR,
-          font: { size: 12 },
-        },
-        title: {
-          display: true,
-          text: 'Number of Games',
-          font: { size: 14, weight: '600' },
-          color: TEXT_COLOR,
-        },
+        border: { display: false },
+        ticks: { precision: 0, maxTicksLimit: 5 },
+        title: { display: true, text: 'Games', color: theme.axis },
       },
     },
     plugins: {
       legend: {
         position: 'top',
         align: 'end',
-        labels: {
-          color: TEXT_COLOR,
-          usePointStyle: true,
-          pointStyle: 'circle',
-          boxWidth: 8,
-          padding: 16,
-          font: { size: 13 },
-        },
+        labels: { color: theme.text, usePointStyle: true, pointStyle: 'rectRounded', boxWidth: 10, boxHeight: 10, padding: 12 },
       },
       tooltip: {
-        backgroundColor: '#1a1d33',
-        titleColor: TEXT_COLOR,
-        bodyColor: TEXT_COLOR,
-        padding: 10,
-        cornerRadius: 6,
         callbacks: {
-          label: (tooltipItem) =>
-            `${tooltipItem.dataset.label}: ${tooltipItem.raw.toLocaleString()} games`,
+          title: (items) => `${items[0].label} kills / deaths`,
+          label: (item) => ` ${item.dataset.label}: ${item.raw.toLocaleString()} games`,
         },
       },
     },
   };
 
   return (
-    <div style={{ position: 'relative', height: '320px', width: '100%' }}>
+    <div className="kda-chart" style={{ position: 'relative', width: '100%' }}>
       <Bar data={data} options={options} />
     </div>
   );
