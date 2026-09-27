@@ -70,9 +70,11 @@ function PlayerStats() {
 
 							<LaneSection puuid={puuid} />
 							<TimeSpentSlide puuid = {puuid} />
-							<TotalTimeBreakdown puuid={puuid} year={year} />
-
+							{/* Summary first, then the ask to share: people see the payoff
+							    before being asked to post it. */}
 							<SummaryCard year={year} />
+
+							<TotalTimeBreakdown puuid={puuid} year={year} />
 						</SlideDeck>
 
 					</Suspense>

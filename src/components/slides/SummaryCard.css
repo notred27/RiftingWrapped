@@ -21,11 +21,40 @@
 
 .summary-wrapper {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   justify-content: center;
   padding: 16px;
   background: transparent;
 }
 
+
+/* Save/share buttons sit outside .summary-card so they aren't in the image. */
+.save-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.save-card-actions .shareButton {
+  width: auto;
+  min-width: 140px;
+}
+
+.save-card-actions .shareButton:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.save-card-error {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-muted-color);
+}
 
 .summary-card {
   width: 1000px;
