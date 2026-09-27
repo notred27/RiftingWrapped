@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { PlayerListProvider } from '../../resources/PlayerListContext';
 import { fetchCached } from '../../resources/fetchCached';
+import { trackEvent } from '../../resources/analytics';
 
 import UserSearchBar from '../../components/common/UserSearchBar';
 import PlayerMarquee from '../../components/common/PlayerMarquee';
@@ -43,22 +44,23 @@ export default function Home() {
 
         try {
             const region = document.getElementById("regionSelect").value;
-            const names = document.getElementById("nameInput").value.split("#");
+            const names = document.getElementById("nameInput").value.split("#").map((n) => n.trim());
 
-            if (names.length !== 2) {
-                setSelectedPlayer("Invalid Search Name");
+            if (names.length !== 2 || !names[0] || !names[1]) {
+                setSelectedPlayer("Enter your Riot ID as Game Name#Tag (e.g. Faker#KR1).");
                 setIsLoading(false);
                 return;
             }
 
             const [displayName, tag] = names;
             setSelectedPlayer(displayName);
+            trackEvent('search_submit', { region });
 
-            let response = await fetch(
-                `${apiUrl}/users/by-riot-id/${displayName}/${tag}/${region}`
-            );
+            const lookupUrl = `${apiUrl}/users/by-riot-id/${encodeURIComponent(displayName)}/${encodeURIComponent(tag)}/${region}`;
+            let response = await fetch(lookupUrl);
 
             if (response.status === 404) {
+                trackEvent('register_start', { region });
                 setSelectedPlayer(`Registering ${displayName}... this can take a minute.`);
 
                 const addResponse = await fetch(`${apiUrl}/users`, {
@@ -69,6 +71,7 @@ export default function Home() {
                 const addBody = await addResponse.json().catch(() => null);
 
                 if (!addResponse.ok && addResponse.status !== 409) {
+                    trackEvent('register_fail', { region, status: addResponse.status });
                     setSelectedPlayer(
                         addBody?.message ||
                         "Failed to find user. Please check that your name and region are correct."
@@ -77,9 +80,7 @@ export default function Home() {
                     return;
                 }
 
-                response = await fetch(
-                    `${apiUrl}/users/by-riot-id/${displayName}/${tag}/${region}`
-                );
+                response = await fetch(lookupUrl);
             }
 
             if (!response.ok) {
@@ -99,6 +100,7 @@ export default function Home() {
                 return;
             }
 
+            trackEvent('search_success', { region, ready: status === "done" });
             navigate(
                 status === "done"
                     ? `/player/${puuid}?year=${WRAP_YEAR}`
@@ -137,7 +139,7 @@ export default function Home() {
             </Helmet>
 
             <div className="heroContainer">
-                <img className="heroOverlay" src={bg_image} alt="Hero Overlay" />
+                <img className="heroOverlay" src={bg_image} alt="" aria-hidden="true" />
                 <div className="heroText">
                     <div className="hero-copy">
                         <span className="hero-eyebrow">{WRAP_YEAR} SEASON RECAP</span>

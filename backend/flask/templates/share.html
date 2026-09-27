@@ -2,15 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta property="og:title" content="Rifting Wrapped - {{ username }}'s 2025 Stats" />
+    <meta property="og:title" content="Rifting Wrapped - {{ username }}'s {{ year }} Stats" />
     <meta property="og:description" content="{{ username }} spent {{ hours_played }} hours on the Rift this year. Check out their top stats!" />
+    {% if champ_name %}
     <meta property="og:image" content="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{{ champ_name }}_0.jpg" />
+    {% else %}
+    <meta property="og:image" content="https://www.riftingwrapped.com/android-chrome-512x512.png" />
+    {% endif %}
+    <meta property="og:site_name" content="Rifting Wrapped" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://riftingwrapped.com/player/{{ puuid }}" />
+    <meta property="og:url" content="https://www.riftingwrapped.com/player/{{ puuid }}?year={{ year }}" />
 
     <title>Rifting Wrapped - {{ username }}</title>
 
-    <link rel="canonical" href="https://riftingwrapped.com/player/{{ puuid }}" />
+    <link rel="canonical" href="https://www.riftingwrapped.com/player/{{ puuid }}?year={{ year }}" />
 
 </head>
 
@@ -29,16 +35,16 @@
 <body >
     <script>
         setTimeout(() => {
-            window.location.href = `https://riftingwrapped.com/player/{{ puuid }}`;
+            window.location.href = `https://www.riftingwrapped.com/player/{{ puuid }}?year={{ year }}`;
         }, 1000);
     </script>
 
     
 
-    <p>If you are not redirected, <a href="https://riftingwrapped.com/player/{{ puuid }}">click here</a>.</p>
+    <p>If you are not redirected, <a href="https://www.riftingwrapped.com/player/{{ puuid }}?year={{ year }}">click here</a>.</p>
 
     <noscript>
-        <meta http-equiv="refresh" content="1; https://riftingwrapped.com/player/{{ puuid }}" />
+        <meta http-equiv="refresh" content="1; https://www.riftingwrapped.com/player/{{ puuid }}?year={{ year }}" />
     </noscript>
 
 </body>
