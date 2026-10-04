@@ -456,3 +456,75 @@
 .queue-status__detail strong {
     color: var(--text-color);
 }
+
+/* ---------- Waiting page (/addPlayer) ---------- */
+.adding-player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-6);
+    padding: var(--space-7) var(--space-4) calc(var(--space-7) * 1.5);
+    text-align: center;
+}
+
+/* The intro card ends at the player's name here, so drop its trailing gap. */
+.adding-player .intro-name {
+    margin-bottom: 0;
+}
+
+.adding-player__status,
+.adding-player__return {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    max-width: 520px;
+}
+
+.adding-player__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--fs-display-sm);
+    font-weight: 800;
+}
+
+.adding-player__count {
+    margin: 0;
+    font-weight: 600;
+}
+
+.adding-player__progress {
+    width: min(320px, 100%);
+    accent-color: var(--accent-color);
+}
+
+.adding-player__note {
+    margin: 0;
+    max-width: 44ch;
+    color: var(--text-muted-color);
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+}
+
+/* Hand-off to "come back later" sits apart from the live status above it. */
+.adding-player__return {
+    padding-top: var(--space-5);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.adding-player .queue-status {
+    margin: 0;
+}
+
+@media (max-width: 640px) {
+    .adding-player {
+        gap: var(--space-5);
+        padding-top: var(--space-5);
+        padding-bottom: var(--space-7);
+    }
+}
+
+.adding-player > .fade-in {
+    width: 100%;
+}

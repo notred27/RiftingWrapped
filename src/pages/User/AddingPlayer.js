@@ -112,74 +112,66 @@ export default function AddingPlayer() {
     const inLine = status === "pending" && queue?.inQueue && queue.playersAhead > 0;
     const wait = queue?.inQueue ? formatWait(queue.estimatedMinutes) : null;
 
-    return (<>
-        <UserResourceProvider puuid={puuid} year={year}>
-            <Suspense fallback={<UserIntroFallback year={year} />}>
-                <div className="fade-in">
-                    <UserIntro year={year} />
-                </div>
-            </Suspense>
-        </UserResourceProvider>
+    return (
+        <div className="adding-player">
+            <UserResourceProvider puuid={puuid} year={year}>
+                <Suspense fallback={<UserIntroFallback year={year} />}>
+                    <div className="fade-in">
+                        <UserIntro year={year} waiting />
+                    </div>
+                </Suspense>
+            </UserResourceProvider>
 
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            textAlign: 'center',
-            paddingLeft: '5vw',
-            paddingRight: '5vw',
-        }}>
-            {(!status || status === "starting") &&
-                <p className="loading-text">Searching for user<LoadingDots /></p>
-            }
+            <div className="adding-player__status">
+                {(!status || status === "starting") &&
+                    <p className="adding-player__title loading-text">Searching for user<LoadingDots /></p>
+                }
 
-            {status === "counting" &&
-                <p className="loading-text">Gathering your match history<LoadingDots /></p>
-            }
+                {status === "counting" &&
+                    <p className="adding-player__title loading-text">Gathering your match history<LoadingDots /></p>
+                }
 
-            {inLine &&
-                <div className="queue-status">
-                    <p className="queue-status__eyebrow">Your place in line</p>
-                    <p className="queue-status__position">#{queue.position}</p>
-                    <p className="queue-status__detail">
-                        {queue.playersAhead === 1 ? "1 player is" : `${queue.playersAhead.toLocaleString()} players are`} ahead of you
-                        ({queue.matchesAhead.toLocaleString()} matches to go before yours)
-                        {wait && <> · <strong>{wait}</strong> until your Wrapped is ready</>}
+                {inLine &&
+                    <div className="queue-status">
+                        <p className="queue-status__eyebrow">Your place in line</p>
+                        <p className="queue-status__position">#{queue.position}</p>
+                        <p className="queue-status__detail">
+                            {queue.playersAhead === 1 ? "1 player is" : `${queue.playersAhead.toLocaleString()} players are`} ahead of you
+                            ({queue.matchesAhead.toLocaleString()} matches to go before yours)
+                            {wait && <> · <strong>{wait}</strong> until your Wrapped is ready</>}
+                        </p>
+                    </div>
+                }
+
+                {hasProgress && !inLine && <>
+                    <p className="adding-player__title loading-text">Processing your matches<LoadingDots /></p>
+                    <p className="adding-player__count">
+                        {userData.processedMatches.toLocaleString()} / {userData.totalMatches.toLocaleString()} matches processed
                     </p>
-                </div>
-            }
-
-            {hasProgress && !inLine &&
-                <div>
-                    <h2 className="loading-text">Processing your matches<LoadingDots /></h2>
-                    <h3>{userData.processedMatches} / {userData.totalMatches} Matches Processed</h3>
                     <progress
+                        className="adding-player__progress"
                         value={userData.processedMatches}
                         max={userData.totalMatches}
-                        style={{ width: "min(320px, 80vw)", accentColor: "var(--accent-color)" }}
                     />
-                    {wait && <p className="subtitle">{wait} left</p>}
-                </div>
-            }
+                    {wait && <p className="adding-player__note">{wait} left</p>}
+                </>}
 
-            {status === "pending" && !hasProgress && !inLine &&
-                <p>
-                    You're in queue! This can take up to an hour depending on how many other players are joining right now.
-                </p>
-            }
+                {status === "pending" && !hasProgress && !inLine &&
+                    <p className="adding-player__note">
+                        You're in queue! This can take up to an hour depending on how many other players are joining right now.
+                    </p>
+                }
 
-            {status === "failed" &&
-                <div>
-                    <h2>We couldn't finish building your Wrapped.</h2>
-                    <p>Something went wrong while processing your matches. Please try searching for yourself again in a little while.</p>
-                    <Link className="emphasize" to="/">Back to search</Link>
-                </div>
-            }
+                {status === "failed" && <>
+                    <p className="adding-player__title">We couldn't finish building your Wrapped.</p>
+                    <p className="adding-player__note">Something went wrong while processing your matches. Please try searching for yourself again in a little while.</p>
+                    <Link className="btn btn--secondary" to="/">Back to search</Link>
+                </>}
+            </div>
 
             {status && !isFinished &&
-                <div style={{ marginTop: "16px" }}>
-                    <p className="subtitle">
+                <div className="adding-player__return">
+                    <p className="adding-player__note">
                         You don't need to keep this tab open. Save this link and come back once your matches are processed.
                     </p>
                     <button type="button" className="btn btn--secondary" onClick={copyReturnLink}>
@@ -188,6 +180,5 @@ export default function AddingPlayer() {
                 </div>
             }
         </div>
-
-    </>)
+    );
 }

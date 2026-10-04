@@ -2,7 +2,12 @@ import { useStatsResources } from "./../../resources/UserResourceContext.js";
 import './styles.css'
 import StatCard from "../layout/StatCard.js";
 
-export default function UserIntro({ year }) {
+/**
+ * `waiting` is for the page shown while a new player's matches are still being
+ * processed: there's no deck to swipe through yet, so the "let's dive in"
+ * headline and swipe cue are left out.
+ */
+export default function UserIntro({ year, waiting = false }) {
     const { user } = useStatsResources();
     const userInfo = user.read();
 
@@ -24,14 +29,16 @@ export default function UserIntro({ year }) {
             <p className="intro-eyebrow">Hey there</p>
             <h1 className="intro-name">{userInfo.displayName}#{userInfo.tag}</h1>
 
-            <p className="intro-headline">
-                Let's dive into your <strong>League of Legends</strong> performance in <strong>{year}</strong>!
-            </p>
+            {!waiting && <>
+                <p className="intro-headline">
+                    Let's dive into your <strong>League of Legends</strong> performance in <strong>{year}</strong>!
+                </p>
 
-            <span className="intro-swipe-cue">
-                Swipe to continue
-                <span className="intro-swipe-cue__chevron" aria-hidden="true">›</span>
-            </span>
+                <span className="intro-swipe-cue">
+                    Swipe to continue
+                    <span className="intro-swipe-cue__chevron" aria-hidden="true">›</span>
+                </span>
+            </>}
         </StatCard>
     );
 }
