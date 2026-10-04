@@ -417,3 +417,42 @@
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
+
+/* Waiting page: place in the processing queue */
+.queue-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    margin: var(--space-4) 0;
+}
+
+.queue-status__eyebrow {
+    margin: 0;
+    color: var(--text-muted-color);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.queue-status__position {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--fs-display-lg);
+    font-weight: 800;
+    line-height: 1;
+    color: var(--accent-text);
+}
+
+.queue-status__detail {
+    margin: 0;
+    max-width: 40ch;
+    color: var(--text-muted-color);
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+}
+
+.queue-status__detail strong {
+    color: var(--text-color);
+}

@@ -33,7 +33,16 @@ PING_KEYS = [
 
 # Fields a match only needs while it waits in the queue (the consumer uses
 # them to fetch and order work). Removed once the match is done.
-QUEUE_ONLY_FIELDS = ("region", "created_at", "processing_started_at", "error")
+QUEUE_ONLY_FIELDS = ("region", "created_at", "priority", "processing_started_at", "error")
+
+# Queue order, shared by the consumer (which match to process next) and the
+# API (a player's position in line). Lower priority first; within a priority,
+# first come first served by queue time. Every match a player's scan queues
+# shares one created_at, and puuid breaks any tie, so the consumer finishes
+# one player's matches before starting the next player's.
+PRIORITY_NEW_PLAYER = 0   # no processed matches yet: waiting for their first Wrapped
+PRIORITY_RESCAN = 1       # already has stats; can view their Wrapped meanwhile
+QUEUE_SORT = [("priority", 1), ("created_at", 1), ("puuid", 1), ("_id", 1)]
 
 # Fields older code stored that nothing reads. They're dropped by
 # backend/migrations/migrate_to_new_project.py. When a writer rewrites a match,

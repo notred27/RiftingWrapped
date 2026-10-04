@@ -11,8 +11,9 @@ from pymongo.errors import PyMongoError
 from werkzeug.exceptions import HTTPException
 import os
 import re
-from datetime import datetime
-from math import floor
+import time
+from datetime import datetime, timedelta, timezone
+from math import ceil, floor
 
 app = Flask(__name__, template_folder='./templates')
 CORS(app)
@@ -168,6 +169,95 @@ def get_all_users():
         {"_id": 0, "displayName": 1, "tag": 1, "region": 1, "icon": 1, "puuid": 1}
     ))
     return jsonify(users), 200
+
+
+# ----------------------------------------------------------------------------
+# Queue position for players waiting on their first Wrapped
+# ----------------------------------------------------------------------------
+QUEUE_CACHE_SECONDS = 15          # the waiting page polls; one snapshot serves everyone
+THROUGHPUT_WINDOW = timedelta(hours=6)
+# Runs don't process back to back (GitHub schedules them every 10 minutes and
+# each spends a little time starting up), so wall-clock speed is a bit lower
+# than the processing speed the consumer measures.
+QUEUE_EFFICIENCY = 0.85
+QUEUE_END = datetime(9999, 1, 1, tzinfo=timezone.utc)
+_queue_cache = {}                 # year -> (built_at, snapshot)
+
+
+def _queue_snapshot(year: int) -> dict:
+    """
+    Everyone with queued matches, in the order the consumer will process them,
+    plus recent processing speed. Must match the consumer's order:
+    QUEUE_SORT in backend/actions/match_doc.py (priority, then queue time,
+    then puuid).
+    """
+    cached = _queue_cache.get(year)
+    if cached and time.time() - cached[0] < QUEUE_CACHE_SECONDS:
+        return cached[1]
+
+    rows = list(get_matches_collection(year).aggregate([
+        {"$match": {"status": {"$in": ["pending", "processing"]}}},
+        {"$group": {
+            "_id": "$puuid",
+            "remaining": {"$sum": 1},
+            "priority": {"$min": {"$ifNull": ["$priority", 0]}},
+            # Unstamped legacy entries go to the back, as the consumer's
+            # recover_stuck_work stamps them with the current time.
+            "queuedAt": {"$min": {"$ifNull": ["$created_at", QUEUE_END]}},
+        }},
+        {"$sort": {"priority": 1, "queuedAt": 1, "_id": 1}},
+    ]))
+
+    # Matches per second while the consumer is actually working.
+    since = datetime.now(timezone.utc) - THROUGHPUT_WINDOW
+    stats = list(db["consumer-runs"].aggregate([
+        {"$match": {"year": year, "finished_at": {"$gte": since}, "processed": {"$gt": 0}}},
+        {"$group": {"_id": None, "processed": {"$sum": "$processed"}, "busy": {"$sum": "$busy_seconds"}}},
+    ]))
+    rate = None
+    if stats and stats[0]["busy"] > 0:
+        rate = stats[0]["processed"] / stats[0]["busy"] * QUEUE_EFFICIENCY
+
+    snapshot = {
+        "order": [r["_id"] for r in rows],
+        "remaining": {r["_id"]: r["remaining"] for r in rows},
+        "rate": rate,
+    }
+    _queue_cache[year] = (time.time(), snapshot)
+    return snapshot
+
+
+@app.route('/users/<puuid>/queue', methods=['GET'])
+def get_queue_position(puuid):
+    """
+    Where a player's matches are in the processing queue, for the waiting
+    page: how many players and matches are ahead, how many of theirs are
+    left, and an estimated wait (null when there isn't enough recent
+    processing history to estimate one).
+    """
+    year_param = require_year_param()
+    snap = _queue_snapshot(year_param)
+
+    if puuid not in snap["remaining"]:
+        return jsonify({"inQueue": False}), 200
+
+    index = snap["order"].index(puuid)
+    matches_ahead = sum(snap["remaining"][p] for p in snap["order"][:index])
+    remaining = snap["remaining"][puuid]
+
+    estimated_minutes = None
+    if snap["rate"]:
+        estimated_minutes = max(1, ceil((matches_ahead + remaining) / snap["rate"] / 60))
+
+    return jsonify({
+        "inQueue": True,
+        "position": index + 1,              # 1 = being processed now / next
+        "playersAhead": index,
+        "matchesAhead": matches_ahead,
+        "remaining": remaining,
+        "queueLength": len(snap["order"]),
+        "estimatedMinutes": estimated_minutes,
+    }), 200
 
 
 @app.route('/users/<puuid>', methods=['GET'])

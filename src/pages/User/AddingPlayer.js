@@ -17,6 +17,15 @@ const POLL_INTERVAL_MS = 2000;
 const SLOW_POLL_INTERVAL_MS = 15000;
 const SLOW_POLL_AFTER_MS = 2 * 60 * 1000;
 
+/** "about 25 minutes", "about 1 hr 10 min", "less than a minute" */
+function formatWait(minutes) {
+    if (minutes == null) return null;
+    if (minutes <= 1) return "less than a minute";
+    if (minutes < 60) return `about ${minutes} minutes`;
+    const h = Math.floor(minutes / 60), m = minutes % 60;
+    return `about ${h} hr${m ? ` ${m} min` : ""}`;
+}
+
 function LoadingDots() {
     return (
         <span className="dots">
@@ -35,6 +44,7 @@ export default function AddingPlayer() {
     const nav = useNavigate();
 
     const [userData, setUserData] = useState({});
+    const [queue, setQueue] = useState(null);
     const [copied, setCopied] = useState(false);
 
     const status = userData.status;
@@ -65,6 +75,12 @@ export default function AddingPlayer() {
 
                 setUserData(data);
                 if (data.status === "failed") return;
+
+                // Place in line, once the player's matches are queued.
+                if (data.status === "pending") {
+                    const q = await fetch(`${apiUrl}/users/${puuid}/queue?year=${year}`).then(r => r.ok ? r.json() : null).catch(() => null);
+                    if (!cancelled) setQueue(q);
+                }
             } catch (err) {
                 console.error("Error fetching user:", err);
             }
@@ -93,6 +109,8 @@ export default function AddingPlayer() {
     };
 
     const hasProgress = status === "pending" && userData.processedMatches !== undefined && userData.totalMatches;
+    const inLine = status === "pending" && queue?.inQueue && queue.playersAhead > 0;
+    const wait = queue?.inQueue ? formatWait(queue.estimatedMinutes) : null;
 
     return (<>
         <UserResourceProvider puuid={puuid} year={year}>
@@ -120,7 +138,19 @@ export default function AddingPlayer() {
                 <p className="loading-text">Gathering your match history<LoadingDots /></p>
             }
 
-            {hasProgress &&
+            {inLine &&
+                <div className="queue-status">
+                    <p className="queue-status__eyebrow">Your place in line</p>
+                    <p className="queue-status__position">#{queue.position}</p>
+                    <p className="queue-status__detail">
+                        {queue.playersAhead === 1 ? "1 player is" : `${queue.playersAhead.toLocaleString()} players are`} ahead of you
+                        ({queue.matchesAhead.toLocaleString()} matches to go before yours)
+                        {wait && <> · <strong>{wait}</strong> until your Wrapped is ready</>}
+                    </p>
+                </div>
+            }
+
+            {hasProgress && !inLine &&
                 <div>
                     <h2 className="loading-text">Processing your matches<LoadingDots /></h2>
                     <h3>{userData.processedMatches} / {userData.totalMatches} Matches Processed</h3>
@@ -129,10 +159,11 @@ export default function AddingPlayer() {
                         max={userData.totalMatches}
                         style={{ width: "min(320px, 80vw)", accentColor: "var(--accent-color)" }}
                     />
+                    {wait && <p className="subtitle">{wait} left</p>}
                 </div>
             }
 
-            {status === "pending" && !hasProgress &&
+            {status === "pending" && !hasProgress && !inLine &&
                 <p>
                     You're in queue! This can take up to an hour depending on how many other players are joining right now.
                 </p>

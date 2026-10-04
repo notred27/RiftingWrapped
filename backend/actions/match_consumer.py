@@ -7,9 +7,9 @@ from typing import Optional
 
 import requests
 from dotenv import load_dotenv
-from pymongo import MongoClient, ASCENDING
+from pymongo import MongoClient, ReturnDocument
 
-from match_doc import build_match_fields, unset_fields
+from match_doc import build_match_fields, unset_fields, QUEUE_SORT, PRIORITY_NEW_PLAYER
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
@@ -49,6 +49,7 @@ yy = WRAP_YEAR % 100
 matches_collection = db[f"matches-{yy:02d}"]
 player_collection = db["tracked-players"]
 dlq_collection = db.get_collection("producer-dlq")
+runs_collection = db["consumer-runs"]   # per-run throughput, for queue wait estimates
 
 
 def get_routing_region(region: str, api_endpoint: bool = False) -> str:
@@ -126,29 +127,21 @@ class Consumer:
         self.rs = RiotSession(riot_api_key, rps=REQUESTS_PER_SECOND)
 
     def process_next_match(self) -> Optional[dict]:
-        pipeline = [
-            {"$match": {"status": "pending"}},
-            {"$lookup": {
-                "from": "tracked-players",
-                "localField": "puuid",
-                "foreignField": "puuid",
-                "as": "player"
-            }},
-            {"$unwind": "$player"},
-            {"$sort": {"player.created_at": -1, "created_at": ASCENDING}},
-            {"$limit": 1}
-        ]
+        """
+        Claim the next pending match in queue order (match_doc.QUEUE_SORT):
+        first-time players before re-scans, then first come first served.
+        A player's matches share one queue time, so they're processed
+        together - one player is finished before the next one starts.
 
-        matches = list(matches_collection.aggregate(pipeline))
-        if not matches:
-            return None
-
-        match = matches[0]
-        matches_collection.update_one(
-            {"_id": match["_id"]},
+        find_one_and_update makes the claim atomic, so two overlapping runs
+        can never pick up the same match.
+        """
+        return matches_collection.find_one_and_update(
+            {"status": "pending"},
             {"$set": {"status": "processing", "processing_started_at": datetime.now(timezone.utc)}},
+            sort=QUEUE_SORT,
+            return_document=ReturnDocument.AFTER,
         )
-        return match
 
     def recover_stuck_work(self):
         """
@@ -175,6 +168,16 @@ class Consumer:
         )
         if reset.modified_count:
             logger.warning("Reset %d stale 'processing' matches back to 'pending'", reset.modified_count)
+
+        # Matches queued before priorities existed: treat them as first-time
+        # work, and give any without a queue time one now, so they join the
+        # back of the line instead of sorting ahead of everyone (MongoDB sorts
+        # missing values first).
+        queued = {"status": {"$in": ["pending", "processing"]}}
+        matches_collection.update_many({**queued, "priority": {"$exists": False}},
+                                       {"$set": {"priority": PRIORITY_NEW_PLAYER}})
+        matches_collection.update_many({**queued, "created_at": {"$exists": False}},
+                                       {"$set": {"created_at": datetime.now(timezone.utc)}})
 
         for player in player_collection.find({"status": "pending"}, {"puuid": 1, "_id": 0}):
             self._finalize_player_if_done(player["puuid"])
@@ -233,8 +236,29 @@ class Consumer:
             # queue is now empty and finalize their status if so.
             self._finalize_player_if_done(puuid)
 
+    def record_run(self, started_at: datetime, num_processed: int, busy_seconds: float):
+        """
+        Store this run's throughput. The API divides recent throughput into
+        the queue to estimate a waiting player's wait. busy_seconds counts
+        only time spent processing (not polling an empty queue), so quiet
+        periods don't make estimates look slower than they are.
+        """
+        try:
+            runs_collection.create_index("finished_at", expireAfterSeconds=2 * 24 * 3600)  # keep 2 days
+            runs_collection.insert_one({
+                "year": WRAP_YEAR,
+                "started_at": started_at,
+                "finished_at": datetime.now(timezone.utc),
+                "processed": num_processed,
+                "busy_seconds": round(busy_seconds, 1),
+            })
+        except Exception:
+            logger.exception("Failed to record consumer run stats")
+
     def run(self):
         num_processed = 0
+        busy_seconds = 0.0
+        run_started_at = datetime.now(timezone.utc)
         start_time = time.time()
         logger.info("Consumer started; will run for up to %s seconds", MAX_RUN_SECONDS)
 
@@ -263,7 +287,9 @@ class Consumer:
                     time.sleep(sleep_for)
                     continue
 
+                t0 = time.time()
                 self.process_match(match_doc)
+                busy_seconds += time.time() - t0
                 num_processed += 1
 
         except KeyboardInterrupt:
@@ -286,6 +312,7 @@ class Consumer:
                 except Exception as e:
                     logger.exception("Failed to write local output file: %s", e)
 
+            self.record_run(run_started_at, num_processed, busy_seconds)
             logger.info("Consumer finished. Total matches processed: %d", num_processed)
 
 

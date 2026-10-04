@@ -9,6 +9,7 @@ from typing import List, Optional
  
 import requests
 from dotenv import load_dotenv
+from match_doc import PRIORITY_NEW_PLAYER, PRIORITY_RESCAN
 from pymongo import MongoClient, ASCENDING, UpdateOne
 from pymongo.errors import BulkWriteError
  
@@ -145,12 +146,12 @@ class Producer:
                 [("puuid", ASCENDING), ("matchId", ASCENDING)],
                 unique=True, name="unique_puuid_matchId", background=True,
             )
-            # Serves the consumer's queue query (status = "pending", oldest first).
-            # Replaces an index on (status, available_at, account_created_at,
-            # created_at): nothing ever sets available_at or account_created_at.
+            # Serves the consumer's "next match" query and the API's queue
+            # position: pending matches in QUEUE_SORT order (match_doc.py).
             matches_collection.create_index(
-                [("status", ASCENDING), ("created_at", ASCENDING)],
-                name="status_created_at", background=True,
+                [("status", ASCENDING), ("priority", ASCENDING),
+                 ("created_at", ASCENDING), ("puuid", ASCENDING)],
+                name="queue_order", background=True,
             )
             player_collection.create_index([("puuid", ASCENDING)], unique=True, background=True)
             logger.info("Ensured necessary indexes.")
@@ -236,7 +237,15 @@ class Producer:
         count = MATCH_PAGE_SIZE
         total_seen = 0
         bulk_ops = []
+        # One timestamp for every match this scan queues: it's this player's
+        # place in line, so all their matches are processed together.
         now_dt = datetime.now(timezone.utc)
+        # Players who already have processed matches can view their Wrapped
+        # while a re-scan runs, so their work waits behind first-time players.
+        has_stats = matches_collection.find_one(
+            {"puuid": puuid, "stats": {"$exists": True}}, {"_id": 1}
+        ) is not None
+        priority = PRIORITY_RESCAN if has_stats else PRIORITY_NEW_PLAYER
  
         while True:
             ids = self.get_match_ids(puuid, region, start=offset, count=count)
@@ -250,6 +259,7 @@ class Producer:
                     "region": region,
                     "status": "pending",
                     "created_at": now_dt,
+                    "priority": priority,
                 }
                 op = UpdateOne(
                     {"matchId": match_id, "puuid": puuid},
