@@ -13,6 +13,9 @@ concurrency:
 jobs:
   run-script:
     runs-on: ubuntu-latest
+    # GitHub only starts the */10 schedule every few hours in practice, so each
+    # run works through the queue for up to ~4 hours instead of 20 minutes.
+    timeout-minutes: 245
 
     environment: Prod
     permissions:
@@ -38,9 +41,10 @@ jobs:
             REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
             MONGO_URI: ${{ secrets.MONGO_URI }}
             WRAP_YEAR: ${{ vars.WRAP_YEAR }}
+            MAX_RUN_SECONDS: '14100'
         run: python backend/actions/match_consumer.py
 
         
       - name: Show number of matches processed
         run: |
-          echo "Step output num_matches=${{ steps.run-script.outputs.num_matches }}"
+          echo "Step output num_matches=${{ steps.run-scraper.outputs.num_matches }}"
