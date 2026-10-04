@@ -71,36 +71,60 @@ function createUserResource(puuid, year, {
 	return wrapPromise(promise);
 }
 
-export function UserResourceProvider({ puuid, year, children }) {
+// Every stats endpoint the Wrapped deck reads, by resource name.
+const STAT_RESOURCES = {
+	date: ['matchesByDate'],
+	forfeit: ['forfeit'],
+	damage: ['damage'],
+	champ: ['champs'],
+
+	cardPreview: ['get_card_preview'],
+	timeBreakdownStats: ['totalStats'],
+
+	role: ['role'],
+	cs: ['cs'],
+	pings: ['pings'],
+	objectives: ['objectives'],
+
+	mapEvents: ['mapEvents'],
+
+	highestKillGames: ['highestStatGames', '&stat=kills', '-kills'],
+	highestDeathGames: ['highestStatGames', '&stat=deaths', '-deaths'],
+	combatTotals: ['matchTotals'],
+	killFreq: ['killFrequency'],
+	deathFreq: ['deathFrequency'],
+	kda: ['kda'],
+};
+
+/**
+ * Resources are created (and fetched) on first use. The waiting page
+ * (/addPlayer) shares this provider just to show the player's name and icon;
+ * fetching every stats endpoint there cached a half-processed player's numbers
+ * for 30 minutes, and the finished Wrapped then showed those (e.g. 11 games
+ * instead of 512).
+ *
+ * `prefetch` starts every request immediately instead - the Wrapped deck
+ * mounts only the slides near the current one, so without it each later
+ * slide would wait on its own request when swiped to.
+ */
+export function UserResourceProvider({ puuid, year, prefetch = false, children }) {
 	const resources = useMemo(() => {
 		if (!puuid) return null;
-		return {
-			user: createUserResource(puuid, year),
-			lolVersion: wrapPromise(fetchCached('https://ddragon.leagueoflegends.com/api/versions.json', 'lol-current-version')),
+		const resources = {};
+		const made = {};
+		const lazy = (name, create) => Object.defineProperty(resources, name, {
+			enumerable: true,
+			get: () => (made[name] ??= create()),
+		});
 
-			date: createResource('matchesByDate', puuid, year),
-			forfeit: createResource('forfeit', puuid, year),
-			damage: createResource('damage', puuid, year),
-			champ: createResource('champs', puuid, year),
-
-			cardPreview: createResource('get_card_preview', puuid, year),
-			timeBreakdownStats: createResource('totalStats', puuid, year),
-
-			role: createResource('role', puuid, year),
-			cs: createResource('cs', puuid, year),
-			pings: createResource('pings', puuid, year),
-			objectives: createResource('objectives', puuid, year),
-
-			mapEvents: createResource('mapEvents', puuid, year),
-
-			highestKillGames: createResource('highestStatGames', puuid, year, '&stat=kills', '-kills'),
-			highestDeathGames: createResource('highestStatGames', puuid, year, '&stat=deaths', '-deaths'),
-			combatTotals: createResource('matchTotals', puuid, year),
-			killFreq: createResource('killFrequency', puuid, year),
-			deathFreq: createResource('deathFrequency', puuid, year),
-			kda: createResource('kda', puuid, year),
-		};
-	}, [puuid, year]);
+		lazy('user', () => createUserResource(puuid, year));
+		lazy('lolVersion', () => wrapPromise(fetchCached('https://ddragon.leagueoflegends.com/api/versions.json', 'lol-current-version')));
+		for (const [name, [endpoint, extraQuery, suffix]] of Object.entries(STAT_RESOURCES)) {
+			lazy(name, () => createResource(endpoint, puuid, year, extraQuery, suffix));
+		}
+		if (prefetch) Object.keys(resources).forEach((name) => resources[name]);
+		return resources;
+	}, [puuid, year, prefetch]);
 
 	return (
 		<StatsResourceContext.Provider value={resources}>

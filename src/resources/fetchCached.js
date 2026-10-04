@@ -45,3 +45,18 @@ export async function fetchCached(url, key, ttl = 30 * 60 * 1000) {
 			throw err;
 		});
 }
+
+/**
+ * Drop every cached response whose key mentions `fragment` (e.g. a puuid).
+ * Used when a player's Wrapped finishes processing, so numbers cached while
+ * it was still in progress aren't shown as their final stats.
+ */
+export function clearCached(fragment) {
+	try {
+		for (const key of Object.keys(localStorage)) {
+			if (key.includes(fragment)) localStorage.removeItem(key);
+		}
+	} catch {
+		// storage unavailable (private mode etc.) - nothing cached to clear
+	}
+}

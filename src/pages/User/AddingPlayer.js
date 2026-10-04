@@ -8,6 +8,7 @@ import UserIntroFallback from '../../components/slides/UserIntroFallback.js';
 import { UserResourceProvider } from "../../resources/UserResourceContext.js";
 import { trackEvent } from '../../resources/analytics.js';
 import { isWrapReady } from '../../resources/playerStatus.js';
+import { clearCached } from '../../resources/fetchCached.js';
 import './PlayerStats.css';
 
 const DEFAULT_YEAR = "2026";
@@ -66,6 +67,9 @@ export default function AddingPlayer() {
 
                 if (isWrapReady(data.status)) {
                     trackEvent('wrap_ready', { from: 'adding_player' });
+                    // Stats seen before processing finished (e.g. an earlier visit to
+                    // the player page) are stale now.
+                    clearCached(puuid);
                     nav(`/player/${puuid}?year=${year}`, { replace: true });
                     return;
                 }

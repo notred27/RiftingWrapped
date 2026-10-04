@@ -46,7 +46,7 @@ function PlayerStats() {
 		<>
 			<PlayerSEO puuid={puuid} year={year} />
 
-			<UserResourceProvider puuid={puuid} year={year}>
+			<UserResourceProvider puuid={puuid} year={year} prefetch>
 				<ErrorBoundary fallback={(err) => <UserError error={err} />}>
 					<Suspense fallback={<UserIntroFallback year={year} />}>
 
