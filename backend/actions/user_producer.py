@@ -145,10 +145,12 @@ class Producer:
                 [("puuid", ASCENDING), ("matchId", ASCENDING)],
                 unique=True, name="unique_puuid_matchId", background=True,
             )
+            # Serves the consumer's queue query (status = "pending", oldest first).
+            # Replaces an index on (status, available_at, account_created_at,
+            # created_at): nothing ever sets available_at or account_created_at.
             matches_collection.create_index(
-                [("status", ASCENDING), ("available_at", ASCENDING),
-                 ("account_created_at", ASCENDING), ("created_at", ASCENDING)],
-                background=True,
+                [("status", ASCENDING), ("created_at", ASCENDING)],
+                name="status_created_at", background=True,
             )
             player_collection.create_index([("puuid", ASCENDING)], unique=True, background=True)
             logger.info("Ensured necessary indexes.")

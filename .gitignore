@@ -40,3 +40,8 @@ local-github-output.txt
 
 /.claude
 handoff.md
+# python
+__pycache__/
+.pytest_cache/
+
+/backend/migrations

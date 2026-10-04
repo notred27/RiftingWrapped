@@ -9,6 +9,8 @@ import requests
 from dotenv import load_dotenv
 from pymongo import MongoClient, ASCENDING
 
+from match_doc import build_match_fields, unset_fields
+
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
 RIOT_API_KEY = os.getenv("REACT_APP_API_KEY")
@@ -120,8 +122,6 @@ class RiotSession:
 class Consumer:
     """Processes pending matches, extracts stats, prioritizing recent users."""
 
-    TARGET_QUEUES = [400, 420, 430, 440, 480, 490]
-
     def __init__(self, riot_api_key: str):
         self.rs = RiotSession(riot_api_key, rps=REQUESTS_PER_SECOND)
 
@@ -179,88 +179,6 @@ class Consumer:
         for player in player_collection.find({"status": "pending"}, {"puuid": 1, "_id": 0}):
             self._finalize_player_if_done(player["puuid"])
 
-    def extract_match_stats(self, participant: dict, match_data: dict, timeline_data: dict) -> dict:
-        participant_id = participant["participantId"]
-        team_id_raw = participant["teamId"]
-        teams = match_data.get("info", {}).get("teams", [])
-        team = next((t for t in teams if t.get("teamId") == team_id_raw), {})
-        objectives = team.get("objectives", {})
-
-        ping_keys = [
-            "allInPings", "assistMePings", "enemyMissingPings", "enemyVisionPings",
-            "getBackPings", "needVisionPings", "onMyWayPings", "pushPings"
-        ]
-        pings = {k: participant.get(k, 0) for k in ping_keys}
-
-        dragon_types = []
-        for frame in timeline_data.get("info", {}).get("frames", []):
-            for event in frame.get("events", []):
-                if event.get("type") == "ELITE_MONSTER_KILL" and event.get("monsterType") == "DRAGON" and event.get("killerId") == participant_id:
-                    dragon_types.append(event.get("monsterSubType", "UNKNOWN"))
-
-        deaths = participant.get("deaths", 0)
-        kda = round((participant.get("kills", 0) + participant.get("assists", 0)) / max(1, deaths), 2)
-
-        return {
-            "matchId": match_data["metadata"]["matchId"],
-            "champion": participant.get("championName", ""),
-            "kills": participant.get("kills", 0),
-            "deaths": participant.get("deaths", 0),
-            "assists": participant.get("assists", 0),
-            "win": participant.get("win", False),
-
-            "magicDamageTaken": participant.get("magicDamageTaken", 0),
-            "physicalDamageTaken": participant.get("physicalDamageTaken", 0),
-            "trueDamageTaken": participant.get("trueDamageTaken", 0),
-
-            "magicDamageDealt": participant.get("magicDamageDealtToChampions", 0),
-            "physicalDamageDealt": participant.get("physicalDamageDealtToChampions", 0),
-            "trueDamageDealt": participant.get("trueDamageDealtToChampions", 0),
-
-            "timeCCingOthers": participant.get("timeCCingOthers", 0),
-
-            "kda": kda,
-            "position": participant.get("teamPosition", ""),
-
-            "cs": participant.get("totalMinionsKilled", 0),
-            "jungleCs": participant.get("neutralMinionsKilled", 0),
-            "visionScore": participant.get("visionScore", 0),
-
-            "killingSprees": participant.get("killingSprees", 0),
-            "timeSpentDead": participant.get("totalTimeSpentDead", 0),
-            "turretKills": participant.get("turretKills", 0),
-            "towerTakedowns": participant.get("challenges", {}).get("turretTakedowns", 0),
-            "inhibitors": objectives.get("inhibitor", {}).get("kills", 0),
-            "towers": objectives.get("tower", {}).get("kills", 0),
-            "pings": pings,
-            "epicMonsters": {
-                "barons": objectives.get("baron", {}).get("kills", 0),
-                "dragons": objectives.get("dragon", {}).get("kills", 0),
-                "riftHeralds": objectives.get("riftHerald", {}).get("kills", 0),
-                "dragonTypes": dragon_types,
-                "voidGrubs": objectives.get("horde", {}).get("kills", 0),
-                "atakhan": objectives.get("atakhan", {}).get("kills", 0),
-            },
-            "gameEndedInEarlySurrender": participant.get("gameEndedInEarlySurrender", False),
-            "gameEndedInSurrender": participant.get("gameEndedInSurrender", False),
-        }
-
-    def get_kill_death_positions(self, participant: dict, timeline_data: dict, queue_id: int) -> dict:
-        if queue_id not in self.TARGET_QUEUES:
-            return {"kills": [], "deaths": []}
-
-        participant_id = participant["participantId"]
-
-        kills, deaths = [], []
-        for frame in timeline_data.get("info", {}).get("frames", []):
-            for event in frame.get("events", []):
-                if event.get("type") == "CHAMPION_KILL":
-                    if event.get("killerId") == participant_id:
-                        kills.append(event.get("position", {}))
-                    if event.get("victimId") == participant_id:
-                        deaths.append(event.get("position", {}))
-        return {"kills": kills, "deaths": deaths}
-
     def _finalize_player_if_done(self, puuid: str):
         """
         Check whether any matches are still pending/processing for this
@@ -290,27 +208,12 @@ class Consumer:
             match_data = self.rs.safe_request("GET", f"https://{R}.api.riotgames.com/lol/match/v5/matches/{match_id}")
             timeline_data = self.rs.safe_request("GET", f"https://{R}.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline")
 
-            participant = next(p for p in match_data["info"]["participants"] if p["puuid"] == puuid)
-            queue_id = match_data["info"].get("queueId", -1)
-            stats = self.extract_match_stats(participant, match_data, timeline_data)
-            locations = self.get_kill_death_positions(participant, timeline_data, queue_id)
-
-            game_created_ms = match_data["info"].get("gameCreation", 0)
-            match_meta = {
-                "gameCreated": datetime.fromtimestamp(game_created_ms / 1000, tz=timezone.utc),
-                "gameDuration": match_data["info"].get("gameDuration", 0),
-                "gameType": match_data["info"].get("gameType", "Unknown"),
-            }
-
+            # Same document shape as the hourly scraper writes (match_doc.py);
+            # drops the queue-only fields now that the match is done.
             matches_collection.update_one(
                 {"_id": match_doc["_id"]},
-                {"$set": {
-                    "status": "done",
-                    "stats": stats,
-                    "queueId": queue_id,
-                    "locations": locations,
-                    "matchInfo": match_meta,
-                }}
+                {"$set": build_match_fields(match_data, timeline_data, puuid),
+                 "$unset": unset_fields()},
             )
 
             player_collection.update_one({"puuid": puuid}, {"$inc": {"processedMatches": 1}})
@@ -318,7 +221,10 @@ class Consumer:
 
         except Exception as e:
             logger.exception("Failed to process match %s: %s", match_id, e)
-            matches_collection.update_one({"_id": match_doc["_id"]}, {"$set": {"status": "failed", "error": str(e)}})
+            matches_collection.update_one(
+                {"_id": match_doc["_id"]},
+                {"$set": {"status": "failed", "error": str(e)}, "$unset": {"processing_started_at": ""}},
+            )
             # Still count as "handled" for progress purposes, even though it failed.
             player_collection.update_one({"puuid": puuid}, {"$inc": {"processedMatches": 1}})
 

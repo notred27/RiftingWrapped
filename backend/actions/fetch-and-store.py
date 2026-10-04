@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import DuplicateKeyError
 
+from match_doc import build_match_fields, unset_fields
+
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
 RIOT_API_KEY = os.getenv("REACT_APP_API_KEY")
@@ -120,115 +122,11 @@ def get_timeline_data(match_id, region):
     return safe_request(url)
 
 
-def extract_match_stats(match_data, timeline_data, puuid):
-    participant = next(p for p in match_data["info"]["participants"] if p["puuid"] == puuid)
-    participant_id = participant["participantId"]
-    team_id_raw = participant["teamId"]
-    teams = match_data.get("info", {}).get("teams", [])
-    team = next((t for t in teams if t.get("teamId") == team_id_raw), {})
-    objectives = team.get("objectives", {})
-
-    ping_keys = [
-        "allInPings", "assistMePings", "enemyMissingPings", "enemyVisionPings",
-        "getBackPings", "needVisionPings", "onMyWayPings", "pushPings",
-    ]
-    pings = {k: participant.get(k, 0) for k in ping_keys}
-
-    dragon_types = []
-    for frame in timeline_data.get("info", {}).get("frames", []):
-        for event in frame.get("events", []):
-            if event.get("type") == "ELITE_MONSTER_KILL" and event.get("monsterType") == "DRAGON" and event.get("killerId") == participant_id:
-                dragon_types.append(event.get("monsterSubType", "UNKNOWN"))
-
-    deaths = participant.get("deaths", 0)
-    kda = round((participant.get("kills", 0) + participant.get("assists", 0)) / max(1, deaths), 2)
-
-    return {
-        "matchId": match_data["metadata"]["matchId"],
-        "champion": participant.get("championName", ""),
-        "riotIdGameName": participant.get("riotIdGameName", ""),
-        "riotIdTagline": participant.get("riotIdTagline", ""),
-
-        "kills": participant.get("kills", 0),
-        "deaths": participant.get("deaths", 0),
-        "assists": participant.get("assists", 0),
-
-        "win": participant.get("win", False),
-
-        "magicDamageTaken": participant.get("magicDamageTaken", 0),
-        "physicalDamageTaken": participant.get("physicalDamageTaken", 0),
-        "trueDamageTaken": participant.get("trueDamageTaken", 0),
-
-        "magicDamageDealt": participant.get("magicDamageDealtToChampions", 0),
-        "physicalDamageDealt": participant.get("physicalDamageDealtToChampions", 0),
-        "trueDamageDealt": participant.get("trueDamageDealtToChampions", 0),
-
-        "timeCCingOthers": participant.get("timeCCingOthers", 0),
-        "kda": kda,
-        "position": participant.get("teamPosition", ""),
-
-        "cs": participant.get("totalMinionsKilled", 0),
-        "jungleCs": participant.get("neutralMinionsKilled", 0),
-        "visionScore": participant.get("visionScore", 0),
-
-        "killingSprees": participant.get("killingSprees", 0),
-        "timeSpentDead": participant.get("totalTimeSpentDead", 0),
-        "turretKills": participant.get("turretKills", 0),
-        "towerTakedowns": participant.get("challenges", {}).get("turretTakedowns", 0),
-        "inhibitors": objectives.get("inhibitor", {}).get("kills", 0),
-        "towers": objectives.get("tower", {}).get("kills", 0),
-        "pings": pings,
-        "epicMonsters": {
-            "barons": objectives.get("baron", {}).get("kills", 0),
-            "dragons": objectives.get("dragon", {}).get("kills", 0),
-            "riftHeralds": objectives.get("riftHerald", {}).get("kills", 0),
-            "dragonTypes": dragon_types,
-            "voidGrubs": objectives.get("horde", {}).get("kills", 0),
-            "atakhan": objectives.get("atakhan", {}).get("kills", 0),
-        },
-        "gameEndedInEarlySurrender": participant.get("gameEndedInEarlySurrender", False),
-        "gameEndedInSurrender": participant.get("gameEndedInSurrender", False),
-    }
-
-
-def get_kill_death_positions(match_data, timeline_data, puuid, queue_id):
-    target_queues = [400, 420, 430, 440, 480, 490]
-    if queue_id not in target_queues:
-        return {"kills": [], "deaths": []}
-
-    participant = next(p for p in match_data["info"]["participants"] if p["puuid"] == puuid)
-    participant_id = participant["participantId"]
-
-    kills, deaths = [], []
-    for frame in timeline_data.get("info", {}).get("frames", []):
-        for event in frame.get("events", []):
-            if event.get("type") == "CHAMPION_KILL":
-                if event.get("killerId") == participant_id:
-                    kills.append(event.get("position", {}))
-                if event.get("victimId") == participant_id:
-                    deaths.append(event.get("position", {}))
-    return {"kills": kills, "deaths": deaths}
-
-
 def store_match(match_data, timeline_data):
     match_id = match_data["metadata"]["matchId"]
-    participants = match_data["info"]["participants"]
-    queue_id = match_data["info"].get("queueId", -1)
-
-    game_created_ms = match_data["info"].get("gameCreation", 0)
-    match_info = {
-        "matchId": match_id,
-        "gameCreated": datetime.fromtimestamp(game_created_ms / 1000, tz=timezone.utc),
-        "gameDuration": match_data["info"].get("gameDuration", 0),
-        "teams": {
-            "blue": [p["puuid"] for p in participants if p["teamId"] == 100],
-            "red": [p["puuid"] for p in participants if p["teamId"] == 200],
-        },
-        "gameType": match_data["info"].get("gameType", "Unknown"),
-    }
 
     num_logged_players = 0
-    for player in participants:
+    for player in match_data["info"]["participants"]:
         puuid = player["puuid"]
 
         if puuid not in tracked_puuids:
@@ -239,24 +137,14 @@ def store_match(match_data, timeline_data):
 
         num_logged_players += 1
 
-        stats = extract_match_stats(match_data, timeline_data, puuid)
-        locations = get_kill_death_positions(match_data, timeline_data, puuid, queue_id)
-
-        doc = {
-            "puuid": puuid,
-            "matchId": match_id,
-            "queueId": queue_id,
-            "status": "done",
-            "team": "blue" if player["teamId"] == 100 else "red",
-            "stats": stats,
-            "locations": locations,
-            "matchInfo": match_info,
-        }
-
+        # Same document shape as match_consumer.py writes (match_doc.py).
+        # Previously this also stored all ten participants' puuids in
+        # matchInfo.teams (~900 bytes per document) that nothing read.
         matches_collection.update_one(
             {"matchId": match_id, "puuid": puuid},
-            {"$set": doc},
-            upsert=True
+            {"$set": build_match_fields(match_data, timeline_data, puuid),
+             "$unset": unset_fields()},
+            upsert=True,
         )
 
         player_collection.update_one(

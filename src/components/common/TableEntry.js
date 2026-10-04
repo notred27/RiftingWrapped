@@ -1,4 +1,6 @@
 import React, { useMemo } from "react";
+
+import { useStatsResources } from "../../resources/UserResourceContext.js";
 import "./TableEntry.css";
 
 function monthInt2String(m) {
@@ -60,41 +62,13 @@ const PLATFORM_TO_REGION = {
 	ME1: "me",
 };
 
-const ROLE_ICON = {
-	TOP: "https://cdn.mobalytics.gg/assets/common/icons/lol-roles/16-top-bright.svg",
-	BOTTOM: "https://cdn.mobalytics.gg/assets/common/icons/lol-roles/16-bot-bright.svg",
-	MIDDLE: "https://cdn.mobalytics.gg/assets/common/icons/lol-roles/16-mid-bright.svg",
-	UTILITY: "https://cdn.mobalytics.gg/assets/common/icons/lol-roles/16-sup-bright.svg",
-	JUNGLE: "https://cdn.mobalytics.gg/assets/common/icons/lol-roles/16-jg-bright.svg",
-};
-
-
-function objectivesGridJSX(stats) {
-	return (
-		<div className="objectivesGrid">
-			<span><img loading="lazy" src="https://cdn.mobalytics.gg/assets/lol/images/ui/icons/dragons.svg" alt="dragon" /></span>
-			<span><img loading="lazy" src="https://cdn.mobalytics.gg/assets/lol/images/ui/icons/baron-nashor.svg" alt="baron" /></span>
-			<span><img loading="lazy" src="https://cdn.mobalytics.gg/assets/lol/images/ui/icons/towers.svg" alt="tower" /></span>
-			<span><img loading="lazy" src="https://cdn.mobalytics.gg/assets/common/icons/lol-game-objectives/inhibitor.svg" alt="inhibitor" /></span>
-
-			<span>{stats.epicMonsters?.dragons ?? 0}</span>
-			<span>{stats.epicMonsters?.barons ?? 0}</span>
-			<span>{stats.towers ?? 0}</span>
-			<span>{stats.inhibitors ?? 0}</span>
-		</div>
-	);
-}
-
-
-
-const VARIANT_CONFIG = {
-	kills: { color: "#D85A30" },
-	deaths: { color: "#378ADD"},
-};
-
-function TableEntryInner({ puuid, match, variant = "kills" }) {
+function TableEntryInner({ match }) {
 	const stats = match.stats;
-	const { color, Icon } = VARIANT_CONFIG[variant] || VARIANT_CONFIG.kills;
+	// The match link needs the player's Riot ID. Read it from the player record
+	// rather than the match: only some older match documents stored a copy,
+	// so links for every other match came out as ".../undefined-undefined/...".
+	const { user } = useStatsResources();
+	const player = user.read();
 
 	const { dateStr, durationMinutes, champUrl, kdaDisplay } = useMemo(() => {
 		const date = new Date(match.matchInfo.gameCreated);
@@ -107,10 +81,10 @@ function TableEntryInner({ puuid, match, variant = "kills" }) {
 	}, [match, stats]);
 
 	const openMatch = () => {
-		const [platform, matchNumber] = String(stats.matchId).split("_");
+		const [platform, matchNumber] = String(match.matchId).split("_");
 		const region = PLATFORM_TO_REGION[String(platform).toUpperCase()] || "na";
 		window.open(
-			`https://mobalytics.gg/lol/match/${region}/${stats.riotIdGameName}-${stats.riotIdTagline}/${matchNumber}`,
+			`https://mobalytics.gg/lol/match/${region}/${encodeURIComponent(player.displayName)}-${encodeURIComponent(player.tag)}/${matchNumber}`,
 			"_blank",
 			"noopener,noreferrer"
 		);
@@ -133,7 +107,6 @@ function TableEntryInner({ puuid, match, variant = "kills" }) {
 				<span className="compact-entry-kda">{stats.kills} / {stats.deaths} / {stats.assists}</span>
 			</div>
 
-			{/* <span>{objectivesGridJSX(stats)}</span> */}
 
 			<div className="compact-entry-meta" style={{textAlign:"right"}}>
 				<span className="compact-entry-date">{QUEUE_ID_MAP[match.queueId]}</span>
