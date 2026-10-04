@@ -25,6 +25,10 @@ BACKOFF_BASE = 2.0
 
 MAX_RUN_SECONDS = int(os.getenv("MAX_RUN_SECONDS", str(20 * 60)))  # default 20 min
 POLL_INTERVAL = float(os.getenv("POLL_INTERVAL", "10.0"))          # seconds to wait when queue empty
+# A match left in "processing" longer than this was abandoned by a run that was
+# cancelled or crashed mid-match. Must exceed MAX_RUN_SECONDS so we never reset
+# a match another run is still working on.
+STALE_PROCESSING_SECONDS = int(os.getenv("STALE_PROCESSING_SECONDS", str(30 * 60)))
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("consumer")
@@ -140,8 +144,40 @@ class Consumer:
             return None
 
         match = matches[0]
-        matches_collection.update_one({"_id": match["_id"]}, {"$set": {"status": "processing"}})
+        matches_collection.update_one(
+            {"_id": match["_id"]},
+            {"$set": {"status": "processing", "processing_started_at": datetime.now(timezone.utc)}},
+        )
         return match
+
+    def recover_stuck_work(self):
+        """
+        Repair state left behind by earlier runs, so no player waits forever:
+
+        1. Matches stuck in "processing" (the run that claimed them was
+           cancelled or crashed) go back to "pending". Matches claimed before
+           processing_started_at existed have no timestamp, so they count as
+           stale too.
+        2. Players still marked "pending" with nothing left in the queue - e.g.
+           a re-scan that found no new matches - get finalized. Previously
+           only processing one of that player's matches could finalize them.
+        """
+        cutoff = datetime.fromtimestamp(time.time() - STALE_PROCESSING_SECONDS, tz=timezone.utc)
+        reset = matches_collection.update_many(
+            {
+                "status": "processing",
+                "$or": [
+                    {"processing_started_at": {"$lt": cutoff}},
+                    {"processing_started_at": {"$exists": False}},
+                ],
+            },
+            {"$set": {"status": "pending"}, "$unset": {"processing_started_at": ""}},
+        )
+        if reset.modified_count:
+            logger.warning("Reset %d stale 'processing' matches back to 'pending'", reset.modified_count)
+
+        for player in player_collection.find({"status": "pending"}, {"puuid": 1, "_id": 0}):
+            self._finalize_player_if_done(player["puuid"])
 
     def extract_match_stats(self, participant: dict, match_data: dict, timeline_data: dict) -> dict:
         participant_id = participant["participantId"]
@@ -295,6 +331,12 @@ class Consumer:
         num_processed = 0
         start_time = time.time()
         logger.info("Consumer started; will run for up to %s seconds", MAX_RUN_SECONDS)
+
+        try:
+            self.recover_stuck_work()
+        except Exception:
+            # Housekeeping must never stop the queue from being processed.
+            logger.exception("recover_stuck_work failed; continuing")
 
         try:
             while True:

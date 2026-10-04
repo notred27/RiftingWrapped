@@ -20,7 +20,7 @@ cache_collection = db["spotlight-cache"]
 def build_spotlight_pool():
     # Only target up-to-date players
     done_players = list(player_collection.aggregate([
-        {"$match": {"status": "done"}},
+        {"$match": {"status": {"$in": ["done", "done_with_errors"]}}},
         {"$project": {"_id": 0, "displayName": 1, "icon": 1, "puuid": 1}},
     ]))
     done_puuids = [p["puuid"] for p in done_players]

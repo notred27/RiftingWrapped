@@ -270,16 +270,36 @@ class Producer:
  
         # Now update player's totalMatches and status. This doc is guaranteed
         # to already exist (register_player runs first), so no upsert/setOnInsert needed.
-        player_collection.update_one(
-            {"puuid": puuid},
-            {"$set": {
-                "status": "pending",
-                "totalMatches": total_seen,
-                "updated_at": datetime.now(timezone.utc),
-            }},
+        #
+        # Count what is actually left to do rather than assuming everything is
+        # pending: a player with no games this year, or a re-scan where every
+        # match is already stored, has nothing for the consumer to process -
+        # and only processing one of a player's matches would ever have moved
+        # them out of "pending", so they sat on the waiting page forever.
+        remaining = matches_collection.count_documents(
+            {"puuid": puuid, "status": {"$in": ["pending", "processing"]}}
         )
+        handled = matches_collection.count_documents(
+            {"puuid": puuid, "status": {"$in": ["done", "failed"]}}
+        )
+        player_update = {
+            "totalMatches": total_seen,
+            # Matches stored by earlier runs or the hourly scraper are already
+            # done; count them so progress reads e.g. "290 / 300", not "0 / 300".
+            "processedMatches": handled,
+            "updated_at": datetime.now(timezone.utc),
+        }
+        if remaining == 0:
+            failed = matches_collection.count_documents({"puuid": puuid, "status": "failed"})
+            player_update["status"] = "done_with_errors" if failed else "done"
+            player_update["finished_at"] = datetime.now(timezone.utc)
+        else:
+            player_update["status"] = "pending"
+
+        player_collection.update_one({"puuid": puuid}, {"$set": player_update})
  
-        logger.info("Queued %d matches for puuid %s", total_seen, puuid)
+        logger.info("Queued %d matches for puuid %s (%d still to process, status=%s)",
+                    total_seen, puuid, remaining, player_update["status"])
         return total_seen
  
     def _commit_bulk(self, ops: List[UpdateOne]):

@@ -22,11 +22,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@600;700;800;900&display=swap"
-        as="style" crossorigin="anonymous" onload="this.rel='stylesheet'">
-    <noscript>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@600;700;800;900&display=swap" rel="stylesheet" crossorigin="anonymous">
-    </noscript>
+    <!-- A plain stylesheet link, not the preload + onload="this.rel=..." trick:
+         customHttp.yml's Content-Security-Policy (script-src 'self') blocks inline
+         event handlers, so in production the onload is blocked and the fonts never
+         apply. display=swap in the URL keeps text visible while they load. -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@600;700;800;900&display=swap" crossorigin="anonymous">
 
 
 

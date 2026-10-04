@@ -7,6 +7,7 @@ import UserIntroFallback from '../../components/slides/UserIntroFallback.js';
 
 import { UserResourceProvider } from "../../resources/UserResourceContext.js";
 import { trackEvent } from '../../resources/analytics.js';
+import { isWrapReady } from '../../resources/playerStatus.js';
 import './PlayerStats.css';
 
 const DEFAULT_YEAR = "2026";
@@ -37,7 +38,7 @@ export default function AddingPlayer() {
     const [copied, setCopied] = useState(false);
 
     const status = userData.status;
-    const isFinished = status === "done" || status === "failed";
+    const isFinished = isWrapReady(status) || status === "failed";
 
     useEffect(() => {
         if (isFinished) return;
@@ -53,7 +54,7 @@ export default function AddingPlayer() {
                 const data = await response.json();
                 if (cancelled) return;
 
-                if (data.status === "done") {
+                if (isWrapReady(data.status)) {
                     trackEvent('wrap_ready', { from: 'adding_player' });
                     nav(`/player/${puuid}?year=${year}`, { replace: true });
                     return;

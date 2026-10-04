@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { PlayerListProvider } from '../../resources/PlayerListContext';
 import { fetchCached } from '../../resources/fetchCached';
 import { trackEvent } from '../../resources/analytics';
+import { isWrapReady } from '../../resources/playerStatus';
 
 import UserSearchBar from '../../components/common/UserSearchBar';
 import PlayerMarquee from '../../components/common/PlayerMarquee';
@@ -100,9 +101,9 @@ export default function Home() {
                 return;
             }
 
-            trackEvent('search_success', { region, ready: status === "done" });
+            trackEvent('search_success', { region, ready: isWrapReady(status) });
             navigate(
-                status === "done"
+                isWrapReady(status)
                     ? `/player/${puuid}?year=${WRAP_YEAR}`
                     : `/addPlayer/${puuid}?year=${WRAP_YEAR}`
             );
