@@ -7,8 +7,24 @@ function monthInt2String(m) {
 	return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][m] || "";
 }
 
-function championImgUrl(champion, version = "14.14.1") {
+// Only used if the current Data Dragon version can't be loaded. Icons for
+// champions released after this patch won't exist at this version.
+const FALLBACK_DDRAGON_VERSION = "16.19.1";
+
+function championImgUrl(champion, version) {
 	return `https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${champion}.png`;
+}
+
+function useDdragonVersion() {
+	const { lolVersion } = useStatsResources();
+	try {
+		return lolVersion.read()[0] || FALLBACK_DDRAGON_VERSION;
+	} catch (thrown) {
+		// Still loading: let Suspense wait for it, as it does for the other data.
+		if (thrown instanceof Promise) throw thrown;
+		// Data Dragon unreachable: show what icons we can rather than failing the slide.
+		return FALLBACK_DDRAGON_VERSION;
+	}
 }
 
 
@@ -69,16 +85,17 @@ function TableEntryInner({ match }) {
 	// so links for every other match came out as ".../undefined-undefined/...".
 	const { user } = useStatsResources();
 	const player = user.read();
+	const ddragonVersion = useDdragonVersion();
 
 	const { dateStr, durationMinutes, champUrl, kdaDisplay } = useMemo(() => {
 		const date = new Date(match.matchInfo.gameCreated);
 		const dateStr = `${monthInt2String(date.getMonth())} ${date.getDate()}`;
 		const durationMinutes = Math.floor(match.matchInfo.gameDuration / 60);
-		const champUrl = championImgUrl(stats.champion);
+		const champUrl = championImgUrl(stats.champion, ddragonVersion);
 		const kdaDisplay = stats.kda;
 
 		return { dateStr, durationMinutes, champUrl, kdaDisplay };
-	}, [match, stats]);
+	}, [match, stats, ddragonVersion]);
 
 	const openMatch = () => {
 		const [platform, matchNumber] = String(match.matchId).split("_");
