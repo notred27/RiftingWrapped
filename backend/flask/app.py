@@ -1,6 +1,10 @@
 from flask import Flask, request, render_template, abort
 from flask import jsonify
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from werkzeug.middleware.proxy_fix import ProxyFix
+import logging
 import requests
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
@@ -14,6 +18,31 @@ app = Flask(__name__, template_folder='./templates')
 CORS(app)
 
 app.config['CORS_HEADERS'] = 'Content-Type'
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logger = logging.getLogger("api")
+
+# Render puts a proxy in front of the app, so the TCP peer is the proxy, not
+# the visitor. ProxyFix takes the client address from X-Forwarded-For instead,
+# trusting this many proxy hops (Render: 1). Without it every visitor would
+# share one rate-limit bucket.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=int(os.getenv("TRUSTED_PROXY_HOPS", "1")))
+
+# Rate limiting, keyed by client IP. Only expensive or sensitive routes are
+# limited (see the decorators below); the read-only stats routes are not.
+# Counters live in memory, per gunicorn worker - fine for a single instance.
+# With several workers or instances, point RATE_LIMIT_STORAGE_URI at Redis.
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    storage_uri=os.getenv("RATE_LIMIT_STORAGE_URI", "memory://"),
+    headers_enabled=True,   # X-RateLimit-* and Retry-After headers on responses
+)
+
+# Each sign-up costs several Riot API calls and starts a GitHub Actions run, so
+# a script hammering this endpoint would burn the shared Riot quota and Actions
+# minutes and block real sign-ups. Real visitors sign up once or twice.
+SIGNUP_RATE_LIMIT = os.getenv("SIGNUP_RATE_LIMIT", "5 per minute;20 per hour;50 per day")
 
 
 MONGO_URI = os.getenv("MONGO_URI")
@@ -35,6 +64,20 @@ def get_matches_collection(year: int):
     return db[f"matches-{yy:02d}"]
 
 
+def completed_matches(puuid: str) -> dict:
+    """
+    $match filter for a player's processed matches - the ones that have stats.
+
+    A match collection also holds queue placeholders ({matchId, puuid, status})
+    for matches still waiting to be processed, plus some from older runs that
+    never finished. Matching on puuid alone counted those as games: per-game
+    averages came out too low and /champs returned a null champion. Checking
+    for stats (rather than status == "done") also covers 2025-era documents,
+    which were written with no status field at all.
+    """
+    return {"puuid": puuid, "stats": {"$exists": True}}
+
+
 def require_year_param() -> int:
     """
     Every match-data route needs to know which year's match collection to
@@ -54,11 +97,21 @@ def require_year_param() -> int:
 # ----------------------------------------------------------------------------
 @app.errorhandler(PyMongoError)
 def handle_db_error(e):
-    return jsonify({"error": "Internal Server Error", "message": f"Database error occurred: {str(e)}"}), 500
+    # Log the details; don't send them to the browser - pymongo errors can
+    # include cluster hostnames and other connection details.
+    logger.exception("Database error on %s %s", request.method, request.path)
+    return jsonify({"error": "Internal Server Error", "message": "A database error occurred. Please try again later."}), 500
 
 
 @app.errorhandler(HTTPException)
 def handle_http_exception(e):
+    if e.code == 429:
+        # Lets you confirm in Render's logs that the limiter sees real visitor
+        # IPs. If every blocked request shows the same client address, set
+        # TRUSTED_PROXY_HOPS to the number of proxies in X-Forwarded-For.
+        logger.warning("Rate limited %s %s: client=%s X-Forwarded-For=%r",
+                       request.method, request.path, request.remote_addr,
+                       request.environ.get("HTTP_X_FORWARDED_FOR"))
     return jsonify({"error": e.name, "message": e.description}), e.code
 
 
@@ -146,6 +199,10 @@ MAX_TAG_LEN = 6
 RIOT_TIMEOUT = 5  # seconds
 
 @app.route('/users', methods=['POST'])
+@limiter.limit(
+    SIGNUP_RATE_LIMIT,
+    error_message="Too many sign-up attempts from your network. Please wait a few minutes and try again.",
+)
 def add_by_display_name():
     if 'displayName' not in request.form or 'tag' not in request.form:
         return {"msg": "Payload is missing displayName or tag"}, 400
@@ -194,8 +251,9 @@ def add_by_display_name():
     try:
         riot_data = r.json()
         puuid = riot_data["puuid"]
-    except (ValueError, KeyError) as e:
-        return jsonify({"error": "Bad Gateway", "message": f"Invalid Riot response format {str(e)}"}), 502
+    except (ValueError, KeyError):
+        logger.exception("Unexpected Riot account response for %s#%s (%s)", displayName, tag, region)
+        return jsonify({"error": "Bad Gateway", "message": "Riot API returned an unexpected response"}), 502
 
     # Confirm the account actually lives on the region the user selected.
     summoner_check_url = f'https://{region.lower()}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}'
@@ -270,6 +328,7 @@ def require_admin_key():
 
 
 @app.route('/users/<puuid>', methods=['DELETE'])
+@limiter.limit("20 per hour", error_message="Too many delete requests. Try again later.")  # slows admin-key guessing
 def delete_by_puuid(puuid):
     """
     Deletion now needs an explicit `scope` because player identity and match
@@ -337,7 +396,7 @@ def get_champ_counts(puuid):
     matches_collection = get_matches_collection(year_param)
 
     pipeline = [
-        {"$match": {"puuid": puuid}},
+        {"$match": completed_matches(puuid)},
         {"$group": {
             "_id": "$stats.champion",
             "count": {"$sum": 1},
@@ -359,7 +418,7 @@ def get_game_dates(puuid):
     matches_collection = get_matches_collection(year_param)
 
     pipeline = [
-        {"$match": {"puuid": puuid}},
+        {"$match": completed_matches(puuid)},
         {"$addFields": {"gameDate": {"$toDate": "$matchInfo.gameCreated"}}},
         {"$addFields": {"dateString": {"$dateToString": {"format": "%Y-%m-%d", "date": "$gameDate"}}}},
         {
@@ -393,7 +452,7 @@ def get_damage(puuid):
     matches_collection = get_matches_collection(year_param)
 
     pipeline = [
-        {"$match": {"puuid": puuid}},
+        {"$match": completed_matches(puuid)},
         {"$group": {
             "_id": puuid,
             "magicDamageTaken": {"$sum": "$stats.magicDamageTaken"},
@@ -420,7 +479,7 @@ def get_forfeit(puuid):
     matches_collection = get_matches_collection(year_param)
 
     pipeline = [
-        {"$match": {"puuid": puuid}},
+        {"$match": completed_matches(puuid)},
         {"$group": {
             "_id": puuid,
             "numGames": {"$sum": 1},
@@ -442,7 +501,7 @@ def get_objectives(puuid):
     matches_collection = get_matches_collection(year_param)
 
     pipeline = [
-        {"$match": {"puuid": puuid}},
+        {"$match": completed_matches(puuid)},
         {"$group": {
             "_id": puuid,
             "numGames": {"$sum": 1},
@@ -466,7 +525,7 @@ def get_breakdown(puuid):
     matches_collection = get_matches_collection(year_param)
 
     pipeline = [
-        {"$match": {"puuid": puuid}},
+        {"$match": completed_matches(puuid)},
         {"$group": {
             "_id": puuid,
             "numGames": {"$sum": 1},
@@ -488,7 +547,7 @@ def get_role(puuid):
     matches_collection = get_matches_collection(year_param)
 
     pipeline = [
-        {"$match": {"puuid": puuid}},
+        {"$match": completed_matches(puuid)},
         {"$group": {
             "_id": "$stats.position",
             "count": {"$sum": 1},
@@ -506,7 +565,7 @@ def get_matchTotals(puuid):
     matches_collection = get_matches_collection(year_param)
 
     pipeline = [
-        {"$match": {"puuid": puuid}},
+        {"$match": completed_matches(puuid)},
         {
             "$group": {
                 "_id": puuid,
@@ -575,7 +634,7 @@ def get_highest_games(puuid):
     sort_field = ALLOWED_GAME_STATS[stat]
 
     pipeline = [
-        {"$match": {"puuid": puuid}},
+        {"$match": completed_matches(puuid)},
         {"$sort": {sort_field: -1, "matchInfo.gameDuration": -1}},
         {"$limit": limit}
     ]
@@ -649,7 +708,7 @@ def get_kda_extremes(puuid):
     year_param = require_year_param()
     matches_collection = get_matches_collection(year_param)
 
-    base_pipeline = [{"$match": {"puuid": puuid}}]
+    base_pipeline = [{"$match": completed_matches(puuid)}]
 
     best_kda_pipeline = base_pipeline + [
         {"$sort": {"stats.kda": -1, "matchInfo.gameDuration": -1}},
@@ -706,7 +765,7 @@ def get_cs_extremes(puuid):
     matches_collection = get_matches_collection(year_param)
 
     base_pipeline = [
-        {"$match": {"puuid": puuid}},
+        {"$match": completed_matches(puuid)},
         {"$addFields": {"totalCs": {"$add": ["$stats.cs", "$stats.jungleCs"]}}}
     ]
 
@@ -767,7 +826,7 @@ def get_ping_sums(puuid):
     matches_collection = get_matches_collection(year_param)
 
     pipeline = [
-        {"$match": {"puuid": puuid}},
+        {"$match": completed_matches(puuid)},
         {
             "$group": {
                 "_id": puuid,
@@ -795,7 +854,7 @@ def get_total_stats(puuid):
     matches_collection = get_matches_collection(year_param)
 
     pipeline = [
-        {"$match": {"puuid": puuid}},
+        {"$match": completed_matches(puuid)},
         {"$group": {
             "_id": puuid,
             "totalPlaytime": {"$sum": "$matchInfo.gameDuration"},
@@ -824,7 +883,7 @@ def get_unique_match_ids(puuid):
     matches_collection = get_matches_collection(year_param)
 
     pipeline = [
-        {"$match": {"puuid": puuid}},
+        {"$match": completed_matches(puuid)},
         {"$addFields": {"gameDate": {"$toDate": "$matchInfo.gameCreated"}}},
         {"$sort": {"gameDate": 1}},
         {"$project": {"_id": 0, "matchId": 1, "gameDate": 1}}
@@ -854,7 +913,7 @@ def _get_share_data(puuid: str, year_param: int):
         return None
 
     champ_pipeline = [
-        {"$match": {"puuid": puuid}},
+        {"$match": completed_matches(puuid)},
         {"$group": {"_id": "$stats.champion", "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},
         {"$limit": 1}
@@ -862,7 +921,7 @@ def _get_share_data(puuid: str, year_param: int):
     champ = list(matches_collection.aggregate(champ_pipeline))
 
     playtime_pipeline = [
-        {"$match": {"puuid": puuid}},
+        {"$match": completed_matches(puuid)},
         {"$group": {"_id": None, "totalPlaytime": {"$sum": "$matchInfo.gameDuration"}}},
         {"$project": {"_id": 0, "totalPlaytime": 1}}
     ]
