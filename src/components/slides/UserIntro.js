@@ -1,4 +1,7 @@
+import { Link } from "react-router-dom";
+
 import { useStatsResources } from "./../../resources/UserResourceContext.js";
+import { trackEvent } from "../../resources/analytics.js";
 import './styles.css'
 import StatCard from "../layout/StatCard.js";
 
@@ -6,8 +9,11 @@ import StatCard from "../layout/StatCard.js";
  * `waiting` is for the page shown while a new player's matches are still being
  * processed: there's no deck to swipe through yet, so the "let's dive in"
  * headline and swipe cue are left out.
+ *
+ * `visitor` is for someone viewing another player's Wrapped (usually from a
+ * shared link): their intro wording changes and it offers to make their own.
  */
-export default function UserIntro({ year, waiting = false }) {
+export default function UserIntro({ year, waiting = false, visitor = false }) {
     const { user } = useStatsResources();
     const userInfo = user.read();
 
@@ -31,13 +37,24 @@ export default function UserIntro({ year, waiting = false }) {
 
             {!waiting && <>
                 <p className="intro-headline">
-                    Let's dive into your <strong>League of Legends</strong> performance in <strong>{year}</strong>!
+                    {visitor
+                        ? <>Let's dive into their <strong>League of Legends</strong> performance in <strong>{year}</strong>!</>
+                        : <>Let's dive into your <strong>League of Legends</strong> performance in <strong>{year}</strong>!</>}
                 </p>
 
                 <span className="intro-swipe-cue">
                     Swipe to continue
                     <span className="intro-swipe-cue__chevron" aria-hidden="true">›</span>
                 </span>
+
+                {visitor &&
+                    // stopPropagation: a tap here must not also trigger the deck's edge-tap navigation
+                    <div className="intro-visitor-cta" onClick={(e) => e.stopPropagation()}>
+                        <Link className="btn btn--secondary" to="/" onClick={() => trackEvent('viral_cta_click', { from: 'intro_slide' })}>
+                            Make your own Wrapped
+                        </Link>
+                    </div>
+                }
             </>}
         </StatCard>
     );

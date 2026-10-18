@@ -7,6 +7,7 @@ import { PlayerListProvider } from '../../resources/PlayerListContext';
 import { fetchCached } from '../../resources/fetchCached';
 import { trackEvent } from '../../resources/analytics';
 import { isWrapReady } from '../../resources/playerStatus';
+import { rememberMyPlayer } from '../../resources/myPlayers.js';
 
 import UserSearchBar from '../../components/common/UserSearchBar';
 import PlayerMarquee from '../../components/common/PlayerMarquee';
@@ -102,6 +103,7 @@ export default function Home() {
             }
 
             trackEvent('search_success', { region, ready: isWrapReady(status) });
+            rememberMyPlayer(puuid);
             navigate(
                 isWrapReady(status)
                     ? `/player/${puuid}?year=${WRAP_YEAR}`

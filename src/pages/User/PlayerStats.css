@@ -528,3 +528,58 @@
 .adding-player > .fade-in {
     width: 100%;
 }
+
+/* "Email me when it's ready" */
+.notify-form {
+    display: flex;
+    gap: var(--space-2);
+    width: 100%;
+}
+
+.notify-form input {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background: var(--second-bg-color);
+    color: var(--text-color);
+    font: inherit;
+    font-size: var(--fs-sm);
+}
+
+.notify-form input:focus-visible {
+    outline: 2px solid var(--accent-text);
+    outline-offset: 1px;
+}
+
+.notify-form__done,
+.notify-form__error,
+.notify-form__fine-print {
+    margin: 0;
+    font-size: var(--fs-xs);
+    line-height: 1.45;
+}
+
+.notify-form__done {
+    color: var(--text-color);
+}
+
+.notify-form__error {
+    color: var(--accent-text);
+}
+
+.notify-form__fine-print {
+    color: var(--text-muted-color);
+}
+
+.notify-form__fine-print a {
+    color: inherit;
+}
+
+@media (max-width: 400px) {
+    .notify-form {
+        flex-direction: column;
+    }
+}

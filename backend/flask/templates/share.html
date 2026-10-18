@@ -2,56 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta property="og:title" content="Rifting Wrapped - {{ username }}'s {{ year }} Stats" />
-    <meta property="og:description" content="{{ username }} spent {{ hours_played }} hours on the Rift this year. Check out their top stats!" />
-    {% if champ_name %}
-    <meta property="og:image" content="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{{ champ_name }}_0.jpg" />
-    {% else %}
-    <meta property="og:image" content="https://www.riftingwrapped.com/android-chrome-512x512.png" />
-    {% endif %}
-    <meta property="og:site_name" content="Rifting Wrapped" />
-    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ username }}'s Rifting Wrapped {{ year }}</title>
+    <meta name="description" content="{{ username }} spent {{ hours_played }} hours on the Rift in {{ year }}. See their League of Legends year in review, then make your own." />
+
+    <!-- Link previews (Discord, X/Twitter, iMessage, Slack...). Their crawlers
+         read these tags and never run the redirect below. -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.riftingwrapped.com/player/{{ puuid }}?year={{ year }}" />
+    <meta property="og:site_name" content="Rifting Wrapped" />
+    <meta property="og:title" content="{{ username }}'s Rifting Wrapped {{ year }}" />
+    <meta property="og:description" content="{{ username }} spent {{ hours_played }} hours on the Rift in {{ year }}. See their League of Legends year in review, then make your own." />
+    <meta property="og:url" content="{{ share_url }}" />
+    <meta property="og:image" content="{{ image_url }}" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="{{ username }}'s {{ year }} League of Legends stats" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="{{ image_url }}" />
+    <meta name="theme-color" content="#c52184" />
 
-    <title>Rifting Wrapped - {{ username }}</title>
-
-    <link rel="canonical" href="https://www.riftingwrapped.com/player/{{ puuid }}?year={{ year }}" />
-
+    <link rel="canonical" href="{{ player_url }}" />
+    <meta http-equiv="refresh" content="0; url={{ redirect_url }}" />
+    <script>window.location.replace({{ redirect_url | tojson }});</script>
 </head>
-
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-3KJTMB7K3W"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  // Report a generic path so GA groups every share page together instead of
-  // creating one row per player ID.
-  gtag('config', 'G-3KJTMB7K3W', {
-    page_location: 'https://riftingwrapped.onrender.com/share/:puuid',
-    page_title: 'Share Redirect',
-    content_group: 'Share Redirect'
-  });
-</script>
-
-
-<body >
-    <script>
-        setTimeout(() => {
-            window.location.href = `https://www.riftingwrapped.com/player/{{ puuid }}?year={{ year }}`;
-        }, 1000);
-    </script>
-
-    
-
-    <p>If you are not redirected, <a href="https://www.riftingwrapped.com/player/{{ puuid }}?year={{ year }}">click here</a>.</p>
-
-    <noscript>
-        <meta http-equiv="refresh" content="1; https://www.riftingwrapped.com/player/{{ puuid }}?year={{ year }}" />
-    </noscript>
-
+<body style="background:#0a0e14;color:#fff;font-family:system-ui,sans-serif;text-align:center;padding-top:20vh">
+    <p>Opening {{ username }}'s Wrapped&hellip; <a href="{{ redirect_url }}" style="color:#e0428f">continue</a></p>
 </body>
 </html>
