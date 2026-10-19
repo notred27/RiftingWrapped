@@ -10,7 +10,7 @@ sent to these addresses.
 Sent through Resend's HTTP API (https://resend.com; free tier: 100/day,
 3,000/month). Needs:
     RESEND_API_KEY   secret
-    NOTIFY_FROM      e.g. "Rifting Wrapped <noreply@riftingwrapped.com>"
+    NOTIFY_FROM      e.g. "Rifting Wrapped <noreply@alerts.riftingwrapped.com>"
                      (the domain must be verified in Resend)
 Without RESEND_API_KEY nothing is sent; sign-ups wait (and expire after 14
 days via the collection's TTL index).
@@ -24,7 +24,7 @@ import requests
 
 logger = logging.getLogger("notify")
 
-DEFAULT_FROM = "Rifting Wrapped <noreply@riftingwrapped.com>"
+DEFAULT_FROM = "Rifting Wrapped <noreply@alerts.riftingwrapped.com>"
 DEFAULT_SITE_URL = "https://www.riftingwrapped.com"
 
 READY_STATUSES = ("done", "done_with_errors")
