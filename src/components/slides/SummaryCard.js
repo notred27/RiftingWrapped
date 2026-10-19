@@ -29,6 +29,11 @@ export default function SummaryCard({ year }) {
     const topRole = roleArr[0];
 
     const combatStats = combatTotals.read()[0];
+    // Overall record across every game this year (wins are split by KDA in
+    // matchTotals: positive-KDA wins + negative-KDA wins).
+    const totalGames = combatStats?.numGames ?? 0;
+    const totalWins = (combatStats?.positiveWR ?? 0) + (combatStats?.negativeWR ?? 0);
+    const winRate = totalGames ? Math.round((totalWins / totalGames) * 100) : 0;
 
     const totalPlaytime = Math.floor((timeBreakdownStats.read()[0]?.totalPlaytime ?? 0) / 3600);
 
@@ -75,7 +80,7 @@ export default function SummaryCard({ year }) {
                     <div id="game-mode-stats" className="stat-card">
                         <div className="stat-label">Top Objectives</div>
 
-                        <ObjectiveBubbleChart objectives={{
+                        <ObjectiveBubbleChart fill objectives={{
                             barons: objectiveArr["barons"],
                             dragons: objectiveArr["dragons"],
                             riftHeralds: objectiveArr["riftHeralds"],
@@ -89,11 +94,14 @@ export default function SummaryCard({ year }) {
 
                     <div id="role-stats" className="stat-card">
                         <div className="stat-label">Favorite Role</div>
-                        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "100%", alignItems: "center", gap: "4px" }}>
-
-                            <RoleGraph roles={roleArr} />
-                            <div className="stat-number">{topRole?.games ? topRole.label : "No lane"}</div>
-                            <div className="label">{topRole?.games ? `${plural(topRole.games, 'game')} (${topRole.winRate}% WR)` : "Other modes only"}</div>
+                        <div className="role-stats__body">
+                            {/* The donut's centre already names the top role, so
+                                underneath is the overall record rather than the role again. */}
+                            {topRole?.games
+                                ? <div className="role-stats__donut"><RoleGraph roles={roleArr} /></div>
+                                : <div className="stat-number">No lane</div>}
+                            <div className="stat-number">{winRate}% WR</div>
+                            <div className="label">{plural(totalGames, 'game')}</div>
                         </div>
 
                     </div>

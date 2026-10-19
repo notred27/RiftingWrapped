@@ -239,6 +239,22 @@
 }
 
 
+/* Favourite role: donut (whose centre names the role), then the overall record. */
+.role-stats__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.role-stats__donut {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 @media (max-width: 640px) {
   /* The slide already has side padding; don't add more around the card. */
   .summary-wrapper {
@@ -250,21 +266,60 @@
 @media (max-width: 900px) {
   .big-stat__text {
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr 20px;
+    grid-template-rows: auto auto;
     gap: 0px;
   }
 
+  .big-stat {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 8px 10px;
+    min-width: 0;
+  }
+
+  .big-stat__text {
+    text-align: left;
+    justify-content: start;
+  }
+
+  /* Phones and small tablets. Every slide is one screen, so the card is laid
+     out to fit one without scrolling: full slide width, a shorter splash
+     banner, kills/deaths as compact rows (number beside its map) and a
+     smaller role donut. */
   .summary-card {
-    width: 386px;
+    width: 100%;
+    max-width: 420px;
     height: fit-content;
-    /* max-height: 94vh; */
     padding: 12px;
     border-radius: 12px;
   }
 
   .summary-splash {
-    height: 96px;
-    margin-bottom: 6px;
+    height: 72px;
+    margin-bottom: 0;
+  }
+
+  /* RoleGraph sizes itself with an inline max-width and an aspect ratio, but
+     Chart.js gives its canvas a default 150px height that stretches the box
+     past square - so pin both dimensions here. */
+  .role-stats__donut > div {
+    width: 88px;
+    max-width: 88px !important;
+    height: 88px;
+    min-height: 0;
+  }
+
+  /* One line each ("Enemy Missing" wrapped at the default size). */
+  #ping-stats .stat-number,
+  #hour-stats .stat-number {
+    font-size: var(--fs-sm);
+    white-space: nowrap;
+  }
+
+  .role-stats__body {
+    gap: 2px;
   }
 
   .appName {
@@ -313,9 +368,14 @@
 
   /* The two heatmaps are square, so at a ~120px column they set the row height.
      Cap the square itself (not its wrapper) so the caption keeps full width. */
+  .big-stat .kill-detail-map {
+    flex: 0 0 64px;
+    width: 64px;
+  }
+
   .big-stat .kill-detail-map > div {
-    max-width: 96px;
-    margin: 0 auto;
+    max-width: 64px;
+    margin: 0;
   }
 
   /* The card already labels these "Kills" / "Deaths", so the heatmap's own
@@ -325,21 +385,21 @@
   }
 
   .stat-card {
-    padding: 4px;
-    min-height: 60px;
+    padding: 8px 6px;
+    min-height: 0;
     border-radius: 10px;
     text-align: center;
   }
 
   .stat-card .label {
     font-size: var(--fs-2xs);
-    margin-bottom: 10px;
     font-weight: normal;
     color: var(--muted);
   }
 
   .stat-label {
     font-size: var(--fs-2xs);
+    margin-bottom: 4px;
   }
 
   .stat-number {
@@ -354,7 +414,7 @@
 
   .card-footer {
     justify-content: center;
-    padding-top: 10px;
+    padding-top: 8px;
     font-size: var(--fs-2xs);
     gap: 8px;
   }
@@ -371,4 +431,36 @@
 
   }
 
+}
+/* Short phones (iPhone SE, or any phone once the browser's toolbars take
+   their share): tighten another notch so the card and its Save button still
+   fit on one screen. */
+@media (max-width: 900px) and (max-height: 760px) {
+  .summary-splash {
+    height: 52px;
+  }
+
+  .top-row img.avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .role-stats__donut > div {
+    width: 68px;
+    max-width: 68px !important;
+    height: 68px;
+  }
+
+  .big-stat .kill-detail-map {
+    flex-basis: 52px;
+    width: 52px;
+  }
+
+  .big-stat .kill-detail-map > div {
+    max-width: 52px;
+  }
+
+  .stats-grid {
+    gap: 6px;
+  }
 }
