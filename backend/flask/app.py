@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, abort
+from flask import Flask, Response, request, render_template, abort, redirect
 from flask import jsonify
 from flask_cors import CORS
 from flask_limiter import Limiter
@@ -14,6 +14,9 @@ import re
 import time
 from datetime import datetime, timedelta, timezone
 from math import ceil, floor
+from collections import OrderedDict
+
+from share_image import render_share_image
 
 app = Flask(__name__, template_folder='./templates')
 CORS(app)
@@ -260,6 +263,54 @@ def get_queue_position(puuid):
     }), 200
 
 
+# "Email me when my Wrapped is ready" sign-ups. Each address is used for one
+# email and then deleted (by the match consumer, backend/actions/notify.py);
+# the TTL index clears any that are never sent. Never returned by the API.
+notify_collection = db["ready-notifications"]
+NOTIFY_RETENTION = timedelta(days=14)
+MAX_NOTIFY_PER_PLAYER = 3
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+_notify_indexes_ready = False
+
+
+def _ensure_notify_indexes():
+    global _notify_indexes_ready
+    if _notify_indexes_ready:
+        return
+    notify_collection.create_index([("puuid", 1), ("email", 1)], unique=True, name="puuid_email")
+    notify_collection.create_index("created_at", expireAfterSeconds=int(NOTIFY_RETENTION.total_seconds()), name="expire")
+    _notify_indexes_ready = True
+
+
+@app.route('/users/<puuid>/notify', methods=['POST'])
+@limiter.limit("5 per hour;20 per day", error_message="Too many requests. Try again later.")
+def request_ready_email(puuid):
+    """Ask for one email when this player's Wrapped finishes processing."""
+    body = request.get_json(silent=True) or request.form
+    email = (body.get("email") or "").strip().lower()
+    year_param = request.args.get("year", type=int) or WRAP_YEAR
+
+    if len(email) > 254 or not EMAIL_RE.match(email):
+        return jsonify({"error": "Bad Request", "message": "Please enter a valid email address."}), 400
+
+    player = player_collection.find_one({"puuid": puuid}, {"status": 1})
+    if not player:
+        return jsonify({"error": "Not Found", "message": "Player not found."}), 404
+    if player.get("status") in ("done", "done_with_errors"):
+        return jsonify({"ready": True}), 200
+
+    _ensure_notify_indexes()
+    if notify_collection.count_documents({"puuid": puuid}) >= MAX_NOTIFY_PER_PLAYER:
+        return jsonify({"error": "Too Many Requests", "message": "This player already has the maximum number of email sign-ups."}), 429
+
+    notify_collection.update_one(
+        {"puuid": puuid, "email": email},
+        {"$setOnInsert": {"year": year_param, "created_at": datetime.now(timezone.utc)}},
+        upsert=True,
+    )
+    return jsonify({"subscribed": True}), 200
+
+
 @app.route('/users/<puuid>', methods=['GET'])
 def get_user_info(puuid):
     result = player_collection.find_one({"puuid": puuid}, {"_id": 0})
@@ -468,6 +519,7 @@ def delete_by_puuid(puuid):
     if scope == "all":
         user = player_collection.delete_one({"puuid": puuid})
         user_deleted_count = user.deleted_count
+        notify_collection.delete_many({"puuid": puuid})   # pending "ready" email sign-ups
 
     # 200, not 204 -- a 204 response must not carry a body.
     return jsonify({
@@ -1029,20 +1081,99 @@ def _get_share_data(puuid: str, year_param: int):
     }
 
 
-@app.route('/share/<puuid>')
-def share_page(puuid):
+SITE_URL = os.getenv("SITE_URL", "https://www.riftingwrapped.com")
+PUBLIC_API_URL = os.getenv("PUBLIC_API_URL", "https://riftingwrapped.onrender.com")
+
+SHARE_IMAGE_CACHE_SECONDS = 60 * 60
+SHARE_IMAGE_CACHE_SIZE = 100
+_share_image_cache = OrderedDict()   # (puuid, year) -> (built_at, jpeg bytes)
+
+
+def _share_stats(puuid: str, year_param: int):
+    """Headline numbers for a player's link preview image."""
+    user = player_collection.find_one({"puuid": puuid}, {"_id": 0, "displayName": 1, "tag": 1})
+    if not user:
+        return None
+
+    matches_collection = get_matches_collection(year_param)
+    totals = list(matches_collection.aggregate([
+        {"$match": completed_matches(puuid)},
+        {"$group": {
+            "_id": None,
+            "games": {"$sum": 1},
+            "wins": {"$sum": {"$cond": ["$stats.win", 1, 0]}},
+            "seconds": {"$sum": "$matchInfo.gameDuration"},
+        }},
+    ]))
+    champ = list(matches_collection.aggregate([
+        {"$match": completed_matches(puuid)},
+        {"$group": {"_id": "$stats.champion", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 1},
+    ]))
+
+    t = totals[0] if totals else {}
+    return {
+        "name": user.get("displayName"),
+        "tag": user.get("tag"),
+        "games": t.get("games", 0),
+        "wins": t.get("wins", 0),
+        "hours": floor(t.get("seconds", 0) / 3600),
+        "champion": champ[0]["_id"] if champ else None,
+        "championGames": champ[0]["count"] if champ else 0,
+    }
+
+
+@app.route('/share/<puuid>/image.jpg')
+@limiter.limit("60 per minute")
+def share_image(puuid):
+    """The link-preview image (og:image) for a player's share link."""
     year_param = require_year_param()
+    key = (puuid, year_param)
+
+    cached = _share_image_cache.get(key)
+    if cached and time.time() - cached[0] < SHARE_IMAGE_CACHE_SECONDS:
+        image = cached[1]
+    else:
+        stats = _share_stats(puuid, year_param)
+        if stats is None:
+            abort(404, description="User not found")
+        image = render_share_image(stats, year_param)
+        _share_image_cache[key] = (time.time(), image)
+        _share_image_cache.move_to_end(key)
+        while len(_share_image_cache) > SHARE_IMAGE_CACHE_SIZE:
+            _share_image_cache.popitem(last=False)
+
+    resp = Response(image, mimetype="image/jpeg")
+    resp.headers["Cache-Control"] = f"public, max-age={SHARE_IMAGE_CACHE_SECONDS}"
+    return resp
+
+
+@app.route('/share/<puuid>')
+@app.route('/share/<int:year>/<puuid>')
+def share_page(puuid, year=None):
+    """
+    What a player's share link serves: link-preview tags for Discord/X/etc.
+    (whose crawlers don't run JavaScript), then an immediate redirect to the
+    Wrapped itself. The site proxies www.riftingwrapped.com/s/<year>/<puuid>
+    here (an AWS Amplify rewrite) so shared links show the site's domain.
+    """
+    year_param = year or require_year_param()
     data = _get_share_data(puuid, year_param)
+    player_url = f"{SITE_URL}/player/{puuid}?year={year_param}"
     if data is None:
-        return {"msg": "User not found"}, 404
+        return redirect(SITE_URL, code=302)
 
     return render_template(
         'share.html',
         puuid=puuid,
-        champ_name=data["champ_name"],
         username=data["username"]["displayName"],
         hours_played=data["hours_played"],
         year=year_param,
+        share_url=f"{SITE_URL}/s/{year_param}/{puuid}",
+        player_url=player_url,
+        redirect_url=f"{player_url}&from=share",
+        image_url=f"{PUBLIC_API_URL}/share/{puuid}/image.jpg?year={year_param}",
     )
 
 

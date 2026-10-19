@@ -47,6 +47,8 @@ export default function AddingPlayer() {
     const [userData, setUserData] = useState({});
     const [queue, setQueue] = useState(null);
     const [copied, setCopied] = useState(false);
+    const [email, setEmail] = useState("");
+    const [notify, setNotify] = useState({ state: "idle", message: "" });
 
     const status = userData.status;
     const isFinished = isWrapReady(status) || status === "failed";
@@ -101,6 +103,27 @@ export default function AddingPlayer() {
             clearTimeout(timeoutId);
         };
     }, [isFinished, puuid, year, nav]);
+
+    const requestEmail = async (e) => {
+        e.preventDefault();
+        setNotify({ state: "sending", message: "" });
+        try {
+            const res = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/users/${puuid}/notify?year=${year}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            });
+            const body = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                setNotify({ state: "error", message: body.message || "Couldn't save that. Please try again." });
+                return;
+            }
+            trackEvent('ready_email_signup');
+            setNotify({ state: "subscribed", message: "" });
+        } catch {
+            setNotify({ state: "error", message: "Couldn't save that. Please try again." });
+        }
+    };
 
     const copyReturnLink = async () => {
         try {
@@ -176,8 +199,36 @@ export default function AddingPlayer() {
             {status && !isFinished &&
                 <div className="adding-player__return">
                     <p className="adding-player__note">
-                        You don't need to keep this tab open. Save this link and come back once your matches are processed.
+                        You don't need to keep this tab open. We can email you when it's ready, or save this link and come back later.
                     </p>
+
+                    {status !== "failed" && (notify.state === "subscribed"
+                        ? <p className="notify-form__done" role="status">
+                            Got it! We'll email <strong>{email}</strong> once when your Wrapped is ready, then delete the address.
+                        </p>
+                        : <form className="notify-form" onSubmit={requestEmail}>
+                            <input
+                                type="email"
+                                required
+                                maxLength={254}
+                                autoComplete="email"
+                                placeholder="you@example.com"
+                                aria-label="Email address"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                            <button type="submit" className="btn btn--primary" disabled={notify.state === "sending"}>
+                                {notify.state === "sending" ? "Saving…" : "Email me"}
+                            </button>
+                        </form>
+                    )}
+                    {notify.state === "error" && <p className="notify-form__error" role="alert">{notify.message}</p>}
+                    {notify.state !== "subscribed" &&
+                        <p className="notify-form__fine-print">
+                            One email, then we delete your address. <Link to="/privacy">Privacy policy</Link>
+                        </p>
+                    }
+
                     <button type="button" className="btn btn--secondary" onClick={copyReturnLink}>
                         {copied ? "Link copied!" : "Copy link to this page"}
                     </button>

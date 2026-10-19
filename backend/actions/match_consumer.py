@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from pymongo import MongoClient, ReturnDocument
 
 from match_doc import build_match_fields, unset_fields, QUEUE_SORT, PRIORITY_NEW_PLAYER
+from notify import send_ready_emails
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
@@ -201,6 +202,7 @@ class Consumer:
             {"$set": {"status": new_status, "finished_at": datetime.now(timezone.utc)}},
         )
         logger.info("Player %s finished processing (status=%s, failed_matches=%d)", puuid, new_status, failed)
+        send_ready_emails(db, puuid)
 
     def process_match(self, match_doc: dict):
         match_id = match_doc["matchId"]
@@ -267,6 +269,10 @@ class Consumer:
         except Exception:
             # Housekeeping must never stop the queue from being processed.
             logger.exception("recover_stuck_work failed; continuing")
+
+        # Players finished elsewhere (e.g. by the producer, when they had no new
+        # matches) and emails that failed to send last run.
+        send_ready_emails(db)
 
         try:
             while True:

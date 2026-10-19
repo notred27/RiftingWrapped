@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 import { useStatsResources } from "../../resources/UserResourceContext.js";
 import { trackEvent } from "../../resources/analytics.js";
@@ -7,7 +8,12 @@ import SharePreviewCard from "../common/SharePreviewCard.js";
 import StatCard from "../layout/StatCard.js";
 
 
-export default function TotalTimeBreakdown({ puuid, year }) {
+/**
+ * Last slide. For the player themselves it's "share your Wrapped"; for a
+ * friend who arrived from a shared link (`isOwner` false) it leads with
+ * "make your own" instead, which is how shared links turn into new sign-ups.
+ */
+export default function TotalTimeBreakdown({ puuid, year, isOwner = true }) {
     const { cardPreview, timeBreakdownStats } = useStatsResources();
     const cardInfo = cardPreview.read();
     const timeArr = timeBreakdownStats.read()[0];
@@ -16,9 +22,12 @@ export default function TotalTimeBreakdown({ puuid, year }) {
 
 
 
-    // For generating posts
-    const shareUrl = `https://riftingwrapped.onrender.com/share/${puuid}?year=${year}`;
-    const shareText = `I spent over ${totalTime} hours on League of Legends this year! #LeagueOfLegends #RiftingWrapped`;
+    // Served by the API's share page (proxied through the site's domain), which
+    // gives Discord/X/etc. a preview image of these stats, then redirects here.
+    const shareUrl = `https://www.riftingwrapped.com/s/${year}/${puuid}`;
+    const shareText = isOwner
+        ? `I spent over ${totalTime} hours on League of Legends this year! #LeagueOfLegends #RiftingWrapped`
+        : `${cardInfo["username"]} spent over ${totalTime} hours on League of Legends this year! #LeagueOfLegends #RiftingWrapped`;
 
     const [copied, setCopied] = useState(false);
     const canNativeShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
@@ -56,9 +65,11 @@ export default function TotalTimeBreakdown({ puuid, year }) {
 
     return (
         <StatCard
-            eyebrow="Impressed with your stats?"
-            title="Share your Wrapped"
-            subtitle="Send your recap to friends, or post it for the world to see."
+            eyebrow={isOwner ? "Impressed with your stats?" : `Liked ${cardInfo["username"]}'s recap?`}
+            title={isOwner ? "Share your Wrapped" : "Your turn!"}
+            subtitle={isOwner
+                ? "Send your recap to friends, or post it for the world to see."
+                : "Enter your Riot ID to see your own year on the Rift. It's free and takes a few seconds."}
             media={
                 <SharePreviewCard
                     username={cardInfo["username"]}
@@ -72,17 +83,22 @@ export default function TotalTimeBreakdown({ puuid, year }) {
             {/* stopPropagation: taps here must not also trigger the deck's edge-tap navigation */}
             <div className="share-actions" onClick={(e) => e.stopPropagation()}>
                 <div className="share-actions__primary">
+                    {!isOwner &&
+                        <Link className="btn btn--primary" to="/" onClick={() => trackEvent('viral_cta_click', { from: 'share_slide_visitor' })}>
+                            Make your own
+                        </Link>
+                    }
                     {canNativeShare &&
-                        <button type="button" className="btn btn--primary" onClick={nativeShare}>
+                        <button type="button" className={`btn ${isOwner ? 'btn--primary' : 'btn--secondary'}`} onClick={nativeShare}>
                             Share
                         </button>
                     }
-                    <button type="button" className={`btn ${canNativeShare ? 'btn--secondary' : 'btn--primary'}`} onClick={copyLink} aria-live="polite">
+                    <button type="button" className={`btn ${canNativeShare || !isOwner ? 'btn--secondary' : 'btn--primary'}`} onClick={copyLink} aria-live="polite">
                         {copied ? "Link copied!" : "Copy link"}
                     </button>
                 </div>
 
-                <div className="share-actions__networks">
+                {isOwner && <div className="share-actions__networks">
                     {networks.map(n => (
                         <a
                             key={n.method}
@@ -95,11 +111,13 @@ export default function TotalTimeBreakdown({ puuid, year }) {
                             {n.label}
                         </a>
                     ))}
-                </div>
+                </div>}
 
-                <p className="slide-note">
-                    Want to see your own recap? <a className="text-link" href="/" onClick={() => trackEvent('viral_cta_click', { from: 'share_slide' })}>Get your Rifting Wrapped</a>
-                </p>
+                {isOwner &&
+                    <p className="slide-note">
+                        Want to see a friend's recap? <Link className="text-link" to="/" onClick={() => trackEvent('viral_cta_click', { from: 'share_slide' })}>Look them up</Link>
+                    </p>
+                }
             </div>
         </StatCard>
     )

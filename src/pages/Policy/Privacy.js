@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import "./Policy.css";
 
-const LAST_UPDATED = "July 11, 2026";
+const LAST_UPDATED = "October 4, 2026";
 const CONTACT_EMAIL = "support@riftingwrapped.com";
 
 export default function PrivacyPolicy() {
@@ -56,7 +56,7 @@ export default function PrivacyPolicy() {
                             <li>To generate and display your personalized stats page</li>
                             <li>To keep your stats updated as new matches are played</li>
                             <li>To understand overall Site usage and improve performance</li>
-                            {/* <li>To send a one-time "your Wrapped is ready" email, if you opted in</li> */}
+                            <li>To send a one-time "your Wrapped is ready" email, if you opted in</li>
                         </ul>
                     </article>
 
@@ -76,6 +76,7 @@ export default function PrivacyPolicy() {
                         <ul>
                             <li><strong>Riot Games API</strong>: the source of all match and gameplay data</li>
                             <li><strong>Google Analytics</strong>: for aggregate, anonymized usage statistics</li>
+                            <li><strong>Resend</strong>: to deliver the optional "your Wrapped is ready" email</li>
                             <li><strong>Hosting and infrastructure providers</strong>: to run the Site and store match data</li>
                         </ul>
                         <p>
@@ -100,6 +101,10 @@ export default function PrivacyPolicy() {
                             If you'd like your Riot ID and associated match data removed from our tracker, contact
                             us using the details below and we'll process your request.
                         </p>
+                        <p>
+                            If you asked to be emailed when your Wrapped is ready, we delete your email address as
+                            soon as that email is sent, or after 14 days if it never is.
+                        </p>
                     </article>
 
                     <article className="policySection">
@@ -117,7 +122,7 @@ export default function PrivacyPolicy() {
                         <p>
                             You can use most of Rifting Wrapped without providing any personal information.
                             Riot IDs are public information, not personal account data.
-                            {/* If you provided an email for notifications, you can request that we delete it at any time.  */}
+                            If you provided an email for notifications, you can ask us to delete it at any time.
                             You can also disable analytics cookies through your browser.
                         </p>
                     </article>

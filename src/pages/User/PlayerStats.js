@@ -1,8 +1,10 @@
-import { Suspense } from "react";
+import { Suspense, useEffect, useMemo } from "react";
 
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import { UserResourceProvider } from "../../resources/UserResourceContext.js";
+import { isMyPlayer, rememberMyPlayer } from '../../resources/myPlayers.js';
+import { trackEvent } from '../../resources/analytics.js';
 import PlayerSEO from '../../components/common/PlayerSEO.js';
 
 import ErrorBoundary from '../../components/error/ErrorBoundary.js';
@@ -41,6 +43,20 @@ function PlayerStats() {
 	const { puuid } = useParams();
 	const [searchParams] = useSearchParams();
 	const year = searchParams.get('year') || DEFAULT_YEAR;
+	const fromShare = searchParams.get('from') === 'share';
+	const fromReadyEmail = searchParams.get('utm_source') === 'ready_email';
+
+	// The player themselves, or a friend following a shared link? Owners are
+	// remembered when they search for themselves (and when they open the
+	// "your Wrapped is ready" email, possibly on another device).
+	const isOwner = useMemo(() => {
+		if (fromReadyEmail) rememberMyPlayer(puuid);
+		return isMyPlayer(puuid);
+	}, [puuid, fromReadyEmail]);
+
+	useEffect(() => {
+		if (fromShare) trackEvent('shared_link_visit', { owner: isOwner });
+	}, [fromShare, isOwner]);
 
 	return (
 		<>
@@ -52,7 +68,7 @@ function PlayerStats() {
 
 						<SlideDeck renderFallback={() => <UserIntroFallback year={year} />}>
 
-							<UserIntro year={year} />
+							<UserIntro year={year} visitor={!isOwner} />
 
 							<ChampSection />
 							<ChampRosterSection />
@@ -74,7 +90,7 @@ function PlayerStats() {
 							    before being asked to post it. */}
 							<SummaryCard year={year} />
 
-							<TotalTimeBreakdown puuid={puuid} year={year} />
+							<TotalTimeBreakdown puuid={puuid} year={year} isOwner={isOwner} />
 						</SlideDeck>
 
 					</Suspense>

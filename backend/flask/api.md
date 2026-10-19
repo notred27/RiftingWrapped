@@ -13,7 +13,15 @@ REACT_APP_API_ENDPOINT = "URL for hosted backend API"
 // MONGO_URI = "URI for backend database. Contains credentials"
 
 // GITHUB_TOKEN = "TOKEN to allow Github Actions for this repository"
+
+// Optional - share links and link previews (defaults shown)
+// SITE_URL = "https://www.riftingwrapped.com"
+// PUBLIC_API_URL = "https://riftingwrapped.onrender.com"
 ```
+
+"Your Wrapped is ready" emails are sent by the match consumer (GitHub Actions),
+not this API: set the `RESEND_API_KEY` secret and `NOTIFY_FROM` variable on the
+repository's **Prod** environment. See `backend/actions/notify.py`.
 
 # Endpoints
 All endpoints extend the URL stored in `REACT_APP_API_ENDPOINT` unless noted otherwise.
@@ -206,6 +214,52 @@ curl -X DELETE -H "X-API-Key: <ADMIN_API_KEY>" "<API_DOMAIN>/users/<PUUID>&confi
 <hr>
 </details>
 
+
+### <code>POST</code> <code style="color:orange"><b>/users/{puuid}/notify?year={year}</b></code>
+<details>
+<summary>Email someone once when this player's Wrapped finishes processing</summary>
+
+<br>
+
+Body: `{"email": "me@example.com"}` (JSON or form). Rate limited to 5/hour and
+20/day per IP, and at most 3 addresses per player. Addresses are stored in
+`ready-notifications`, deleted once the email is sent (or after 14 days), and
+never returned by any endpoint.
+
+> | HTTP Code | Response |
+> |---|---|
+> | `200` | `{"subscribed": true}`, or `{"ready": true}` if the Wrapped is already done (nothing stored) |
+> | `400` | Invalid email address |
+> | `404` | Player not found |
+> | `429` | Rate limited, or the player already has 3 sign-ups |
+
+<hr>
+</details>
+
+### <code>GET</code> <code style="color:orange"><b>/share/{year}/{puuid}</b></code> (also <code>/share/{puuid}?year=</code>)
+<details>
+<summary>Share link landing page: link-preview tags, then a redirect to the Wrapped</summary>
+
+<br>
+
+Serves Open Graph / Twitter card tags (crawlers don't run JavaScript) and
+redirects visitors to `/player/{puuid}?year={year}&from=share`. The site proxies
+`www.riftingwrapped.com/s/{year}/{puuid}` here via an AWS Amplify rewrite.
+
+<hr>
+</details>
+
+### <code>GET</code> <code style="color:orange"><b>/share/{puuid}/image.jpg?year={year}</b></code>
+<details>
+<summary>1200x630 link-preview image of the player's headline stats</summary>
+
+<br>
+
+Drawn with Pillow (`share_image.py`, fonts bundled in `fonts/`). Cached in
+memory and by clients for an hour. 60 requests/minute per IP.
+
+<hr>
+</details>
 
 <br>
 
