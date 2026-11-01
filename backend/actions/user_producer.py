@@ -6,6 +6,7 @@ import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional
+from urllib.parse import quote
  
 import requests
 from dotenv import load_dotenv
@@ -161,7 +162,11 @@ class Producer:
     # ----- Riot / Summoner utilities -----
     def get_user_puuid(self, display_name: str, tag: str, region: str) -> str:
         R = get_routing_region(region, api_endpoint=True)
-        url = f"https://{R}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{display_name}/{tag}"
+        # quote(): a name/tag is user input in a URL path segment.
+        url = (
+            f"https://{R}.api.riotgames.com"
+            f"/riot/account/v1/accounts/by-riot-id/{quote(display_name, safe='')}/{quote(tag, safe='')}"
+        )
         data = self.rs.safe_request("GET", url)
         if not data or "puuid" not in data:
             raise RuntimeError("Couldn't fetch puuid for user")

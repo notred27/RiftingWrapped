@@ -20,7 +20,7 @@ export default function PlayerSEO({ puuid, year }) {
         }
 
         fetchPlayerData();
-    }, [puuid]);
+    }, [puuid, year]);
 
 
     return (

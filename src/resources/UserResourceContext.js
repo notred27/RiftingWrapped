@@ -5,14 +5,6 @@ import wrapPromise from './wrapPromise.js';
 
 const StatsResourceContext = createContext(null);
 
-function createResource(endpoint, puuid, year, extraQuery = '', cacheKeySuffix = '') {
-	const promise = fetchCached(
-		`${process.env.REACT_APP_API_ENDPOINT}/${endpoint}/${puuid}?year=${year}${extraQuery}`,
-		`${endpoint}-${puuid}-${year}${cacheKeySuffix}`
-	);
-	return wrapPromise(promise);
-}
-
 function createUserResource(puuid, year, {
 	intervalMs = 1500,
 	maxAttempts = 15,
@@ -97,6 +89,49 @@ const STAT_RESOURCES = {
 };
 
 /**
+ * The deck needs seventeen stat payloads. /summary answers all of them in one
+ * response, so a viewer makes one request instead of seventeen - this matters
+ * most for shared links, where every new visitor pays the full set.
+ *
+ * The request is started at most once per provider, and each resource below
+ * reads its own slice of it.
+ */
+function createSummaryLoader(puuid, year) {
+	let promise = null;
+	return () => (promise ??= fetchCached(
+		`${process.env.REACT_APP_API_ENDPOINT}/summary/${puuid}?year=${year}`,
+		`summary-${puuid}-${year}`
+	).then(
+		(data) => ({ ok: true, data }),
+		(error) => ({ ok: false, error })
+	));
+}
+
+async function readSummaryPart(loadSummary, name, { endpoint, extraQuery = '', suffix = '', puuid, year }) {
+	const result = await loadSummary();
+
+	if (result.ok) {
+		const part = result.data?.[name];
+		if (part && part.__error__) {
+			// A stat this player has no data for. Carry the status the individual
+			// endpoint would have returned so the slide renders the same empty
+			// state rather than an error.
+			const err = new Error(part.__error__.message || 'No data available for this stat');
+			err.status = part.__error__.status;
+			throw err;
+		}
+		if (part !== undefined) return part;
+	}
+
+	// API predates /summary (or didn't include this key): fall back to the
+	// single endpoint so the frontend and API can deploy in either order.
+	return fetchCached(
+		`${process.env.REACT_APP_API_ENDPOINT}/${endpoint}/${puuid}?year=${year}${extraQuery}`,
+		`${endpoint}-${puuid}-${year}${suffix}`
+	);
+}
+
+/**
  * Resources are created (and fetched) on first use. The waiting page
  * (/addPlayer) shares this provider just to show the player's name and icon;
  * fetching every stats endpoint there cached a half-processed player's numbers
@@ -119,8 +154,11 @@ export function UserResourceProvider({ puuid, year, prefetch = false, children }
 
 		lazy('user', () => createUserResource(puuid, year));
 		lazy('lolVersion', () => wrapPromise(fetchCached('https://ddragon.leagueoflegends.com/api/versions.json', 'lol-current-version')));
+		const loadSummary = createSummaryLoader(puuid, year);
 		for (const [name, [endpoint, extraQuery, suffix]] of Object.entries(STAT_RESOURCES)) {
-			lazy(name, () => createResource(endpoint, puuid, year, extraQuery, suffix));
+			lazy(name, () => wrapPromise(
+				readSummaryPart(loadSummary, name, { endpoint, extraQuery, suffix, puuid, year })
+			));
 		}
 		if (prefetch) Object.keys(resources).forEach((name) => resources[name]);
 		return resources;

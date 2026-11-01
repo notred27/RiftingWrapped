@@ -9,17 +9,36 @@ export default function UserSearchBar() {
     const { playerList } = usePlayerListResources();
     const rawPlayers = playerList.read();
 
-    // Normalize names
+    // Normalize names.
+    //
+    // /users/all serves {version, players:[...]} with icons as bare ddragon ids,
+    // so the same URL prefix isn't repeated once per player. Older deploys (and
+    // the server's fallback when it doesn't know the ddragon version) send a
+    // bare array with full icon URLs, so both shapes are accepted - that way the
+    // API and the frontend can ship in either order.
     const names = useMemo(() => {
-        const arr = (rawPlayers || []);
+        const payload = rawPlayers;
+        const arr = Array.isArray(payload) ? payload : (payload?.players || []);
+        const version = Array.isArray(payload) ? null : payload?.version;
+
+        const iconUrl = (item) => {
+            if (item.iconUrl) return item.iconUrl;
+            const icon = item.icon ?? "";
+            if (!icon) return "";
+            // Already a full URL (legacy shape)
+            if (typeof icon === "string" && icon.includes("/")) return icon;
+            if (!version) return "";
+            return `https://ddragon.leagueoflegends.com/cdn/${version}/img/profileicon/${icon}.png`;
+        };
+
         return arr.map((item) => {
             if (!item) return null;
-            if (typeof item === "string") return { displayName: item, tag: "", region: "" };
+            if (typeof item === "string") return { displayName: item, tag: "", region: "", icon: "" };
             return {
                 displayName: item.displayName ?? "",
                 tag: item.tag ?? "",
                 region: item.region ?? "",
-                icon: item.icon ?? "",
+                icon: iconUrl(item),
             };
         }).filter(Boolean);
     }, [rawPlayers]);

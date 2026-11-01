@@ -12,6 +12,7 @@ from werkzeug.exceptions import HTTPException
 import os
 import re
 import time
+from urllib.parse import quote
 from datetime import datetime, timedelta, timezone
 from math import ceil, floor
 from collections import OrderedDict
@@ -165,13 +166,65 @@ def get_user_count():
     return jsonify({"count": count}), 200
 
 
+DDRAGON_ICON_PREFIX = "https://ddragon.leagueoflegends.com/cdn"
+
+
+def _profile_icon_id(icon_url: str):
+    """
+    The numeric profile-icon id out of a stored ddragon URL, or None if it
+    doesn't look like one. Icons are stored as full URLs, but every row repeats
+    the same ~64-character prefix, so /users/all sends just the id.
+    """
+    if not icon_url:
+        return None
+    tail = str(icon_url).rsplit("/", 1)[-1]
+    name = tail.split("?", 1)[0]
+    if name.endswith(".png"):
+        name = name[:-4]
+    return name if name.isdigit() else None
+
+
 @app.route('/users/all', methods=['GET'])
 def get_all_users():
+    """
+    The search box's autocomplete list. This grows with every sign-up and is
+    downloaded by first-time visitors, so it carries only what the dropdown
+    actually renders:
+
+      - no puuid. Nothing in the client reads it (selection just fills the
+        input; Home resolves the puuid via /users/by-riot-id on submit), and it
+        was a third of the payload as well as a bulk dump of every tracked id.
+      - icons as bare ids. All rows shared one ddragon URL prefix; the client
+        rebuilds the URL from the `version` field.
+
+    Shape: {"version": "...", "players": [...]}. Older clients expect a bare
+    array, so if the ddragon version isn't known we fall back to the original
+    response rather than serving ids the client can't turn into URLs.
+    """
     users = list(player_collection.find(
         {},
-        {"_id": 0, "displayName": 1, "tag": 1, "region": 1, "icon": 1, "puuid": 1}
+        {"_id": 0, "displayName": 1, "tag": 1, "region": 1, "icon": 1}
     ))
-    return jsonify(users), 200
+
+    if not LOL_VERSION:
+        return jsonify(users), 200
+
+    players = []
+    for u in users:
+        icon_id = _profile_icon_id(u.get("icon"))
+        row = {
+            "displayName": u.get("displayName"),
+            "tag": u.get("tag"),
+            "region": u.get("region"),
+        }
+        # Unrecognised icon URLs keep their full value so the row still renders.
+        if icon_id is not None:
+            row["icon"] = icon_id
+        elif u.get("icon"):
+            row["iconUrl"] = u["icon"]
+        players.append(row)
+
+    return jsonify({"version": LOL_VERSION, "players": players}), 200
 
 
 # ----------------------------------------------------------------------------
@@ -375,7 +428,12 @@ def add_by_display_name():
         print("Missing Riot API key in environment (add logger)")
         return jsonify({"error": "Server Misconfiguration", "message": "Riot API key missing"}), 500
 
-    riot_url = f'https://{get_routing_region(region)}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{displayName}/{tag}'
+    # quote() the name and tag: they're user input going into a URL path, and
+    # a '/' or '?' in a name would otherwise change which Riot endpoint we call.
+    riot_url = (
+        f'https://{get_routing_region(region)}.api.riotgames.com'
+        f'/riot/account/v1/accounts/by-riot-id/{quote(displayName, safe="")}/{quote(tag, safe="")}'
+    )
 
     try:
         r = requests.get(riot_url, headers={"X-Riot-Token": riot_key}, timeout=RIOT_TIMEOUT)
@@ -1205,3 +1263,124 @@ def get_spotlight_players():
 
     import random
     return jsonify(random.sample(cached["cards"], min(count, len(cached["cards"]))))
+
+# ----------------------------------------------------------------------------
+# Combined per-player summary
+# ----------------------------------------------------------------------------
+# A Wrapped page needs seventeen different stat payloads. Fetched individually
+# that's seventeen HTTP round trips per viewer, which is the dominant cost when
+# a share link gets passed around - every new visitor pays all of them.
+#
+# This route answers all of them in one response. It deliberately *calls the
+# existing view functions* rather than reimplementing their pipelines, so the
+# per-part payloads cannot drift from the individual routes (which stay in
+# place for older clients and for debugging).
+#
+# Parts that would have been a 404/422 on their own - a player with no pings,
+# say - come back as {"__error__": {...}} instead of failing the whole
+# response, so the client can render that one slide's empty state exactly as
+# it does today.
+
+SUMMARY_PARTS = (
+    # key in the response      view function          extra query string
+    ("date",                   lambda p: get_game_dates(p),      ""),
+    ("forfeit",                lambda p: get_forfeit(p),         ""),
+    ("damage",                 lambda p: get_damage(p),          ""),
+    ("champ",                  lambda p: get_champ_counts(p),    ""),
+    ("cardPreview",            lambda p: get_card_preview(p),    ""),
+    ("timeBreakdownStats",     lambda p: get_total_stats(p),     ""),
+    ("role",                   lambda p: get_role(p),            ""),
+    ("cs",                     lambda p: get_cs_extremes(p),     ""),
+    ("pings",                  lambda p: get_ping_sums(p),       ""),
+    ("objectives",             lambda p: get_objectives(p),      ""),
+    ("mapEvents",              lambda p: get_map_events(p),      ""),
+    ("highestKillGames",       lambda p: get_highest_games(p),   "&stat=kills"),
+    ("highestDeathGames",      lambda p: get_highest_games(p),   "&stat=deaths"),
+    ("combatTotals",           lambda p: get_matchTotals(p),     ""),
+    ("killFreq",               lambda p: get_kill_frequency(p),  ""),
+    ("deathFreq",              lambda p: get_death_frequency(p), ""),
+    ("kda",                    lambda p: get_kda_extremes(p),    ""),
+)
+
+
+def _unwrap_view_result(rv):
+    """Flatten whatever a view returned into (payload, status_code)."""
+    status = 200
+    if isinstance(rv, tuple):
+        rv, status = rv[0], (rv[1] if len(rv) > 1 else 200)
+    if isinstance(rv, Response):
+        status = rv.status_code
+        payload = rv.get_json(silent=True)
+        return payload, status
+    return rv, status
+
+
+def _summary_part(view, puuid: str, year: int, extra_query: str):
+    """
+    Run one part in its own request context so the view sees the `year` (and
+    any extra) query parameters it expects. An empty stat is reported rather
+    than raised, so one missing slide can't take down the other sixteen.
+    """
+    try:
+        with app.test_request_context(f"/summary/{puuid}?year={year}{extra_query}"):
+            payload, status = _unwrap_view_result(view(puuid))
+    except HTTPException as e:
+        return {"__error__": {"status": e.code, "message": e.description}}
+    except PyMongoError:
+        logger.exception("Summary part failed for %s", puuid)
+        return {"__error__": {"status": 500, "message": "A database error occurred."}}
+
+    if status >= 400:
+        message = "No data available for this stat"
+        if isinstance(payload, dict):
+            message = payload.get("message") or payload.get("msg") or message
+        return {"__error__": {"status": status, "message": message}}
+
+    return payload
+
+
+@app.route('/summary/<puuid>', methods=['GET'])
+def get_player_summary(puuid):
+    year_param = require_year_param()
+    return jsonify({key: _summary_part(view, puuid, year_param, extra)
+                    for key, view, extra in SUMMARY_PARTS}), 200
+
+
+# ----------------------------------------------------------------------------
+# HTTP caching
+# ----------------------------------------------------------------------------
+# Stat responses only change when the scraper/consumer writes new matches, so
+# they can safely be held for a short while. This mainly exists so a CDN can be
+# put in front of the API later; on its own it still saves repeat loads and
+# back/forward navigations.
+#
+# Deliberately NOT cached: /users/<puuid> and /users/<puuid>/queue, which the
+# waiting page polls and must see fresh, and anything that isn't a GET.
+CACHEABLE_ENDPOINTS = {
+    "get_player_summary", "get_champ_counts", "get_game_dates", "get_damage",
+    "get_forfeit", "get_objectives", "get_breakdown", "get_role",
+    "get_matchTotals", "get_highest_games", "get_kill_frequency",
+    "get_death_frequency", "get_kda_extremes", "get_map_events",
+    "get_cs_extremes", "get_ping_sums", "get_total_stats", "get_card_preview",
+}
+STATS_CACHE_SECONDS = int(os.getenv("STATS_CACHE_SECONDS", "120"))
+LIST_CACHE_SECONDS = int(os.getenv("LIST_CACHE_SECONDS", "300"))
+LIST_ENDPOINTS = {"get_all_users", "get_user_count", "get_spotlight_players"}
+
+
+@app.after_request
+def add_cache_headers(resp):
+    if request.method != "GET" or resp.status_code != 200:
+        return resp
+    if "Cache-Control" in resp.headers:
+        return resp
+
+    endpoint = request.endpoint
+    if endpoint in CACHEABLE_ENDPOINTS:
+        resp.headers["Cache-Control"] = (
+            f"public, max-age={STATS_CACHE_SECONDS}, "
+            f"stale-while-revalidate={STATS_CACHE_SECONDS * 5}"
+        )
+    elif endpoint in LIST_ENDPOINTS:
+        resp.headers["Cache-Control"] = f"public, max-age={LIST_CACHE_SECONDS}"
+    return resp

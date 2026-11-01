@@ -1,6 +1,6 @@
 import { lazy } from 'react';
 
-import { Navigate, Route, BrowserRouter as Router, Routes, useParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 
 import SiteFooter from './components/layout/SiteFooter.js';
 import SiteHeader from './components/layout/SiteHeader.js';
