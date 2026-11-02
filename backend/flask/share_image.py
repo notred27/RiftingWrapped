@@ -115,8 +115,6 @@ def _background(champion: str) -> Image.Image:
         fade = fade.resize((WIDTH, HEIGHT))
         canvas = Image.composite(Image.new("RGB", (WIDTH, HEIGHT), BG), canvas, fade)
 
-    # Accent stripe down the left edge, the site's brand mark.
-    ImageDraw.Draw(canvas).rectangle([0, 0, 8, HEIGHT], fill=ACCENT)
     return canvas
 
 
