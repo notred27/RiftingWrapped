@@ -32,8 +32,10 @@ GRID_SIZE = 40          # cells per side
 MAP_SIZE = 15000        # Summoner's Rift coordinates run 0..15000 on both axes
 
 # Keep each match's raw kill/death coordinates in matches-YY as well as the
-# player's grid. Turned off only after the raw positions have been archived.
-STORE_RAW_LOCATIONS = True
+# player's grid. Off: the grid is the only copy now. The raw positions of every
+# match before this was turned off are archived (see the full-db archives), and
+# build_player_locations.py can no longer rebuild a grid once they're gone.
+STORE_RAW_LOCATIONS = False
 
 # Riot participant field -> how it's summed by GET /pings.
 PING_KEYS = [
