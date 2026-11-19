@@ -384,6 +384,12 @@ curl "<API_DOMAIN>/highestStatGames/<PUUID>?stat=deaths&year=2025"
 
 - [`/get_card_preview/<puuid>`](): Data used to generate a preview card for a player.
 
-- [`/mapEvents/<puuid>](): Positions of player's kills and deaths on Summoner's Rift
+- [`/mapEvents/<puuid>`](): Where the player's kills and deaths happened on Summoner's Rift, as counts per cell of a 40x40 grid over the map (stored per player in `player-locations-YY`):
+
+  ```json
+  { "grid": 40, "kills": { "812": 3, "853": 1 }, "deaths": { "1204": 2 } }
+  ```
+
+  A cell key is `row * grid + col`, with `col = floor(x / 15000 * grid)` and `row = floor(y / 15000 * grid)` (row 0 is the bottom of the map). Cells with no events are left out; a player with no grid gets empty `kills` and `deaths`.
 
 

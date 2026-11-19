@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import DuplicateKeyError
 
-from match_doc import build_match_fields, unset_fields
+from match_doc import build_match_fields, build_match_update, add_to_player_grid, player_locations_name
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
@@ -46,6 +46,7 @@ db = client[DB_NAME]
 yy = WRAP_YEAR % 100
 matches_collection = db[f"matches-{yy:02d}"]
 player_collection = db["tracked-players"]  # shared across all wrap years
+player_locations_collection = db[player_locations_name(WRAP_YEAR)]   # per-player kill/death grids
 
 tracked_players = list(player_collection.find({}, {"puuid": 1, "region": 1, "_id": 0}))
 tracked_puuids = {p["puuid"] for p in tracked_players}
@@ -140,12 +141,16 @@ def store_match(match_data, timeline_data):
         # Same document shape as match_consumer.py writes (match_doc.py).
         # Previously this also stored all ten participants' puuids in
         # matchInfo.teams (~900 bytes per document) that nothing read.
-        matches_collection.update_one(
+        fields = build_match_fields(match_data, timeline_data, puuid)
+        result = matches_collection.update_one(
             {"matchId": match_id, "puuid": puuid},
-            {"$set": build_match_fields(match_data, timeline_data, puuid),
-             "$unset": unset_fields()},
+            build_match_update(fields),
             upsert=True,
         )
+        # Only a match this call inserted counts towards the player's grid. If a
+        # concurrent run (e.g. the consumer) got there first, it already did.
+        if result.upserted_id is not None:
+            add_to_player_grid(player_locations_collection, puuid, fields["locations"])
 
         player_collection.update_one(
             {"puuid": puuid},

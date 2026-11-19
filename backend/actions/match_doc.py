@@ -22,8 +22,18 @@ it - every byte is repeated in every match of every player.
 
 from datetime import datetime, timezone
 
+from pymongo.errors import DuplicateKeyError
+
 # Queues whose timelines we keep kill/death positions for (Summoner's Rift).
 SUMMONERS_RIFT_QUEUES = {400, 420, 430, 440, 480, 490}
+
+# Kill/death heatmap grid (see "Per-player kill/death grid" below).
+GRID_SIZE = 40          # cells per side
+MAP_SIZE = 15000        # Summoner's Rift coordinates run 0..15000 on both axes
+
+# Keep each match's raw kill/death coordinates in matches-YY as well as the
+# player's grid. Turned off only after the raw positions have been archived.
+STORE_RAW_LOCATIONS = True
 
 # Riot participant field -> how it's summed by GET /pings.
 PING_KEYS = [
@@ -147,6 +157,80 @@ def build_match_fields(match_data: dict, timeline_data: dict, puuid: str) -> dic
         "stats": extract_match_stats(match_data, participant),
         "locations": get_kill_death_positions(timeline_data, participant["participantId"], queue_id),
     }
+
+
+def build_match_update(fields: dict) -> dict:
+    """
+    The full update document for a finished match: $set of build_match_fields()
+    plus the $unset of queue-only/legacy fields. Leaves out the raw kill/death
+    positions when STORE_RAW_LOCATIONS is off (they live only in the player's
+    grid then; see player_locations_inc).
+    """
+    to_set = {k: v for k, v in fields.items() if STORE_RAW_LOCATIONS or k != "locations"}
+    return {"$set": to_set, "$unset": unset_fields()}
+
+
+# --------------------------------------------------------------------------
+# Per-player kill/death grid
+#
+# Heatmaps don't need every kill's exact coordinates, so each player also gets
+# ONE document in player-locations-YY, counting kills and deaths per cell of a
+# GRID_SIZE x GRID_SIZE grid laid over the map:
+#
+#   {"_id": <puuid>, "grid": 40,
+#    "kills":  {"<cell>": <count>, ...},     # cell = row * 40 + col, only non-empty cells
+#    "deaths": {"<cell>": <count>, ...}}
+#
+# col = floor(x / MAP_SIZE * 40), row = floor(y / MAP_SIZE * 40), clamped to the
+# grid; y grows towards the top of the map, like the game's coordinates.
+# --------------------------------------------------------------------------
+def player_locations_name(year: int) -> str:
+    return f"player-locations-{year % 100:02d}"
+
+
+def cell_index(x, y):
+    """Grid cell for a map position, or None if the position is missing."""
+    if x is None or y is None:
+        return None
+    col = min(GRID_SIZE - 1, max(0, int(x / MAP_SIZE * GRID_SIZE)))
+    row = min(GRID_SIZE - 1, max(0, int(y / MAP_SIZE * GRID_SIZE)))
+    return row * GRID_SIZE + col
+
+
+def grid_counts(locations: dict) -> dict:
+    """{"kills": {cell: n}, "deaths": {cell: n}} for one match's raw positions."""
+    out = {"kills": {}, "deaths": {}}
+    for kind in ("kills", "deaths"):
+        for point in (locations or {}).get(kind) or []:
+            cell = cell_index(point.get("x"), point.get("y"))
+            if cell is not None:
+                out[kind][cell] = out[kind].get(cell, 0) + 1
+    return out
+
+
+def player_locations_inc(locations: dict) -> dict:
+    """$inc spec adding one match's kills and deaths to a player's grid ({} if nothing to add)."""
+    counts = grid_counts(locations)
+    return {f"{kind}.{cell}": n for kind in counts for cell, n in counts[kind].items()}
+
+
+def add_to_player_grid(collection, puuid: str, locations: dict) -> None:
+    """
+    Add one match's positions to the player's grid, creating it on first use.
+    Callers must do this at most once per match (see the consumer and the
+    scraper), because $inc is not idempotent. build_player_locations.py
+    rebuilds the grids from the raw positions if the two ever drift apart.
+    """
+    inc = player_locations_inc(locations)
+    if not inc:
+        return
+    update = {"$inc": inc, "$setOnInsert": {"grid": GRID_SIZE}}
+    try:
+        collection.update_one({"_id": puuid}, update, upsert=True)
+    except DuplicateKeyError:
+        # Two writers created the same player's grid at once; the other won, so
+        # this time it's a plain update.
+        collection.update_one({"_id": puuid}, update, upsert=True)
 
 
 def unset_fields() -> dict:

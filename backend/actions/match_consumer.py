@@ -9,7 +9,10 @@ import requests
 from dotenv import load_dotenv
 from pymongo import MongoClient, ReturnDocument
 
-from match_doc import build_match_fields, unset_fields, QUEUE_SORT, PRIORITY_NEW_PLAYER
+from match_doc import (
+    build_match_fields, build_match_update, add_to_player_grid, player_locations_name,
+    QUEUE_SORT, PRIORITY_NEW_PLAYER,
+)
 from notify import send_ready_emails
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
@@ -48,6 +51,7 @@ client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
 yy = WRAP_YEAR % 100
 matches_collection = db[f"matches-{yy:02d}"]
+player_locations_collection = db[player_locations_name(WRAP_YEAR)]   # per-player kill/death grids
 player_collection = db["tracked-players"]
 dlq_collection = db.get_collection("producer-dlq")
 runs_collection = db["consumer-runs"]   # per-run throughput, for queue wait estimates
@@ -215,11 +219,16 @@ class Consumer:
 
             # Same document shape as the hourly scraper writes (match_doc.py);
             # drops the queue-only fields now that the match is done.
-            matches_collection.update_one(
-                {"_id": match_doc["_id"]},
-                {"$set": build_match_fields(match_data, timeline_data, puuid),
-                 "$unset": unset_fields()},
+            # "status != done" makes this the one write that finishes the match:
+            # if another run already finished it, nothing matches and its
+            # positions must not be added to the player's grid a second time.
+            fields = build_match_fields(match_data, timeline_data, puuid)
+            result = matches_collection.update_one(
+                {"_id": match_doc["_id"], "status": {"$ne": "done"}},
+                build_match_update(fields),
             )
+            if result.matched_count == 1:
+                add_to_player_grid(player_locations_collection, puuid, fields["locations"])
 
             player_collection.update_one({"puuid": puuid}, {"$inc": {"processedMatches": 1}})
             logger.info("Processed match %s for player %s", match_id, puuid)

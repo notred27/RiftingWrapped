@@ -69,6 +69,14 @@ def get_matches_collection(year: int):
     return db[f"matches-{yy:02d}"]
 
 
+def get_player_locations_collection(year: int):
+    """Per-player kill/death heatmap grids for a wrap year, e.g. player-locations-26."""
+    return db[f"player-locations-{year % 100:02d}"]
+
+
+GRID_SIZE = 40   # cells per side of the kill/death grid; keep in step with backend/actions/match_doc.py
+
+
 def completed_matches(puuid: str) -> dict:
     """
     $match filter for a player's processed matches - the ones that have stats.
@@ -572,6 +580,7 @@ def delete_by_puuid(puuid):
         }), 200
 
     result = matches_collection.delete_many({"puuid": puuid})
+    get_player_locations_collection(year_param).delete_one({"_id": puuid})   # this year's kill/death grid
 
     user_deleted_count = 0
     if scope == "all":
@@ -936,27 +945,17 @@ def get_kda_extremes(puuid):
 @app.route('/mapEvents/<puuid>', methods=['GET'])
 def get_map_events(puuid):
     year_param = require_year_param()
-    matches_collection = get_matches_collection(year_param)
 
-    pipeline = [
-        {"$match": {
-            "puuid": puuid,
-            "queueId": {"$in": [400, 420, 430, 440, 480]}
-        }},
-        {"$project": {"_id": 0, "locations.kills": 1, "locations.deaths": 1}}
-    ]
+    # Kill/death counts per cell of a grid over the map, kept per player in
+    # player-locations-YY (see backend/actions/match_doc.py). Cell = row * grid
+    # + col; only cells with at least one event are present.
+    grid_doc = get_player_locations_collection(year_param).find_one({"_id": puuid}) or {}
 
-    result = list(matches_collection.aggregate(pipeline))
-
-    kills = []
-    deaths = []
-    for match in result:
-        for k in match.get("locations", {}).get("kills", []):
-            kills.append(k)
-        for d in match.get("locations", {}).get("deaths", []):
-            deaths.append(d)
-
-    return jsonify({"kills": kills, "deaths": deaths})
+    return jsonify({
+        "grid": grid_doc.get("grid", GRID_SIZE),
+        "kills": grid_doc.get("kills", {}),
+        "deaths": grid_doc.get("deaths", {}),
+    })
 
 
 @app.route('/cs/<puuid>', methods=['GET'])
