@@ -17,6 +17,40 @@ const TYPE_CONFIG = {
     },
 };
 
+const HEAT_MAX = 5;
+
+// Turn the API's events into heatmap.js points for a map drawn at `size` px.
+//
+// The API sends counts per cell of a grid laid over the map:
+//   { grid: 40, kills: { "<row * grid + col>": count }, deaths: { ... } }
+// (older API versions sent every event: { kills: [{ x, y }], ... }; both work).
+// Each cell is drawn once at its centre. A point adds 1/HEAT_MAX opacity, so n
+// events in one cell are drawn as value HEAT_MAX * (1 - (1 - 1/HEAT_MAX)^n),
+// which is what n stacked points would have looked like.
+function toHeatPoints(mapData, type, size) {
+    const events = type === 'kills' ? mapData.kills : mapData.deaths;
+    if (!events) return [];
+
+    if (Array.isArray(events)) {
+        return events.map((pos) => ({
+            x: Math.floor((pos.x / GAME_MAP_SIZE) * size),
+            y: Math.floor(size - (pos.y / GAME_MAP_SIZE) * size),
+            value: 1,
+        }));
+    }
+
+    const grid = mapData.grid;
+    return Object.entries(events).map(([cell, count]) => {
+        const row = Math.floor(Number(cell) / grid);
+        const col = Number(cell) % grid;
+        return {
+            x: Math.round(((col + 0.5) / grid) * size),
+            y: Math.round(size - ((row + 0.5) / grid) * size),
+            value: HEAT_MAX * (1 - Math.pow(1 - 1 / HEAT_MAX, count)),
+        };
+    });
+}
+
 export default function HeatmapOverlay({ type = 'kills' }) {
     const { mapEvents } = useStatsResources();
     const mapData = mapEvents.read();
@@ -58,13 +92,7 @@ export default function HeatmapOverlay({ type = 'kills' }) {
         });
 
         if (mapData) {
-            const scale = (pos) => ({
-                x: Math.floor((pos.x / GAME_MAP_SIZE) * size),
-                y: Math.floor(size - (pos.y / GAME_MAP_SIZE) * size),
-                value: 1,
-            });
-            const points = (type === 'kills' ? mapData.kills : mapData.deaths).map(scale);
-            heatmapRef.current.setData({ max: 5, data: points });
+            heatmapRef.current.setData({ max: HEAT_MAX, data: toHeatPoints(mapData, type, size) });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [size, config.gradient]);
@@ -73,13 +101,7 @@ export default function HeatmapOverlay({ type = 'kills' }) {
     useEffect(() => {
         if (!mapData || !heatmapRef.current || !size) return;
 
-        const scale = (pos) => ({
-            x: Math.floor((pos.x / GAME_MAP_SIZE) * size),
-            y: Math.floor(size - (pos.y / GAME_MAP_SIZE) * size),
-            value: 1,
-        });
-        const points = (type === 'kills' ? mapData.kills : mapData.deaths).map(scale);
-        heatmapRef.current.setData({ max: 5, data: points });
+        heatmapRef.current.setData({ max: HEAT_MAX, data: toHeatPoints(mapData, type, size) });
     }, [mapData, type, size]);
 
     return (
