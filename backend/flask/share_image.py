@@ -27,8 +27,8 @@ ACCENT = (224, 66, 143)        # --accent-text
 
 FONT_DIR = Path(__file__).resolve().parent / "fonts"
 DISPLAY_FONT = FONT_DIR / "BricolageGrotesque-ExtraBold.ttf"
-BOLD_FONT = FONT_DIR / "Inter-Bold.ttf"
-BODY_FONT = FONT_DIR / "Inter-Medium.ttf"
+BOLD_FONT = FONT_DIR / "Lato-Bold.ttf"
+BODY_FONT = FONT_DIR / "Lato-Regular.ttf"
 
 SPLASH_URL = "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{}_0.jpg"
 
