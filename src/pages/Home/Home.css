@@ -483,9 +483,11 @@ iframe {
         flex-direction: column;
     }
 
-    /* In a column the 240px flex-basis would become the pill's height. */
+    /* In a column the 240px flex-basis would become the pill's height, and
+       the 240px min-width pushed it off-centre on very narrow screens. */
     .hero-search-box {
         flex: none;
+        min-width: 0;
     }
 
     .hero-join-line {
