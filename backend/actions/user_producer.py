@@ -1,7 +1,6 @@
 
 import os
 import sys
-import time
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
@@ -11,6 +10,7 @@ from urllib.parse import quote
 import requests
 from dotenv import load_dotenv
 from match_doc import PRIORITY_NEW_PLAYER, PRIORITY_RESCAN
+from riot import RiotSession, get_routing_region
 from pymongo import MongoClient, ASCENDING, UpdateOne
 from pymongo.errors import BulkWriteError
  
@@ -30,8 +30,6 @@ END_DATE = int(datetime(WRAP_YEAR + 1, 1, 1, tzinfo=timezone.utc).timestamp())
  
 MATCH_PAGE_SIZE = 100
 REQUESTS_PER_SECOND = float(os.getenv("REQUESTS_PER_SECOND", "10.0"))
-MAX_RETRIES = 5
-BACKOFF_BASE = 2.0
 BULK_OP_SIZE = 200
  
 # logging
@@ -55,86 +53,6 @@ player_collection = db["tracked-players"]
 dlq_collection = db.get_collection("producer-dlq")
  
  
-def get_routing_region(region: str, api_endpoint: bool = False) -> str:
-    """
-    Map summoner region code to routing or platform region for Riot endpoints.
-    """
-    r = (region or "").strip().upper()
-    americas = {"NA1", "BR1", "LA1", "LA2"}
-    europe = {"EUN1", "EUW1", "TR1", "RU", "ME1"}
-    asia = {"KR", "JP1"}
-    sea = {"SG2", "OC1", "TW2", "VN2", "PH2", "TH2"}
- 
-    if r in americas:
-        return "americas"
-    if r in europe:
-        return "europe"
-    if r in asia:
-        return "asia"
-    if r in sea:
-        # Riot quirk
-        return "asia" if api_endpoint else "sea"
-    return r.lower() or "unknown"
- 
- 
-class RiotSession:
-    """
-    Wrapper around requests.Session to handle rate limiting and retries.
-    """
- 
-    def __init__(self, api_key: str, rps: float = 1.0):
-        self.sess = requests.Session()
-        self.sess.headers.update({"X-Riot-Token": api_key})
-        self.last_request_at = 0.0
-        self.min_interval = 1.0 / max(rps, 0.1)
- 
-    def safe_request(self, method: str, url: str, params: Optional[dict] = None, timeout: int = 30):
-        attempt = 0
-        while True:
-            # enforce spacing between requests
-            now = time.time()
-            elapsed = now - self.last_request_at
-            if elapsed < self.min_interval:
-                time.sleep(self.min_interval - elapsed)
- 
-            try:
-                resp = self.sess.request(method, url, params=params, timeout=timeout)
-                self.last_request_at = time.time()
- 
-                # handle rate limit 429
-                if resp.status_code == 429:
-                    retry_after = resp.headers.get("Retry-After")
-                    wait = int(retry_after) if retry_after and retry_after.isdigit() else 20
-                    logger.warning("Rate limited (429). Waiting %s seconds and retrying.", wait)
-                    time.sleep(wait)
-                    attempt += 1
-                    if attempt > MAX_RETRIES:
-                        resp.raise_for_status()
-                    continue
- 
-                # 5xx -> retry with backoff
-                if 500 <= resp.status_code < 600:
-                    attempt += 1
-                    backoff = BACKOFF_BASE ** attempt
-                    logger.warning("Server error %s. Backing off %ss (attempt %s).", resp.status_code, backoff, attempt)
-                    time.sleep(backoff)
-                    if attempt > MAX_RETRIES:
-                        resp.raise_for_status()
-                    continue
- 
-                resp.raise_for_status()
-                if resp.status_code == 204 or not resp.content:
-                    return None
-                return resp.json()
-            except requests.RequestException as exc:
-                attempt += 1
-                backoff = min(BACKOFF_BASE ** attempt, 60)
-                logger.warning("Network error: %s. Retry in %ss (attempt %s).", exc, backoff, attempt)
-                time.sleep(backoff)
-                if attempt > MAX_RETRIES:
-                    raise
- 
- 
 class Producer:
     def __init__(self, riot_api_key: str):
         self.rs = RiotSession(riot_api_key, rps=REQUESTS_PER_SECOND)
@@ -154,7 +72,6 @@ class Producer:
                  ("created_at", ASCENDING), ("puuid", ASCENDING)],
                 name="queue_order", background=True,
             )
-            player_collection.create_index([("puuid", ASCENDING)], unique=True, background=True)
             logger.info("Ensured necessary indexes.")
         except Exception as e:
             logger.exception("Index creation issue: %s", e)
@@ -348,26 +265,9 @@ class Producer:
         except Exception:
             logger.exception("Failed to mark player failed in DB.")
  
-    def sanity_check_duplicates(self):
-        """Manual maintenance utility -- not run automatically. Invoke via
-        `python producer.py --check-duplicates` to audit the matches collection."""
-        pipeline = [
-            {"$group": {"_id": {"puuid": "$puuid", "matchId": "$matchId"}, "count": {"$sum": 1}, "ids": {"$push": "$_id"}}},
-            {"$match": {"count": {"$gt": 1}}},
-        ]
-        duplicates = list(matches_collection.aggregate(pipeline))
-        logger.info("Found %d duplicate (puuid, matchId) combinations.", len(duplicates))
-        return duplicates
- 
- 
 def main():
-    if len(sys.argv) == 2 and sys.argv[1] == "--check-duplicates":
-        Producer(RIOT_API_KEY).sanity_check_duplicates()
-        return
- 
     if len(sys.argv) < 4:
         logger.error("Usage: python producer.py <displayName> <tag> <region>")
-        logger.error("       python producer.py --check-duplicates")
         sys.exit(2)
  
     username, tag, region = sys.argv[1], sys.argv[2], sys.argv[3]

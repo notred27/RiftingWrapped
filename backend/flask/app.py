@@ -459,6 +459,9 @@ def add_by_display_name():
     try:
         riot_data = r.json()
         puuid = riot_data["puuid"]
+        # Riot's lookup ignores case, so store its spelling ("Faker"), not what was typed ("faker").
+        displayName = riot_data.get("gameName") or displayName
+        tag = riot_data.get("tagLine") or tag
     except (ValueError, KeyError):
         logger.exception("Unexpected Riot account response for %s#%s (%s)", displayName, tag, region)
         return jsonify({"error": "Bad Gateway", "message": "Riot API returned an unexpected response"}), 502
@@ -555,18 +558,25 @@ def delete_by_puuid(puuid):
       - scope=year (default): delete only this year's matches, keep the
         global player record intact (e.g. wiping a bad 2024 backfill without
         de-registering the player).
-      - scope=all: delete this year's matches AND the global player record,
-        fully removing the player.
+      - scope=all: delete every year's matches and grids AND the global
+        player record, fully removing the player.
     """
     require_admin_key()
     year_param = require_year_param()
-    matches_collection = get_matches_collection(year_param)
 
     scope = request.args.get("scope", default="year")
     if scope not in ("year", "all"):
         abort(400, description="`scope` must be `year` or `all`")
 
-    match_count = matches_collection.count_documents({"puuid": puuid})
+    if scope == "all":
+        names = db.list_collection_names()
+        match_colls = [db[n] for n in names if n.startswith("matches-")]
+        grid_colls = [db[n] for n in names if n.startswith("player-locations-")]
+    else:
+        match_colls = [get_matches_collection(year_param)]
+        grid_colls = [get_player_locations_collection(year_param)]
+
+    match_count = sum(c.count_documents({"puuid": puuid}) for c in match_colls)
     user_doc = player_collection.find_one({"puuid": puuid}, {"_id": 1, "displayName": 1, "tag": 1})
 
     if not user_doc and match_count == 0:
@@ -590,8 +600,9 @@ def delete_by_puuid(puuid):
             "message": "Re-run with ?confirm=true to perform deletion"
         }), 200
 
-    result = matches_collection.delete_many({"puuid": puuid})
-    get_player_locations_collection(year_param).delete_one({"_id": puuid})   # this year's kill/death grid
+    deleted_matches = sum(c.delete_many({"puuid": puuid}).deleted_count for c in match_colls)
+    for c in grid_colls:
+        c.delete_one({"_id": puuid})
 
     user_deleted_count = 0
     if scope == "all":
@@ -603,9 +614,9 @@ def delete_by_puuid(puuid):
     return jsonify({
         "puuid": puuid,
         "numUserDeleted": user_deleted_count,
-        "numMatchesDeleted": result.deleted_count,
+        "numMatchesDeleted": deleted_matches,
         "scope": scope,
-        "status": "success" if (result.deleted_count > 0 or user_deleted_count > 0) else "no matches found"
+        "status": "success" if (deleted_matches > 0 or user_deleted_count > 0) else "no matches found"
     }), 200
 
 
@@ -625,7 +636,6 @@ def get_champ_counts(puuid):
     ]
 
     results = list(matches_collection.aggregate(pipeline))
-    print(results)
     for doc in results:
         doc['champion'] = doc.pop('_id')
 
@@ -732,28 +742,6 @@ def get_objectives(puuid):
             "atakhans": {"$sum": "$stats.epicMonsters.atakhan"},
             "towers": {"$sum": "$stats.turretKills"},
             "inhibitors": {"$sum": "$stats.inhibitors"}
-        }},
-    ]
-
-    results = list(matches_collection.aggregate(pipeline))
-    return jsonify(results)
-
-
-@app.route('/timeBreakdown/<puuid>', methods=['GET'])
-def get_breakdown(puuid):
-    year_param = require_year_param()
-    matches_collection = get_matches_collection(year_param)
-
-    pipeline = [
-        {"$match": completed_matches(puuid)},
-        {"$group": {
-            "_id": puuid,
-            "numGames": {"$sum": 1},
-            "numSurrenders": {"$sum": {"$cond": ["$stats.gameEndedInSurrender", 1, 0]}},
-            "numSurrendersWon": {"$sum": {"$cond": [{"$and": ["$stats.gameEndedInSurrender", "$stats.win"]}, 1, 0]}},
-            "gamesEndingBefore16": {"$sum": {"$cond": [{"$and": ["$stats.gameEndedInSurrender", {"$lt": ["$matchInfo.gameDuration", 960]}]}, 1, 0]}},
-            "totalSurrenderTime": {"$sum": {"$cond": ["$stats.gameEndedInSurrender", "$matchInfo.gameDuration", 0]}},
-            "totalNonSurrenderTime": {"$sum": {"$cond": ["$stats.gameEndedInSurrender", 0, "$matchInfo.gameDuration"]}},
         }},
     ]
 
@@ -1087,68 +1075,6 @@ def get_total_stats(puuid):
     return jsonify(results)
 
 
-@app.route('/allMatchIds/<puuid>', methods=['GET'])
-def get_unique_match_ids(puuid):
-    year_param = require_year_param()
-    matches_collection = get_matches_collection(year_param)
-
-    pipeline = [
-        {"$match": completed_matches(puuid)},
-        {"$addFields": {"gameDate": {"$toDate": "$matchInfo.gameCreated"}}},
-        {"$sort": {"gameDate": 1}},
-        {"$project": {"_id": 0, "matchId": 1, "gameDate": 1}}
-    ]
-
-    results = list(matches_collection.aggregate(pipeline))
-
-    seen_match_ids = set()
-    unique_results = []
-    for doc in results:
-        match_id = doc.get("matchId")
-        if match_id and match_id not in seen_match_ids:
-            seen_match_ids.add(match_id)
-            game_date = doc.get("gameDate")
-            formatted_date = game_date.strftime("%B %d, %Y") if isinstance(game_date, datetime) else None
-            unique_results.append({"matchId": match_id, "date": formatted_date})
-
-    return jsonify(unique_results)
-
-
-def _get_share_data(puuid: str, year_param: int):
-    """Shared logic between /share and /get_card_preview."""
-    matches_collection = get_matches_collection(year_param)
-
-    user = player_collection.find_one({"puuid": puuid})
-    if not user:
-        return None
-
-    champ_pipeline = [
-        {"$match": completed_matches(puuid)},
-        {"$group": {"_id": "$stats.champion", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 1}
-    ]
-    champ = list(matches_collection.aggregate(champ_pipeline))
-
-    playtime_pipeline = [
-        {"$match": completed_matches(puuid)},
-        {"$group": {"_id": None, "totalPlaytime": {"$sum": "$matchInfo.gameDuration"}}},
-        {"$project": {"_id": 0, "totalPlaytime": 1}}
-    ]
-    playtime = list(matches_collection.aggregate(playtime_pipeline))
-
-    username = player_collection.find_one({"puuid": puuid}, {"_id": 0, "displayName": 1, "tag": 1})
-
-    if not champ or not playtime:
-        return {"champ_name": None, "username": username, "hours_played": 0}
-
-    return {
-        "champ_name": champ[0]['_id'],
-        "username": username,
-        "hours_played": floor(playtime[0]["totalPlaytime"] / 3600),
-    }
-
-
 SITE_URL = os.getenv("SITE_URL", "https://www.riftingwrapped.com")
 PUBLIC_API_URL = os.getenv("PUBLIC_API_URL", "https://riftingwrapped.onrender.com")
 
@@ -1227,7 +1153,7 @@ def share_page(puuid, year=None):
     here (an AWS Amplify rewrite) so shared links show the site's domain.
     """
     year_param = year or require_year_param()
-    data = _get_share_data(puuid, year_param)
+    data = _share_stats(puuid, year_param)
     player_url = f"{SITE_URL}/player/{puuid}?year={year_param}"
     if data is None:
         return redirect(SITE_URL, code=302)
@@ -1235,8 +1161,8 @@ def share_page(puuid, year=None):
     return render_template(
         'share.html',
         puuid=puuid,
-        username=data["username"]["displayName"],
-        hours_played=data["hours_played"],
+        username=data["name"],
+        hours_played=data["hours"],
         year=year_param,
         share_url=f"{SITE_URL}/s/{year_param}/{puuid}",
         player_url=player_url,
@@ -1248,14 +1174,14 @@ def share_page(puuid, year=None):
 @app.route("/get_card_preview/<puuid>", methods=['GET'])
 def get_card_preview(puuid):
     year_param = require_year_param()
-    data = _get_share_data(puuid, year_param)
+    data = _share_stats(puuid, year_param)
     if data is None:
         return {"msg": "User not found"}, 404
 
     return jsonify({
-        "champName": data["champ_name"],
-        "username": data["username"]["displayName"],
-        "hoursPlayed": data["hours_played"],
+        "champName": data["champion"],
+        "username": data["name"],
+        "hoursPlayed": data["hours"],
     })
 
 
@@ -1579,7 +1505,7 @@ def get_player_summary(puuid):
 # waiting page polls and must see fresh, and anything that isn't a GET.
 CACHEABLE_ENDPOINTS = {
     "get_player_summary", "get_champ_counts", "get_game_dates", "get_damage",
-    "get_forfeit", "get_objectives", "get_breakdown", "get_role",
+    "get_forfeit", "get_objectives", "get_role",
     "get_matchTotals", "get_highest_games", "get_kill_frequency",
     "get_death_frequency", "get_kda_extremes", "get_map_events",
     "get_cs_extremes", "get_ping_sums", "get_total_stats", "get_card_preview",

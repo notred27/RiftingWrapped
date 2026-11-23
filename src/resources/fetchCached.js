@@ -3,9 +3,9 @@ export async function fetchCached(url, key, ttl = 30 * 60 * 1000) {
 	try {
 		cached = JSON.parse(localStorage.getItem(key) || 'null');
 	} catch (e) {
-		// corrupted cache drop
+		// corrupted cache or storage unavailable: drop it
 		console.warn('fetchCached: bad cache for', key, e);
-		localStorage.removeItem(key);
+		forget(key);
 		cached = null;
 	}
 
@@ -15,7 +15,7 @@ export async function fetchCached(url, key, ttl = 30 * 60 * 1000) {
 		console.debug('fetchCached: cache HIT for', key);
 		const isEmptyArray = Array.isArray(cached.data) && cached.data.length === 0;
 		if (isEmptyArray) {
-			localStorage.removeItem(key);
+			forget(key);
 		}
 		return Promise.resolve(cached.data);
 	}
@@ -35,15 +35,24 @@ export async function fetchCached(url, key, ttl = 30 * 60 * 1000) {
 			const isNonEmptyArray = Array.isArray(data) && data.length > 0;
 			const isObject = data && typeof data === 'object' && !Array.isArray(data);
 			if (isNonEmptyArray || isObject) {
-				localStorage.setItem(key, JSON.stringify({ data, timestamp: now }));
+				try {
+					localStorage.setItem(key, JSON.stringify({ data, timestamp: now }));
+				} catch {
+					// storage full or blocked: the data is still good, just not cached
+				}
 			} else {
-				localStorage.removeItem(key);
+				forget(key);
 			}
 			return data;
-		})
-		.catch(err => {
-			throw err;
 		});
+}
+
+function forget(key) {
+	try {
+		localStorage.removeItem(key);
+	} catch {
+		// storage unavailable - nothing to remove
+	}
 }
 
 /**

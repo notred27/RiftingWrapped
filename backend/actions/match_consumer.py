@@ -5,7 +5,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-import requests
 from dotenv import load_dotenv
 from pymongo import MongoClient, ReturnDocument
 
@@ -14,6 +13,7 @@ from match_doc import (
     QUEUE_SORT, PRIORITY_NEW_PLAYER,
 )
 from notify import send_ready_emails
+from riot import RiotSession, get_routing_region
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
@@ -26,8 +26,6 @@ WRAP_YEAR = int(os.getenv("WRAP_YEAR", "2026"))
 DB_NAME = os.getenv("DB_NAME", f"rifting-wrapped")
 
 REQUESTS_PER_SECOND = float(os.getenv("REQUESTS_PER_SECOND", "10.0"))
-MAX_RETRIES = 5
-BACKOFF_BASE = 2.0
 
 MAX_RUN_SECONDS = int(os.getenv("MAX_RUN_SECONDS", str(20 * 60)))  # default 20 min
 POLL_INTERVAL = float(os.getenv("POLL_INTERVAL", "10.0"))          # seconds to wait when queue empty
@@ -55,74 +53,6 @@ player_locations_collection = db[player_locations_name(WRAP_YEAR)]   # per-playe
 player_collection = db["tracked-players"]
 dlq_collection = db.get_collection("producer-dlq")
 runs_collection = db["consumer-runs"]   # per-run throughput, for queue wait estimates
-
-
-def get_routing_region(region: str, api_endpoint: bool = False) -> str:
-    r = (region or "").strip().upper()
-    americas = {"NA1", "BR1", "LA1", "LA2"}
-    europe = {"EUN1", "EUW1", "TR1", "RU", "ME1"}
-    asia = {"KR", "JP1"}
-    sea = {"SG2", "OC1", "TW2", "VN2", "PH2", "TH2"}
-
-    if r in americas:
-        return "americas"
-    if r in europe:
-        return "europe"
-    if r in asia:
-        return "asia"
-    if r in sea:
-        return "asia" if api_endpoint else "sea"
-    return r.lower() or "unknown"
-
-
-class RiotSession:
-    """Riot API wrapper with retries and rate-limiting."""
-
-    def __init__(self, api_key: str, rps: float = 1.0):
-        self.sess = requests.Session()
-        self.sess.headers.update({"X-Riot-Token": api_key})
-        self.last_request_at = 0.0
-        self.min_interval = 1.0 / max(rps, 0.1)
-
-    def safe_request(self, method: str, url: str, params: Optional[dict] = None, timeout: int = 30):
-        attempt = 0
-        while True:
-            now = time.time()
-            elapsed = now - self.last_request_at
-            if elapsed < self.min_interval:
-                time.sleep(self.min_interval - elapsed)
-
-            try:
-                resp = self.sess.request(method, url, params=params, timeout=timeout)
-                self.last_request_at = time.time()
-
-                if resp.status_code == 429:
-                    wait = int(resp.headers.get("Retry-After", 20))
-                    logger.warning("Rate limited. Waiting %s seconds", wait)
-                    time.sleep(wait)
-                    attempt += 1
-                    if attempt > MAX_RETRIES:
-                        resp.raise_for_status()
-                    continue
-
-                if 500 <= resp.status_code < 600:
-                    attempt += 1
-                    backoff = BACKOFF_BASE ** attempt
-                    logger.warning("Server error %s. Backing off %ss", resp.status_code, backoff)
-                    time.sleep(backoff)
-                    if attempt > MAX_RETRIES:
-                        resp.raise_for_status()
-                    continue
-
-                resp.raise_for_status()
-                return resp.json() if resp.content else None
-            except requests.RequestException as e:
-                attempt += 1
-                backoff = min(BACKOFF_BASE ** attempt, 60)
-                logger.warning("Network error: %s. Retry in %ss", e, backoff)
-                time.sleep(backoff)
-                if attempt > MAX_RETRIES:
-                    raise
 
 
 class Consumer:
