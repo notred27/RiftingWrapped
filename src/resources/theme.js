@@ -25,7 +25,7 @@ export const theme = {
 	get physical() { return cssVar('--chart-2', '#d95926'); },
 	get magic() { return cssVar('--chart-violet', '#9085e9'); },
 	get trueDmg() { return cssVar('--chart-3', '#199e70'); },
-	get fontBody() { return cssVar('--font-body', 'Inter, system-ui, sans-serif'); },
+	get fontBody() { return cssVar('--font-body', 'Lato, sans-serif'); },
 };
 
 /** Highlight-the-top-one colouring used by every single-series bar chart. */

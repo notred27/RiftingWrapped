@@ -26,7 +26,7 @@
          customHttp.yml's Content-Security-Policy (script-src 'self') blocks inline
          event handlers, so in production the onload is blocked and the fonts never
          apply. display=swap in the URL keeps text visible while they load. -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@600;700;800;900&display=swap" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Bricolage+Grotesque:wght@600;700;800;900&display=swap" crossorigin="anonymous">
 
 
 
@@ -86,8 +86,11 @@
             --space-6: 32px;
             --space-7: 48px;
 
-            --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-            --font-display: "Bricolage Grotesque", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            /* The site uses exactly two families: Bricolage Grotesque for
+               headings and wordmarks, Lato for everything else. sans-serif is
+               only a safety net if Google Fonts fails to load. */
+            --font-body: "Lato", sans-serif;
+            --font-display: "Bricolage Grotesque", "Lato", sans-serif;
 
             /* Type scale — fixed sizes for UI text (the same at every width,
                16px body like most sites), fluid clamp()s for the slide-deck's
@@ -130,7 +133,7 @@
         }
 
         /* Every heading uses the display face (the Home hero's font) so pages
-           don't mix Inter and Bricolage headings. */
+           don't mix Lato and Bricolage headings. */
         h1, h2, h3, h4, h5, h6 {
             font-family: var(--font-display);
         }
