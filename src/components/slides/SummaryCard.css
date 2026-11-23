@@ -224,6 +224,7 @@
 
 
 .appName {
+  font-family: var(--font-display);
   padding: 6px 10px;
   border-radius: 10px;
   font-size: var(--fs-2xs);
