@@ -13,7 +13,7 @@ function key(puuid) {
 	return `${KEY_PREFIX}${puuid}`;
 }
 
-/** { at, year, games, wins, seconds, kills } from the previous visit, or null. */
+/** { at, year, games, wins, seconds } from the previous visit, or null. */
 export function readLastVisit(puuid) {
 	try {
 		const snap = JSON.parse(localStorage.getItem(key(puuid)) || 'null');
@@ -44,7 +44,6 @@ export function changesSince(prev, year, totals) {
 		games: totals.games - (prev.games ?? 0),
 		wins: totals.wins - (prev.wins ?? 0),
 		seconds: totals.seconds - (prev.seconds ?? 0),
-		kills: totals.kills - (prev.kills ?? 0),
 		at: prev.at,
 	};
 	return diff.games > 0 ? diff : null;
