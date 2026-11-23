@@ -1246,9 +1246,9 @@ def _games_between(puuid: str, start: datetime, end: datetime) -> list:
             {"$addFields": {"gameDate": {"$toDate": "$matchInfo.gameCreated"}}},
             {"$match": {"gameDate": {"$gte": start, "$lt": end}}},
             {"$project": {
-                "_id": 0, "matchId": 1, "queueId": 1, "gameDate": 1,
+                "_id": 0, "matchId": 1, "gameDate": 1,
                 "duration": "$matchInfo.gameDuration",
-                "champion": "$stats.champion", "position": "$stats.position",
+                "champion": "$stats.champion",
                 "kills": "$stats.kills", "deaths": "$stats.deaths", "assists": "$stats.assists",
                 "win": "$stats.win", "kda": "$stats.kda",
             }},
@@ -1285,11 +1285,6 @@ def _week_details(games: list, start: datetime, tz) -> dict:
         c["wins"] += 1 if g.get("win") else 0
     top_champs = sorted(champs.values(), key=lambda c: (-c["games"], -c["wins"]))[:WEEKLY_TOP_CHAMPS]
 
-    roles = {}
-    for g in games:
-        if g.get("position"):
-            roles[g["position"]] = roles.get(g["position"], 0) + 1
-
     days = [0] * 7
     for g in games:
         days[(g["gameDate"].astimezone(tz).date() - start.date()).days] += 1
@@ -1301,7 +1296,7 @@ def _week_details(games: list, start: datetime, tz) -> dict:
 
     def game_card(g):
         return None if g is None else {
-            "matchId": g.get("matchId"), "champion": g.get("champion"), "win": bool(g.get("win")),
+            "champion": g.get("champion"), "win": bool(g.get("win")),
             "kills": g.get("kills") or 0, "deaths": g.get("deaths") or 0, "assists": g.get("assists") or 0,
             "kda": g.get("kda") or 0, "duration": g.get("duration") or 0,
             "date": g["gameDate"].astimezone(timezone.utc).isoformat(),
@@ -1313,8 +1308,9 @@ def _week_details(games: list, start: datetime, tz) -> dict:
     return {
         "topChamps": top_champs,
         "uniqueChamps": len(champs),
-        "roles": roles,
         "days": days,
+        # The game of the week is the best KDA, which is often not a deathless one.
+        "deathlessGames": sum(1 for g in games if not g.get("deaths") and (g.get("kills") or 0) + (g.get("assists") or 0) >= 5),
         "longestWinStreak": best_win_streak,
         "longestGameSeconds": max((g.get("duration") or 0 for g in games), default=0),
         "bestGame": game_card(best),
@@ -1323,7 +1319,7 @@ def _week_details(games: list, start: datetime, tz) -> dict:
 
 
 def _weeks_played(puuid: str, year: int, tz_name: str) -> dict:
-    """{week start (UTC datetime): {games, wins, seconds, kills}} for one wrap year."""
+    """{week start (UTC datetime): {games, wins, seconds}} for one wrap year."""
     rows = get_matches_collection(year).aggregate([
         {"$match": completed_matches(puuid)},
         {"$group": {
@@ -1334,7 +1330,6 @@ def _weeks_played(puuid: str, year: int, tz_name: str) -> dict:
             "games": {"$sum": 1},
             "wins": {"$sum": {"$cond": ["$stats.win", 1, 0]}},
             "seconds": {"$sum": "$matchInfo.gameDuration"},
-            "kills": {"$sum": "$stats.kills"},
         }},
     ])
     return {r["_id"].replace(tzinfo=timezone.utc): r for r in rows}
@@ -1369,7 +1364,7 @@ def get_weekly_recap(puuid):
     start_key = start.astimezone(timezone.utc)
     week_keys = sorted(k for k in weeks if k <= start_key)
 
-    ytd = {"games": 0, "wins": 0, "seconds": 0, "kills": 0}
+    ytd = {"games": 0, "wins": 0, "seconds": 0}
     for k in week_keys:
         for field in ytd:
             ytd[field] += weeks[k][field]

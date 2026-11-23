@@ -15,8 +15,8 @@ export function weeklyAwards(recap) {
 	if (w.longestWinStreak >= 3) {
 		awards.push({ id: 'win-streak', title: 'On a heater', detail: `${w.longestWinStreak} wins in a row` });
 	}
-	if (w.bestGame && w.bestGame.deaths === 0 && w.bestGame.kills + w.bestGame.assists >= 5) {
-		awards.push({ id: 'deathless', title: 'Untouchable', detail: `${w.bestGame.kills}/0/${w.bestGame.assists} on ${w.bestGame.champion}` });
+	if (w.deathlessGames > 0) {
+		awards.push({ id: 'deathless', title: 'Untouchable', detail: w.deathlessGames === 1 ? 'a game with zero deaths' : `${w.deathlessGames} games with zero deaths` });
 	}
 	if (w.mostKillsGame && w.mostKillsGame.kills >= 15) {
 		awards.push({ id: 'kills', title: 'Bloodthirsty', detail: `${w.mostKillsGame.kills} kills in one game` });

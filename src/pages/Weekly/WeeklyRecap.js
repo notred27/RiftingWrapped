@@ -157,8 +157,9 @@ function WeekBody({ recap, since, version, puuid, isOwner }) {
 	return (
 		<>
 			{since && recap.isCurrentWeek && (
-				<section className="wk-since" aria-label="Since your last visit">
-					<span className="wk-since__label">Since you last checked {timeAgo(since.at)}</span>
+				<section className="wk-since" aria-label="Added since your last visit">
+					{/* "Added", not "played": a backfill or late processing can add older games. */}
+					<span className="wk-since__label">Added since you last checked {timeAgo(since.at)}</span>
 					<span className="wk-since__stats">
 						+{plural(since.games, 'game')} · +{hours(since.seconds)} · +{plural(since.wins, 'win')}
 					</span>
