@@ -108,8 +108,10 @@
 /* ---------- Link columns ---------- */
 .site-footer__cols {
     grid-area: cols;
-    display: flex;
-    gap: 48px;
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    column-gap: 48px;
+    row-gap: 24px;
     justify-self: end;
 }
 
@@ -176,23 +178,27 @@
     color: var(--text-color);
 }
 
-@media (max-width: 700px) {
+/* Four link columns beside the brand need ~830px. Below that the brand sits
+   on top and the links fold into a 2x2 grid. */
+@media (max-width: 860px) {
     .site-footer {
         grid-template-columns: 1fr;
         grid-template-areas:
             "brand"
-            "cta"
             "cols"
-            "desc"
             "bottom";
     }
 
+    .site-footer__cols {
+        grid-template-columns: repeat(2, max-content);
+        column-gap: clamp(32px, 10vw, 96px);
+        justify-self: start;
+    }
+}
+
+@media (max-width: 700px) {
     .site-footer__cta {
         justify-self: stretch;
-    }
-
-    .site-footer__cols {
-        justify-self: start;
     }
 
     .site-footer__bottom {
