@@ -1,22 +1,9 @@
 /* Policy.css — shared by FAQ / Privacy / TOS so they all match */
-:root{
-  --muted: var(--text-muted-color);
-  --accent: var(--accent-color);
-  --card-gap: 12px;
-}
-
-*,
-*::before,
-*::after { box-sizing: border-box; }
-
 .policyContainer{
-  width: calc(100% - 32px);
+  width: calc(100% - 2 * var(--space-4));
   max-width: 1100px;
-  margin: 20px auto;
-  padding: 18px;
+  margin: var(--space-5) auto;
   color: var(--text-color);
-  background: var(--bg-color);
-  border-radius: 12px;
   text-align: left;
 }
 
@@ -25,14 +12,14 @@
   display: block;
   font-size: var(--fs-2xs);
   font-weight: 700;
-  color: var(--muted);
+  color: var(--text-muted-color);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 10px;
 }
 .policyHeader h1 { font-family: var(--font-display); font-size: var(--fs-xl); margin:0; font-weight:900; }
-.policySubtitle { margin-top:6px; color:var(--muted); font-size:var(--fs-sm); }
-.policyUpdated { margin-top:4px; color:var(--muted); font-size:var(--fs-xs); }
+.policySubtitle { margin-top:6px; color:var(--text-muted-color); font-size:var(--fs-sm); }
+.policyUpdated { margin-top:4px; color:var(--text-muted-color); font-size:var(--fs-xs); }
 
 .policyBody{
   max-width: 800px;
@@ -43,9 +30,9 @@
 }
 
 .policySection{
-  border-radius:4px;
+  border-radius: var(--radius-md);
   overflow:hidden;
-  border:1px solid rgba(255,255,255,0.08);
+  border:1px solid var(--border-subtle);
   background: var(--second-bg-color);
   padding: 16px 18px 20px;
   transition: transform 180ms ease, box-shadow 180ms ease;
@@ -61,7 +48,7 @@
 }
 
 .policySection p{
-  color: var(--muted);
+  color: var(--text-muted-color);
   margin: 0 0 10px;
   line-height: 1.6;
   font-size: var(--fs-sm);
@@ -71,19 +58,19 @@
 .policySection ul{
   margin: 0 0 10px;
   padding-left: 20px;
-  color: var(--muted);
+  color: var(--text-muted-color);
   line-height: 1.6;
   font-size: var(--fs-sm);
 }
 .policySection ul:last-child{ margin-bottom: 0; }
 .policySection li{ margin-bottom: 6px; }
 
-.policySection a{ color: var(--accent-color); text-decoration: underline; }
+.policySection a{ color: var(--accent-text); text-decoration: underline; }
 
 
 
-.policyFooter{ margin-top: 22px; text-align: center; color:var(--muted); font-size:var(--fs-xs); }
-.policyContactLink{ color:var(--accent-color); text-decoration:underline; }
+.policyFooter{ margin-top: 22px; text-align: center; color:var(--text-muted-color); font-size:var(--fs-xs); }
+.policyContactLink{ color:var(--accent-text); text-decoration:underline; }
 
 @media (min-width: 700px){
   .policyContainer{ padding:24px; margin:28px auto; }
