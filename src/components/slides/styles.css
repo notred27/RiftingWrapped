@@ -338,10 +338,11 @@
     animation: intro-fade-up 0.5s 0.15s ease both;
 }
 
+/* Regular body text, not a second headline under the name. */
 .intro-headline {
-    font-size: var(--fs-lg);
-    font-weight: 500;
-    line-height: 1.4;
+    font-size: var(--fs-sm);
+    font-weight: 400;
+    line-height: 1.5;
     max-width: 34ch;
     margin: 0 auto;
     animation: intro-fade-up 0.5s 0.3s ease both;
