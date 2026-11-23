@@ -2,7 +2,7 @@
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	background: var(--second-bg-color, #141a21);
+	background: var(--second-bg-color);
 	border: 1px solid var(--border-subtle);
 	border-radius: var(--radius-md);
 	padding: 10px 12px;
@@ -33,19 +33,19 @@
 }
 
 .compact-entry-date {
-	font-size: var(--fs-2xs, 12px);
-	color: var(--text-muted-color, #9DA3A6);
+	font-size: var(--fs-2xs);
+	color: var(--text-muted-color);
 }
 
 .compact-entry-kda {
-	font-size: var(--fs-xs, 14px);
+	font-size: var(--fs-xs);
 	font-weight: 500;
-	color: var(--text-color, #FFFFFF);
+	color: var(--text-color);
 }
 
 .compact-entry-kda-label {
-	font-size: var(--fs-xs, 14px);
-	color: var(--text-muted-color, #9DA3A6);
+	font-size: var(--fs-xs);
+	color: var(--text-muted-color);
 	flex-shrink: 0;
 }
 
@@ -70,7 +70,7 @@
 	}
 
 	.compact-entry-kda {
-		font-size: var(--fs-2xs, 12px);
+		font-size: var(--fs-2xs);
 	}
 
 	.compact-entry-meta > span {

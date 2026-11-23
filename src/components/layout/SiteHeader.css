@@ -5,7 +5,7 @@
     padding: 12px clamp(16px, 5vw, 64px);
     background-color: var(--second-bg-color);
     color: var(--text-color);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--border-subtle);
     position: relative;
     top: 0;
     z-index: 1000;
@@ -54,7 +54,7 @@
 }
 
 .site-header__support:hover {
-    color: var(--accent-color);
+    color: var(--accent-text);
 }
 
 .site-header__corner {

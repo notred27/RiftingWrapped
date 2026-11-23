@@ -60,13 +60,15 @@
   opacity: 0.2;
 }
 
+/* 28px circle, 44px hit area via ::before: no room for a bigger button beside the grid on phones */
 .champion-grid-nav {
+  position: relative;
   flex-shrink: 0;
   width: 28px;
   height: 28px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--border-subtle);
   color: var(--text-color);
   font-size: var(--fs-sm);
   cursor: pointer;
@@ -74,12 +76,17 @@
   align-items: center;
   justify-content: center;
 }
+.champion-grid-nav::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
 .champion-grid-nav:disabled {
   opacity: 0.25;
   cursor: default;
 }
 .champion-grid-nav:not(:disabled):hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--border-strong);
 }
 
 .champion-grid-toggle {

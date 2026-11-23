@@ -494,10 +494,19 @@
     font-weight: 600;
 }
 
+/* native <progress> drew a bright white track on the dark page */
 .adding-player__progress {
     width: min(320px, 100%);
-    accent-color: var(--accent-color);
+    height: 8px;
+    appearance: none;
+    border: none;
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    background: var(--surface-2);
 }
+.adding-player__progress::-webkit-progress-bar { background: var(--surface-2); }
+.adding-player__progress::-webkit-progress-value { background: var(--accent-color); }
+.adding-player__progress::-moz-progress-bar { background: var(--accent-color); }
 
 .adding-player__note {
     margin: 0;

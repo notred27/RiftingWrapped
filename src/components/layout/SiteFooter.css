@@ -115,7 +115,7 @@
 .site-footer__col {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0;
 }
 
 .site-footer__col-title {
@@ -127,7 +127,11 @@
     margin: 0 0 2px;
 }
 
+/* 44px tap rows; the old 8px gap is absorbed into the row height */
 .site-footer__col a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
     color: var(--text-muted-color);
     text-decoration: none;
     font-size: var(--fs-xs);
