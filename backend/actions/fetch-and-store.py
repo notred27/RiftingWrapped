@@ -99,7 +99,11 @@ def get_routing_region(region: str, api_endpoint: bool = False) -> str:
     return r.lower() or "unknown"
 
 
+MAX_NETWORK_RETRIES = 5
+
+
 def safe_request(url, params=None):
+    network_errors = 0
     while True:
         try:
             r = requests.get(url, headers={"X-Riot-Token": RIOT_API_KEY}, params=params, timeout=30)
@@ -113,6 +117,9 @@ def safe_request(url, params=None):
                 logger.exception("HTTP error")
                 raise
         except requests.exceptions.RequestException as e:
+            network_errors += 1
+            if network_errors > MAX_NETWORK_RETRIES:
+                raise
             logger.warning("Network error: %s", e)
             time.sleep(10)
 
@@ -213,6 +220,7 @@ if __name__ == "__main__":
         logger.warning("Couldn't fetch ddragon version; icon links won't be updated this run.")
 
     num_processed = 0
+    failed_players = 0
 
     for user_puuid in tracked_puuids:
         region = puuid_region.get(user_puuid, "NA1")
@@ -242,7 +250,14 @@ if __name__ == "__main__":
             logger.warning("Failed to update %s: %s", user_puuid, e)
 
         while True:
-            match_ids = get_match_ids(user_puuid, region, start=offset, count=count)
+            try:
+                match_ids = get_match_ids(user_puuid, region, start=offset, count=count)
+            except Exception:
+                # One bad account (moved region, deleted) must not stop the
+                # scan for every player after it.
+                logger.exception("Couldn't list matches for %s; skipping this player", user_puuid)
+                failed_players += 1
+                break
             if not match_ids:
                 logger.info("No more matches found for %s.", user_puuid)
                 break
@@ -269,15 +284,21 @@ if __name__ == "__main__":
 
     sanity_check(matches_collection)
 
-    # Recorded only once every player was scanned, so a run that crashes part
-    # way leaves the next run to catch up from the previous successful one.
-    scraper_runs.insert_one({
-        "year": WRAP_YEAR,
-        "started_at": RUN_STARTED_AT,
-        "finished_at": datetime.now(timezone.utc),
-        "cutoff": datetime.fromtimestamp(cutoffDate, timezone.utc),
-        "processed": num_processed,
-    })
+    # Recorded only once every player was scanned, so a run that crashes or
+    # skips a player leaves the next run to catch up from the previous
+    # successful one. shortcut: one permanently broken account keeps every run
+    # at the MAX_CATCHUP_SECONDS window (cheap: stored matches are skipped);
+    # track the last scan per player if that ever gets slow.
+    if failed_players:
+        logger.warning("%d player(s) skipped; not recording this run so the next one catches up", failed_players)
+    else:
+        scraper_runs.insert_one({
+            "year": WRAP_YEAR,
+            "started_at": RUN_STARTED_AT,
+            "finished_at": datetime.now(timezone.utc),
+            "cutoff": datetime.fromtimestamp(cutoffDate, timezone.utc),
+            "processed": num_processed,
+        })
 
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:

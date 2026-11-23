@@ -4,6 +4,7 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from werkzeug.middleware.proxy_fix import ProxyFix
+import hmac
 import logging
 import requests
 from pymongo import MongoClient
@@ -143,7 +144,7 @@ def get_routing_region(region: str) -> str:
 
     americas = {"NA1", "BR1", "LA1", "LA2", "OC1"}
     europe = {"EUN1", "EUW1", "TR1", "RU", "ME1"}
-    asia = {"KR", "JP1", "SG2", "TW2", "VN2"}
+    asia = {"KR", "JP1", "SG2", "TW2", "VN2", "PH2", "TH2"}
 
     if region in americas:
         return "americas"
@@ -494,6 +495,7 @@ def add_by_display_name():
 
     result = player_collection.update_one({"puuid": puuid}, user_doc, upsert=True)
 
+    triggered = False
     try:
         GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
         url = "https://api.github.com/repos/notred27/RiftingWrapped/actions/workflows/player_init.yaml/dispatches"
@@ -506,12 +508,20 @@ def add_by_display_name():
             "inputs": {"displayName": displayName, "tag": tag, "region": region}
         }
         gh_resp = requests.post(url, headers=headers, json=payload, timeout=RIOT_TIMEOUT)
-        if gh_resp.status_code == 204:
-            print(f"GitHub Action triggered for {displayName}#{tag} in {region}")
+        triggered = gh_resp.status_code == 204
+        if triggered:
+            logger.info("GitHub Action triggered for %s#%s in %s", displayName, tag, region)
         else:
-            print(f"Failed to trigger workflow: {gh_resp.status_code} {gh_resp.text}")
-    except Exception as e:
-        print(f"Failed to trigger GitHub Action: {e}")
+            logger.error("Failed to trigger workflow: %s %s", gh_resp.status_code, gh_resp.text[:200])
+    except requests.RequestException:
+        logger.exception("Failed to trigger GitHub Action")
+
+    if not triggered:
+        # Nothing ever picks up a "starting" player, so keeping the record would
+        # leave them on the waiting page forever and make a retry return 409.
+        if result.upserted_id:
+            player_collection.delete_one({"puuid": puuid, "status": "starting"})
+        return jsonify({"error": "Bad Gateway", "message": "Couldn't start processing your account. Please try again in a few minutes."}), 502
 
     status_code = 201 if result.upserted_id else 200
     message = "User created successfully" if result.upserted_id else "User updated successfully"
@@ -529,8 +539,9 @@ def add_by_display_name():
 ADMIN_API_KEY = os.getenv("RIFTING_WRAPPED_ADMIN_KEY")
 
 def require_admin_key():
-    api_key = request.headers.get("X-API-Key") or request.args.get("api_key")
-    if not api_key or api_key != ADMIN_API_KEY:
+    # Header only: a key in the query string ends up in access logs and history.
+    api_key = request.headers.get("X-API-Key") or ""
+    if not ADMIN_API_KEY or not hmac.compare_digest(api_key.encode(), ADMIN_API_KEY.encode()):
         abort(401, description="Unauthorized")
 
 
