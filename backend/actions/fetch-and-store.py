@@ -86,7 +86,11 @@ def get_routing_region(region: str, api_endpoint: bool = False) -> str:
     return r.lower() or "unknown"
 
 
+MAX_NETWORK_RETRIES = 5
+
+
 def safe_request(url, params=None):
+    network_errors = 0
     while True:
         try:
             r = requests.get(url, headers={"X-Riot-Token": RIOT_API_KEY}, params=params, timeout=30)
@@ -100,6 +104,9 @@ def safe_request(url, params=None):
                 logger.exception("HTTP error")
                 raise
         except requests.exceptions.RequestException as e:
+            network_errors += 1
+            if network_errors > MAX_NETWORK_RETRIES:
+                raise
             logger.warning("Network error: %s", e)
             time.sleep(10)
 
@@ -230,7 +237,14 @@ if __name__ == "__main__":
             logger.warning("Failed to update %s: %s", user_puuid, e)
 
         while True:
-            match_ids = get_match_ids(user_puuid, region, start=offset, count=count)
+            try:
+                match_ids = get_match_ids(user_puuid, region, start=offset, count=count)
+            except Exception:
+                # One bad account (moved region, deleted) must not stop the
+                # scan for every player after it.
+                logger.exception("Couldn't list matches for %s; skipping this player", user_puuid)
+                failed_matches += 1
+                break
             if not match_ids:
                 logger.info("No more matches found for %s.", user_puuid)
                 break
@@ -264,8 +278,9 @@ if __name__ == "__main__":
     sanity_check(matches_collection)
 
     # Recorded only when every player was scanned and every match stored, so a
-    # crash or a failed download (e.g. a Riot 503) makes the next run retry from
-    # the last clean run. shortcut: a match that always fails keeps every run at
+    # crash, a skipped player or a failed download (e.g. a Riot 503) makes the
+    # next run retry from the last clean run. failed_matches also counts players
+    # whose match list couldn't be fetched. shortcut: a match that always fails keeps every run at
     # the MAX_CATCHUP_SECONDS window (cheap: stored matches are one query per
     # page); skip such matches by ID if that ever gets slow.
     if failed_matches:

@@ -12,6 +12,7 @@ const TOS = lazy(() => import('./pages/Policy/TOS.js'));
 const Privacy = lazy(() => import('./pages/Policy/Privacy.js'));
 const AddingPlayer = lazy(() => import('./pages/User/AddingPlayer.js'));
 const PlayerStats = lazy(() => import('./pages/User/PlayerStats.js'));
+const WeeklyRecap = lazy(() => import('./pages/Weekly/WeeklyRecap.js'));
 
 
 
@@ -37,6 +38,7 @@ export default function App() {
                     <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/player/:puuid" element={<PlayerStats />} />
+                        <Route path="/player/:puuid/week" element={<WeeklyRecap />} />
                         <Route path="/addPlayer/:puuid" element={<AddingPlayer />} />
                         <Route path="/s/:year/:puuid" element={<ShareRedirect />} />
                         <Route path="/faq" element={<FAQ />} />

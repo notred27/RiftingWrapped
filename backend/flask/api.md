@@ -393,3 +393,15 @@ curl "<API_DOMAIN>/highestStatGames/<PUUID>?stat=deaths&year=2025"
   A cell key is `row * grid + col`, with `col = floor(x / 15000 * grid)` and `row = floor(y / 15000 * grid)` (row 0 is the bottom of the map). Cells with no events are left out; a player with no grid gets empty `kills` and `deaths`.
 
 
+
+
+### Weekly
+
+- [`/weekly/<puuid>?week={weeksAgo}&tz={offset}`](): One calendar week (Monday to Sunday) of a player's games, for the weekly recap page (`/player/<puuid>/week`). Unlike the other stats routes it takes no `year`: the week decides which `matches-YY` collections are read.
+
+  | Param | Default | Description |
+  |---|---|---|
+  | `week` | `0` | Weeks back from the current one, `0`-`60` (`0` = this week so far) |
+  | `tz` | `0` | Viewer's UTC offset in minutes, as JavaScript's `Date.getTimezoneOffset()` returns it (positive west of UTC). Weeks are cut at local midnight. |
+
+  Returns `weekStart`/`weekEnd` (ISO), `thisWeek` (totals plus `topChamps`, `days` (games per day, Monday first), `bestGame`, `mostKillsGame`, `longestWinStreak`, `uniqueChamps`, `roles`), `lastWeek` (totals, for week-over-week changes), `yearToDate`, `weeklyStreak` (weeks in a row with a game, not broken until the current week ends), `activeWeeks`, `bestWeekGames` (busiest earlier week this year) and `paceHours` (projected year-end hours; current week only). `400` for an out-of-range `week`/`tz`, `404` for an unknown player.

@@ -4,6 +4,7 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from werkzeug.middleware.proxy_fix import ProxyFix
+import hmac
 import logging
 import requests
 from pymongo import MongoClient
@@ -143,7 +144,7 @@ def get_routing_region(region: str) -> str:
 
     americas = {"NA1", "BR1", "LA1", "LA2", "OC1"}
     europe = {"EUN1", "EUW1", "TR1", "RU", "ME1"}
-    asia = {"KR", "JP1", "SG2", "TW2", "VN2"}
+    asia = {"KR", "JP1", "SG2", "TW2", "VN2", "PH2", "TH2"}
 
     if region in americas:
         return "americas"
@@ -494,6 +495,7 @@ def add_by_display_name():
 
     result = player_collection.update_one({"puuid": puuid}, user_doc, upsert=True)
 
+    triggered = False
     try:
         GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
         url = "https://api.github.com/repos/notred27/RiftingWrapped/actions/workflows/player_init.yaml/dispatches"
@@ -506,12 +508,20 @@ def add_by_display_name():
             "inputs": {"displayName": displayName, "tag": tag, "region": region}
         }
         gh_resp = requests.post(url, headers=headers, json=payload, timeout=RIOT_TIMEOUT)
-        if gh_resp.status_code == 204:
-            print(f"GitHub Action triggered for {displayName}#{tag} in {region}")
+        triggered = gh_resp.status_code == 204
+        if triggered:
+            logger.info("GitHub Action triggered for %s#%s in %s", displayName, tag, region)
         else:
-            print(f"Failed to trigger workflow: {gh_resp.status_code} {gh_resp.text}")
-    except Exception as e:
-        print(f"Failed to trigger GitHub Action: {e}")
+            logger.error("Failed to trigger workflow: %s %s", gh_resp.status_code, gh_resp.text[:200])
+    except requests.RequestException:
+        logger.exception("Failed to trigger GitHub Action")
+
+    if not triggered:
+        # Nothing ever picks up a "starting" player, so keeping the record would
+        # leave them on the waiting page forever and make a retry return 409.
+        if result.upserted_id:
+            player_collection.delete_one({"puuid": puuid, "status": "starting"})
+        return jsonify({"error": "Bad Gateway", "message": "Couldn't start processing your account. Please try again in a few minutes."}), 502
 
     status_code = 201 if result.upserted_id else 200
     message = "User created successfully" if result.upserted_id else "User updated successfully"
@@ -529,8 +539,9 @@ def add_by_display_name():
 ADMIN_API_KEY = os.getenv("RIFTING_WRAPPED_ADMIN_KEY")
 
 def require_admin_key():
-    api_key = request.headers.get("X-API-Key") or request.args.get("api_key")
-    if not api_key or api_key != ADMIN_API_KEY:
+    # Header only: a key in the query string ends up in access logs and history.
+    api_key = request.headers.get("X-API-Key") or ""
+    if not ADMIN_API_KEY or not hmac.compare_digest(api_key.encode(), ADMIN_API_KEY.encode()):
         abort(401, description="Unauthorized")
 
 
@@ -1263,6 +1274,217 @@ def get_spotlight_players():
     import random
     return jsonify(random.sample(cached["cards"], min(count, len(cached["cards"]))))
 
+
+# ----------------------------------------------------------------------------
+# Weekly recap
+# ----------------------------------------------------------------------------
+# The yearly Wrapped is a once-a-year visit; this is the reason to come back
+# every week. One calendar week (Monday to Sunday, in the viewer's time zone)
+# of a player's games, compared with the week before, plus the running
+# year-to-date totals and how many weeks in a row they've played.
+#
+# Weeks are cut in the viewer's local time so a Sunday-night game lands on
+# Sunday. The client sends its UTC offset as `tz` (minutes, as JavaScript's
+# Date.getTimezoneOffset() returns it: positive west of UTC). A fixed offset
+# ignores DST changes inside the year, which only moves an hour's games.
+
+WEEKLY_MAX_WEEKS_AGO = 60
+WEEKLY_TOP_CHAMPS = 3
+
+
+def _weekly_tz():
+    offset = request.args.get("tz", default=0, type=int)
+    if offset is None or not -14 * 60 <= offset <= 14 * 60:
+        abort(400, description="`tz` must be a UTC offset in minutes between -840 and 840")
+    tz = timezone(-timedelta(minutes=offset))
+    sign = "-" if offset > 0 else "+"
+    hours, minutes = divmod(abs(offset), 60)
+    return tz, f"{sign}{hours:02d}:{minutes:02d}"     # Python tz, MongoDB timezone string
+
+
+def _week_start(weeks_ago: int, tz) -> datetime:
+    """Midnight on the Monday that starts the requested week, in `tz`."""
+    now = datetime.now(tz)
+    monday = (now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
+    return monday - timedelta(weeks=weeks_ago)
+
+
+def _games_between(puuid: str, start: datetime, end: datetime) -> list:
+    """A player's finished games in [start, end), oldest first, across wrap-year collections."""
+    first = start.astimezone(timezone.utc).year
+    last = (end - timedelta(microseconds=1)).astimezone(timezone.utc).year
+    games = {}
+    for year in range(first, last + 1):
+        for doc in get_matches_collection(year).aggregate([
+            {"$match": completed_matches(puuid)},
+            {"$addFields": {"gameDate": {"$toDate": "$matchInfo.gameCreated"}}},
+            {"$match": {"gameDate": {"$gte": start, "$lt": end}}},
+            {"$project": {
+                "_id": 0, "matchId": 1, "queueId": 1, "gameDate": 1,
+                "duration": "$matchInfo.gameDuration",
+                "champion": "$stats.champion", "position": "$stats.position",
+                "kills": "$stats.kills", "deaths": "$stats.deaths", "assists": "$stats.assists",
+                "win": "$stats.win", "kda": "$stats.kda",
+            }},
+        ]):
+            # pymongo hands back naive datetimes (in UTC); make them aware so
+            # they compare with the week boundaries.
+            if doc["gameDate"].tzinfo is None:
+                doc["gameDate"] = doc["gameDate"].replace(tzinfo=timezone.utc)
+            games[doc["matchId"]] = doc
+    return sorted(games.values(), key=lambda g: g["gameDate"])
+
+
+def _week_totals(games: list) -> dict:
+    kills = sum(g.get("kills") or 0 for g in games)
+    deaths = sum(g.get("deaths") or 0 for g in games)
+    assists = sum(g.get("assists") or 0 for g in games)
+    return {
+        "games": len(games),
+        "wins": sum(1 for g in games if g.get("win")),
+        "seconds": sum(g.get("duration") or 0 for g in games),
+        "kills": kills,
+        "deaths": deaths,
+        "assists": assists,
+        "kda": round((kills + assists) / max(1, deaths), 2),
+    }
+
+
+def _week_details(games: list, start: datetime, tz) -> dict:
+    """The parts of a week only the selected week needs: champs, days, best game, streaks."""
+    champs = {}
+    for g in games:
+        c = champs.setdefault(g.get("champion") or "Unknown", {"champion": g.get("champion"), "games": 0, "wins": 0})
+        c["games"] += 1
+        c["wins"] += 1 if g.get("win") else 0
+    top_champs = sorted(champs.values(), key=lambda c: (-c["games"], -c["wins"]))[:WEEKLY_TOP_CHAMPS]
+
+    roles = {}
+    for g in games:
+        if g.get("position"):
+            roles[g["position"]] = roles.get(g["position"], 0) + 1
+
+    days = [0] * 7
+    for g in games:
+        days[(g["gameDate"].astimezone(tz).date() - start.date()).days] += 1
+
+    best_win_streak = streak = 0
+    for g in games:
+        streak = streak + 1 if g.get("win") else 0
+        best_win_streak = max(best_win_streak, streak)
+
+    def game_card(g):
+        return None if g is None else {
+            "matchId": g.get("matchId"), "champion": g.get("champion"), "win": bool(g.get("win")),
+            "kills": g.get("kills") or 0, "deaths": g.get("deaths") or 0, "assists": g.get("assists") or 0,
+            "kda": g.get("kda") or 0, "duration": g.get("duration") or 0,
+            "date": g["gameDate"].astimezone(timezone.utc).isoformat(),
+        }
+
+    best = max(games, key=lambda g: (g.get("kda") or 0, g.get("kills") or 0), default=None)
+    most_kills = max(games, key=lambda g: (g.get("kills") or 0, -(g.get("deaths") or 0)), default=None)
+
+    return {
+        "topChamps": top_champs,
+        "uniqueChamps": len(champs),
+        "roles": roles,
+        "days": days,
+        "longestWinStreak": best_win_streak,
+        "longestGameSeconds": max((g.get("duration") or 0 for g in games), default=0),
+        "bestGame": game_card(best),
+        "mostKillsGame": game_card(most_kills),
+    }
+
+
+def _weeks_played(puuid: str, year: int, tz_name: str) -> dict:
+    """{week start (UTC datetime): {games, wins, seconds, kills}} for one wrap year."""
+    rows = get_matches_collection(year).aggregate([
+        {"$match": completed_matches(puuid)},
+        {"$group": {
+            "_id": {"$dateTrunc": {
+                "date": {"$toDate": "$matchInfo.gameCreated"},
+                "unit": "week", "startOfWeek": "monday", "timezone": tz_name,
+            }},
+            "games": {"$sum": 1},
+            "wins": {"$sum": {"$cond": ["$stats.win", 1, 0]}},
+            "seconds": {"$sum": "$matchInfo.gameDuration"},
+            "kills": {"$sum": "$stats.kills"},
+        }},
+    ])
+    return {r["_id"].replace(tzinfo=timezone.utc): r for r in rows}
+
+
+@app.route('/weekly/<puuid>', methods=['GET'])
+def get_weekly_recap(puuid):
+    """
+    One week of a player's games: `week` is how many weeks back (0 = this
+    week so far), `tz` the viewer's UTC offset (see above).
+    """
+    weeks_ago = request.args.get("week", default=0, type=int)
+    if weeks_ago is None or not 0 <= weeks_ago <= WEEKLY_MAX_WEEKS_AGO:
+        abort(400, description=f"`week` must be between 0 and {WEEKLY_MAX_WEEKS_AGO}")
+    tz, tz_name = _weekly_tz()
+
+    if not player_collection.find_one({"puuid": puuid}, {"_id": 1}):
+        abort(404, description=f"No user found with puuid `{puuid}`")
+
+    start = _week_start(weeks_ago, tz)
+    end = start + timedelta(weeks=1)
+    prev_start = start - timedelta(weeks=1)
+
+    games = _games_between(puuid, prev_start, end)
+    this_week = [g for g in games if g["gameDate"] >= start]
+    last_week = [g for g in games if g["gameDate"] < start]
+
+    # Year to date and the weekly streak come from the wrap year the week
+    # starts in. (A streak running across New Year restarts in January.)
+    wrap_year = start.year
+    weeks = _weeks_played(puuid, wrap_year, tz_name)
+    start_key = start.astimezone(timezone.utc)
+    week_keys = sorted(k for k in weeks if k <= start_key)
+
+    ytd = {"games": 0, "wins": 0, "seconds": 0, "kills": 0}
+    for k in week_keys:
+        for field in ytd:
+            ytd[field] += weeks[k][field]
+
+    # Weeks in a row with at least one game, ending at this week. While the
+    # current week is still empty the streak isn't broken yet, so count from
+    # last week.
+    cursor = start_key
+    if weeks_ago == 0 and cursor not in weeks:
+        cursor -= timedelta(weeks=1)
+    weekly_streak = 0
+    while cursor in weeks:
+        weekly_streak += 1
+        cursor -= timedelta(weeks=1)
+
+    # Busiest earlier week of the year, for a "new personal best" callout.
+    best_week_games = max((weeks[k]["games"] for k in week_keys if k < start_key), default=0)
+
+    pace_hours = None
+    if weeks_ago == 0:
+        year_start = datetime(wrap_year, 1, 1, tzinfo=tz)
+        year_end = datetime(wrap_year + 1, 1, 1, tzinfo=tz)
+        elapsed = (datetime.now(tz) - year_start).total_seconds()
+        if elapsed > 0:
+            pace_hours = floor(ytd["seconds"] / elapsed * (year_end - year_start).total_seconds() / 3600)
+
+    return jsonify({
+        "weekStart": start.isoformat(),
+        "weekEnd": end.isoformat(),
+        "weeksAgo": weeks_ago,
+        "isCurrentWeek": weeks_ago == 0,
+        "year": wrap_year,
+        "thisWeek": {**_week_totals(this_week), **_week_details(this_week, start, tz)},
+        "lastWeek": _week_totals(last_week),
+        "yearToDate": ytd,
+        "weeklyStreak": weekly_streak,
+        "activeWeeks": len(week_keys),
+        "bestWeekGames": best_week_games,
+        "paceHours": pace_hours,
+    }), 200
+
 # ----------------------------------------------------------------------------
 # Combined per-player summary
 # ----------------------------------------------------------------------------
@@ -1361,6 +1583,7 @@ CACHEABLE_ENDPOINTS = {
     "get_matchTotals", "get_highest_games", "get_kill_frequency",
     "get_death_frequency", "get_kda_extremes", "get_map_events",
     "get_cs_extremes", "get_ping_sums", "get_total_stats", "get_card_preview",
+    "get_weekly_recap",
 }
 STATS_CACHE_SECONDS = int(os.getenv("STATS_CACHE_SECONDS", "120"))
 LIST_CACHE_SECONDS = int(os.getenv("LIST_CACHE_SECONDS", "300"))
