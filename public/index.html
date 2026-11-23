@@ -26,7 +26,7 @@
          customHttp.yml's Content-Security-Policy (script-src 'self') blocks inline
          event handlers, so in production the onload is blocked and the fonts never
          apply. display=swap in the URL keeps text visible while they load. -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@600;700;800;900&display=swap" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Bricolage+Grotesque:wght@600;700;800;900&display=swap" crossorigin="anonymous">
 
 
 
@@ -86,11 +86,17 @@
             --space-6: 32px;
             --space-7: 48px;
 
-            --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-            --font-display: "Bricolage Grotesque", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            /* The site uses exactly two families: Bricolage Grotesque for
+               headings and wordmarks, Lato for everything else. sans-serif is
+               only a safety net if Google Fonts fails to load. */
+            --font-body: "Lato", sans-serif;
+            --font-display: "Bricolage Grotesque", "Lato", sans-serif;
 
-            /* Type scale — fixed sizes for UI text, fluid clamp()s for the
-               slide-deck's big "flex" numbers and hero display moments. */
+            /* Type scale — fixed sizes for UI text (the same at every width,
+               16px body like most sites), fluid clamp()s for the slide-deck's
+               big "flex" numbers and hero display moments. The display sizes
+               also follow screen height (dvh) so a short laptop window
+               shrinks them instead of overflowing the slide. */
             --fs-2xs: 12px;
             --fs-xs: 14px;
             --fs-sm: 16px;
@@ -98,22 +104,9 @@
             --fs-lg: 24px;
             --fs-xl: 28px;
             --fs-2xl: 36px;
-            --fs-display-sm: clamp(20px, 5vw, 32px);
-            --fs-display-md: clamp(28px, 7vw, 44px);
-            --fs-display-lg: clamp(40px, 12vw, 72px);
-        }
-
-        /* Wider screens get a larger type scale so slides don't read as a
-           phone layout floating in empty space. */
-        @media (min-width: 1024px) {
-            :root {
-                --fs-xs: 15px;
-                --fs-sm: 17px;
-                --fs-md: 22px;
-                --fs-display-sm: 36px;
-                --fs-display-md: 52px;
-                --fs-display-lg: 84px;
-            }
+            --fs-display-sm: clamp(20px, min(5vw, 4dvh), 30px);
+            --fs-display-md: clamp(28px, min(7vw, 6dvh), 44px);
+            --fs-display-lg: clamp(40px, min(12vw, 9dvh), 64px);
         }
 
         /* Border-box reset. This lives here, with the tokens, because this block
@@ -137,6 +130,12 @@
         textarea {
             font: inherit;
             color: inherit;
+        }
+
+        /* Every heading uses the display face (the Home hero's font) so pages
+           don't mix Lato and Bricolage headings. */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-display);
         }
 
         :focus-visible {

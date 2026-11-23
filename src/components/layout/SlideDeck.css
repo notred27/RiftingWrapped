@@ -144,3 +144,11 @@
         padding: 28px 16px 16px;
     }
 }
+
+/* Short laptop windows (1366x768 minus browser toolbars is ~650px tall):
+   less padding above and below each slide. */
+@media (min-width: 641px) and (max-height: 760px) {
+    .slide {
+        padding: 24px 32px 16px;
+    }
+}

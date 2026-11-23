@@ -30,3 +30,11 @@
         max-width: 200px;
     }
 }
+
+/* Short phones. Kept here, not in styles.css: this file loads later, so the
+   200px rule above used to win over a cap declared there. */
+@media (max-width: 640px) and (max-height: 700px) {
+    .slide-media .kill-detail-map {
+        max-width: 150px;
+    }
+}

@@ -11,6 +11,9 @@ import { theme } from '../../resources/theme.js';
 ChartJS.register(Tooltip, Legend);
 
 ChartJS.defaults.font.family = theme.fontBody;
+// Canvas text is baked in when drawn: redraw any chart painted before Lato
+// finished loading so it doesn't keep the fallback font.
+document.fonts?.ready.then(() => Object.values(ChartJS.instances).forEach((chart) => chart.draw()));
 ChartJS.defaults.font.size = 12;
 ChartJS.defaults.color = theme.axis;
 ChartJS.defaults.borderColor = theme.grid;
