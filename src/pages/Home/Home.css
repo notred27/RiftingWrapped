@@ -142,17 +142,19 @@ body,
     width: 100%;
 }
 
+/* Pill search bar, after Material 3's search bar: 56px tall with fully
+   rounded ends. The name input fills the left; the region picker owns the
+   right-hand end of the pill. */
 .hero-search-box {
     position: relative;
     display: flex;
-    gap: 0px;
-    align-items: center;
+    align-items: stretch;
     flex: 1 1 240px;
     min-width: 240px;
+    height: 56px;
     background-color: var(--second-bg-color);
-    padding: 4px;
-    border-radius: 4px;
-    max-height: 60px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-pill);
 }
 
 .hero-search-corner {
@@ -167,27 +169,67 @@ body,
 .hero-search-corner--bl { bottom: -1px; left: -1px; border-bottom: 1px solid; border-left: 1px solid; }
 .hero-search-corner--br { bottom: -1px; right: -1px; border-bottom: 1px solid; border-right: 1px solid; }
 
-#regionSelect {
-
-    padding: 12px;
-    font-size: var(--fs-md);
-    border: 1px solid var(--border-subtle);
-    background: var(--second-bg-color);
-    color: var(--text-color);
-
-}
-
-
 #nameInput {
-    padding: 10px 14px;
+    padding: 0 12px 0 24px;
     font-size: var(--fs-md);
     border: none;
-    background: var(--second-bg-color);
+    border-radius: var(--radius-pill) 0 0 var(--radius-pill);
+    background: transparent;
     color: var(--text-color);
     width: 100%;
     max-width: 100%;
-    height: 54px;
+    height: 100%;
     outline: none;
+}
+
+/* Region: "⌄ NA1" in the pill's right end, split from the name by a divider.
+   The chevron sits over the select's left padding and ignores clicks, so the
+   whole segment opens the native picker. */
+.region-picker {
+    position: relative;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    border-left: 1px solid var(--border-subtle);
+    border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+    color: var(--text-muted-color);
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+.region-picker:hover {
+    background-color: var(--surface-2);
+    color: var(--text-color);
+}
+
+.region-picker__chevron {
+    position: absolute;
+    left: 14px;
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+}
+
+#regionSelect {
+    appearance: none;
+    -webkit-appearance: none;
+    height: 100%;
+    padding: 0 22px 0 36px;
+    border: none;
+    border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+    background: transparent;
+    color: var(--text-color);
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* Keep the keyboard ring inside the pill instead of doubling the box ring. */
+#regionSelect:focus-visible {
+    outline-offset: -3px;
+}
+
+#regionSelect option {
+    background: var(--second-bg-color);
 }
 
 
@@ -199,7 +241,7 @@ body,
     color: var(--text-color);
     border: none;
     cursor: pointer;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-pill);
     transition: background .2s ease;
     white-space: nowrap;
     flex: 0 0 auto;
@@ -214,8 +256,9 @@ body,
 }
 
 /* The name input sets outline: none, so show focus on its container instead -
-   keyboard users otherwise get no indication the search box is focused. */
-.hero-search-box:focus-within {
+   keyboard users otherwise get no indication the search box is focused.
+   The region select draws its own inset ring, so it isn't doubled here. */
+.hero-search-box:has(#nameInput:focus) {
     outline: 2px solid var(--accent-text);
     outline-offset: 2px;
 }
@@ -440,6 +483,11 @@ iframe {
         flex-direction: column;
     }
 
+    /* In a column the 240px flex-basis would become the pill's height. */
+    .hero-search-box {
+        flex: none;
+    }
+
     .hero-join-line {
         margin-left: auto;
         margin-right: auto;
@@ -457,8 +505,8 @@ iframe {
 
     #submitBtn {
         min-width: 0;
+        min-height: 48px;
         padding: 12px;
-        border-radius: 4px;
         margin-top: 0;
         width: 100%;
     }
