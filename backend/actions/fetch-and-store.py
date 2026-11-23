@@ -10,6 +10,7 @@ from pymongo import MongoClient, ASCENDING
 from pymongo.errors import DuplicateKeyError
 
 from match_doc import build_match_fields, build_match_update, add_to_player_grid, player_locations_name
+from scrape_window import compute_cutoff
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
@@ -20,7 +21,7 @@ WRAP_YEAR = int(os.getenv("WRAP_YEAR", "2026"))
 DB_NAME = os.getenv("DB_NAME", "rifting-wrapped")
 
 # How far back to look for new matches. Each run picks up from where the last
-# successful run started (minus RUN_OVERLAP_SECONDS), so a late or skipped
+# successful run started (see scrape_window.py), so a late or skipped
 # GitHub schedule - which in practice fires every 5-10 hours, not hourly -
 # doesn't drop the games played in between. Matches already stored are skipped
 # by a database check, so a wider window costs almost no Riot calls.
@@ -30,7 +31,6 @@ DB_NAME = os.getenv("DB_NAME", "rifting-wrapped")
 # LOOKBACK_SECONDS=1814400 for 21 days (or the workflow's `lookback_days` input).
 # MAX_CATCHUP_SECONDS caps how far back an automatic catch-up goes.
 LOOKBACK_SECONDS = int(os.getenv("LOOKBACK_SECONDS", str(2 * 60 * 60)))
-RUN_OVERLAP_SECONDS = 60 * 60
 MAX_CATCHUP_SECONDS = int(os.getenv("MAX_CATCHUP_SECONDS", str(14 * 24 * 60 * 60)))
 
 # Never pull matches past the wrap year's boundary, even if WRAP_YEAR is
@@ -59,22 +59,9 @@ player_locations_collection = db[player_locations_name(WRAP_YEAR)]   # per-playe
 
 scraper_runs = db["scraper-runs"]   # one document per successful run
 
-
-def compute_cutoff(now: datetime, last_run_started_at) -> int:
-    """Unix time to fetch matches from: the last successful run's start (less
-    an overlap), but at least LOOKBACK_SECONDS and at most MAX_CATCHUP_SECONDS back."""
-    now_ts = int(now.timestamp())
-    cutoff = now_ts - LOOKBACK_SECONDS
-    if last_run_started_at is not None:
-        if last_run_started_at.tzinfo is None:            # pymongo returns naive UTC
-            last_run_started_at = last_run_started_at.replace(tzinfo=timezone.utc)
-        cutoff = min(cutoff, int(last_run_started_at.timestamp()) - RUN_OVERLAP_SECONDS)
-    cutoff = max(cutoff, now_ts - max(MAX_CATCHUP_SECONDS, LOOKBACK_SECONDS))
-    return min(cutoff, END_DATE)
-
-
 _last_run = scraper_runs.find_one({"year": WRAP_YEAR}, sort=[("started_at", -1)])
-cutoffDate = compute_cutoff(RUN_STARTED_AT, _last_run["started_at"] if _last_run else None)
+cutoffDate = compute_cutoff(RUN_STARTED_AT, _last_run["started_at"] if _last_run else None,
+                            WRAP_YEAR, LOOKBACK_SECONDS, MAX_CATCHUP_SECONDS)
 
 tracked_players = list(player_collection.find({}, {"puuid": 1, "region": 1, "_id": 0}))
 tracked_puuids = {p["puuid"] for p in tracked_players}
@@ -213,6 +200,7 @@ if __name__ == "__main__":
         logger.warning("Couldn't fetch ddragon version; icon links won't be updated this run.")
 
     num_processed = 0
+    failed_matches = 0
 
     for user_puuid in tracked_puuids:
         region = puuid_region.get(user_puuid, "NA1")
@@ -247,8 +235,13 @@ if __name__ == "__main__":
                 logger.info("No more matches found for %s.", user_puuid)
                 break
 
+            # One query per page instead of one per match: a catch-up window can
+            # list tens of thousands of already-stored matches.
+            stored = {d["matchId"] for d in matches_collection.find(
+                {"puuid": user_puuid, "matchId": {"$in": match_ids}}, {"matchId": 1, "_id": 0})}
+
             for match_id in match_ids:
-                if match_id_exists(match_id, user_puuid):
+                if match_id in stored:
                     logger.info("Match %s already found from another query. Skipping.", match_id)
                     continue
 
@@ -263,21 +256,28 @@ if __name__ == "__main__":
 
                 except Exception as e:
                     logger.exception("Error fetching match %s: %s", match_id, e)
+                    failed_matches += 1
                     time.sleep(1)
 
             offset += count
 
     sanity_check(matches_collection)
 
-    # Recorded only once every player was scanned, so a run that crashes part
-    # way leaves the next run to catch up from the previous successful one.
-    scraper_runs.insert_one({
-        "year": WRAP_YEAR,
-        "started_at": RUN_STARTED_AT,
-        "finished_at": datetime.now(timezone.utc),
-        "cutoff": datetime.fromtimestamp(cutoffDate, timezone.utc),
-        "processed": num_processed,
-    })
+    # Recorded only when every player was scanned and every match stored, so a
+    # crash or a failed download (e.g. a Riot 503) makes the next run retry from
+    # the last clean run. shortcut: a match that always fails keeps every run at
+    # the MAX_CATCHUP_SECONDS window (cheap: stored matches are one query per
+    # page); skip such matches by ID if that ever gets slow.
+    if failed_matches:
+        logger.warning("%d match(es) failed; not recording this run so the next one retries them", failed_matches)
+    else:
+        scraper_runs.insert_one({
+            "year": WRAP_YEAR,
+            "started_at": RUN_STARTED_AT,
+            "finished_at": datetime.now(timezone.utc),
+            "cutoff": datetime.fromtimestamp(cutoffDate, timezone.utc),
+            "processed": num_processed,
+        })
 
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:
