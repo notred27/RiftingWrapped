@@ -4,6 +4,16 @@ on:
   schedule:
     - cron: '0 * * * *'
   workflow_dispatch:
+    inputs:
+      lookback_days:
+        description: "Backfill: fetch every tracked player's matches from this many days back (blank = since the last successful run)"
+        required: false
+        default: ""
+
+# A slow run must not overlap the next one: both would fetch the same matches.
+concurrency:
+  group: hourly-scraper
+  cancel-in-progress: false
 
 jobs:
   run-scraper:
@@ -33,7 +43,10 @@ jobs:
             REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
             MONGO_URI: ${{ secrets.MONGO_URI }}
             WRAP_YEAR: ${{ vars.WRAP_YEAR }}
-        run: python backend/actions/fetch-and-store.py
+            LOOKBACK_DAYS: ${{ inputs.lookback_days }}
+        run: |
+          if [ -n "$LOOKBACK_DAYS" ]; then export LOOKBACK_SECONDS=$((LOOKBACK_DAYS * 86400)); fi
+          python backend/actions/fetch-and-store.py
 
         
       - name: Show number of matches processed
