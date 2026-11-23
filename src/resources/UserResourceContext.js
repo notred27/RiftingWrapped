@@ -47,7 +47,9 @@ function createUserResource(puuid, year, {
 					continue;
 				}
 
-				if (user && user.icon) {
+				// "starting" players have no profile yet; past that, a missing icon
+				// (ddragon was down at sign-up) must not block the page.
+				if (user && (user.icon || user.status !== "starting")) {
 					return resolve(user);
 				}
 

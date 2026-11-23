@@ -33,8 +33,8 @@ MAP_SIZE = 15000        # Summoner's Rift coordinates run 0..15000 on both axes
 
 # Keep each match's raw kill/death coordinates in matches-YY as well as the
 # player's grid. Off: the grid is the only copy now. The raw positions of every
-# match before this was turned off are archived (see the full-db archives), and
-# build_player_locations.py can no longer rebuild a grid once they're gone.
+# match before this was turned off are archived (see the full-db archives);
+# grids can't be rebuilt from matches-YY any more.
 STORE_RAW_LOCATIONS = False
 
 # Riot participant field -> how it's summed by GET /pings.
@@ -56,8 +56,8 @@ PRIORITY_NEW_PLAYER = 0   # no processed matches yet: waiting for their first Wr
 PRIORITY_RESCAN = 1       # already has stats; can view their Wrapped meanwhile
 QUEUE_SORT = [("priority", 1), ("created_at", 1), ("puuid", 1), ("_id", 1)]
 
-# Fields older code stored that nothing reads. They're dropped by
-# backend/migrations/migrate_to_new_project.py. When a writer rewrites a match,
+# Fields older code stored that nothing reads (already dropped from the live
+# collections by a one-off migration). When a writer rewrites a match,
 # replacing "stats" and "matchInfo" wholesale already removes the nested ones;
 # only the top-level ones need an explicit $unset (see unset_fields).
 LEGACY_TOP_LEVEL_FIELDS = (
@@ -220,8 +220,8 @@ def add_to_player_grid(collection, puuid: str, locations: dict) -> None:
     """
     Add one match's positions to the player's grid, creating it on first use.
     Callers must do this at most once per match (see the consumer and the
-    scraper), because $inc is not idempotent. build_player_locations.py
-    rebuilds the grids from the raw positions if the two ever drift apart.
+    scraper), because $inc is not idempotent, and the raw positions are not
+    kept, so a lost or doubled add can't be repaired afterwards.
     """
     inc = player_locations_inc(locations)
     if not inc:

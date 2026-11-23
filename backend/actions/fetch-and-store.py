@@ -11,6 +11,7 @@ from pymongo.errors import DuplicateKeyError
 
 from match_doc import build_match_fields, build_match_update, add_to_player_grid, player_locations_name
 from scrape_window import compute_cutoff
+from riot import RiotSession, get_routing_region
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
@@ -59,6 +60,8 @@ player_locations_collection = db[player_locations_name(WRAP_YEAR)]   # per-playe
 
 scraper_runs = db["scraper-runs"]   # one document per successful run
 
+rs = RiotSession(RIOT_API_KEY, rps=float(os.getenv("REQUESTS_PER_SECOND", "10.0")))
+
 _last_run = scraper_runs.find_one({"year": WRAP_YEAR}, sort=[("started_at", -1)])
 cutoffDate = compute_cutoff(RUN_STARTED_AT, _last_run["started_at"] if _last_run else None,
                             WRAP_YEAR, LOOKBACK_SECONDS, MAX_CATCHUP_SECONDS)
@@ -66,60 +69,6 @@ cutoffDate = compute_cutoff(RUN_STARTED_AT, _last_run["started_at"] if _last_run
 tracked_players = list(player_collection.find({}, {"puuid": 1, "region": 1, "_id": 0}))
 tracked_puuids = {p["puuid"] for p in tracked_players}
 puuid_region = {p["puuid"]: p.get("region", "NA1") for p in tracked_players}
-
-
-def get_routing_region(region: str, api_endpoint: bool = False) -> str:
-    r = (region or "").strip().upper()
-    americas = {"NA1", "BR1", "LA1", "LA2"}
-    europe = {"EUN1", "EUW1", "TR1", "RU", "ME1"}
-    asia = {"KR", "JP1"}
-    sea = {"SG2", "OC1", "TW2", "VN2", "PH2", "TH2"}
-
-    if r in americas:
-        return "americas"
-    if r in europe:
-        return "europe"
-    if r in asia:
-        return "asia"
-    if r in sea:
-        return "asia" if api_endpoint else "sea"
-    return r.lower() or "unknown"
-
-
-MAX_NETWORK_RETRIES = 5
-
-
-def safe_request(url, params=None):
-    network_errors = 0
-    while True:
-        try:
-            r = requests.get(url, headers={"X-Riot-Token": RIOT_API_KEY}, params=params, timeout=30)
-            r.raise_for_status()
-            return r.json()
-        except requests.exceptions.HTTPError:
-            if r.status_code == 429:
-                logger.warning("Rate limit exceeded (429). Waiting 20 seconds before retrying...")
-                time.sleep(20)
-            else:
-                logger.exception("HTTP error")
-                raise
-        except requests.exceptions.RequestException as e:
-            network_errors += 1
-            if network_errors > MAX_NETWORK_RETRIES:
-                raise
-            logger.warning("Network error: %s", e)
-            time.sleep(10)
-
-
-def sanity_check(collection):
-    pipeline = [
-        {"$group": {"_id": {"puuid": "$puuid", "matchId": "$matchId"}, "count": {"$sum": 1}, "ids": {"$push": "$_id"}}},
-        {"$match": {"count": {"$gt": 1}}}
-    ]
-    duplicates = list(collection.aggregate(pipeline))
-    logger.info("Found %d duplicate (puuid, matchId) combinations.", len(duplicates))
-    for dup in duplicates:
-        logger.info("Duplicate pair: %s -- Document IDs: %s", dup["_id"], dup["ids"])
 
 
 def match_id_exists(match_id, puuid):
@@ -130,19 +79,19 @@ def get_match_ids(puuid, region, start=0, count=20):
     R = get_routing_region(region)
     url = f"https://{R}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids"
     params = {"start": start, "count": count, "startTime": cutoffDate, "endTime": END_DATE}
-    return safe_request(url, params=params)
+    return rs.safe_request("GET", url, params=params)
 
 
 def get_match_data(match_id, region):
     R = get_routing_region(region)
     url = f"https://{R}.api.riotgames.com/lol/match/v5/matches/{match_id}"
-    return safe_request(url)
+    return rs.safe_request("GET", url)
 
 
 def get_timeline_data(match_id, region):
     R = get_routing_region(region)
     url = f"https://{R}.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline"
-    return safe_request(url)
+    return rs.safe_request("GET", url)
 
 
 def store_match(match_data, timeline_data):
@@ -215,13 +164,8 @@ if __name__ == "__main__":
         count = 100
 
         try:
-            r = requests.get(
-                f"https://{region.upper()}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{user_puuid}",
-                headers={"X-Riot-Token": RIOT_API_KEY},
-                timeout=30,
-            )
-            r.raise_for_status()
-            summoner_data = r.json()
+            summoner_data = rs.safe_request(
+                "GET", f"https://{region.upper()}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{user_puuid}")
 
             level = summoner_data.get("summonerLevel")
             profile_icon_id = summoner_data.get("profileIconId")
@@ -274,8 +218,6 @@ if __name__ == "__main__":
                     time.sleep(1)
 
             offset += count
-
-    sanity_check(matches_collection)
 
     # Recorded only when every player was scanned and every match stored, so a
     # crash, a skipped player or a failed download (e.g. a Riot 503) makes the

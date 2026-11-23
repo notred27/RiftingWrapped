@@ -45,4 +45,9 @@ jobs:
             REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
             MONGO_URI: ${{ secrets.MONGO_URI }}
             WRAP_YEAR: ${{ vars.WRAP_YEAR }}
-        run: python backend/actions/user_producer.py "${{ github.event.inputs.displayName }}" "${{ github.event.inputs.tag }}" "${{ github.event.inputs.region }}"
+            # Inputs come from user sign-ups: pass them as env vars, never
+            # paste ${{ }} into the shell, or a crafted name runs as a command.
+            DISPLAY_NAME: ${{ github.event.inputs.displayName }}
+            TAG: ${{ github.event.inputs.tag }}
+            REGION: ${{ github.event.inputs.region }}
+        run: python backend/actions/user_producer.py "$DISPLAY_NAME" "$TAG" "$REGION"
