@@ -47,11 +47,16 @@ export default function UserIntro({ year, waiting = false, visitor = false }) {
                     <span className="intro-swipe-cue__chevron" aria-hidden="true">›</span>
                 </span>
 
-                {visitor &&
-                    // stopPropagation: a tap here must not also trigger the deck's edge-tap navigation
-                    <div className="intro-visitor-cta" onClick={(e) => e.stopPropagation()}>
+                {/* stopPropagation: a tap on these must not also trigger the deck's edge-tap navigation */}
+                {visitor
+                    ? <div className="intro-visitor-cta" onClick={(e) => e.stopPropagation()}>
                         <Link className="btn btn--secondary" to="/" onClick={() => trackEvent('viral_cta_click', { from: 'intro_slide' })}>
                             Make your own Wrapped
+                        </Link>
+                    </div>
+                    : <div className="intro-visitor-cta" onClick={(e) => e.stopPropagation()}>
+                        <Link className="btn btn--secondary" to={`/player/${userInfo.puuid}/week`} onClick={() => trackEvent('weekly_cta_click', { from: 'intro_slide' })}>
+                            See your week on the Rift ›
                         </Link>
                     </div>
                 }

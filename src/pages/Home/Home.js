@@ -1,13 +1,13 @@
 import { Suspense, useEffect, useState } from 'react';
 
 import { Helmet } from 'react-helmet-async';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { PlayerListProvider } from '../../resources/PlayerListContext';
 import { fetchCached } from '../../resources/fetchCached';
 import { trackEvent } from '../../resources/analytics';
 import { isWrapReady } from '../../resources/playerStatus';
-import { rememberMyPlayer } from '../../resources/myPlayers.js';
+import { lastMyPlayer, rememberMyPlayer } from '../../resources/myPlayers.js';
 
 import UserSearchBar from '../../components/common/UserSearchBar';
 import PlayerMarquee from '../../components/common/PlayerMarquee';
@@ -24,6 +24,8 @@ export default function Home() {
     const [selectedPlayer, setSelectedPlayer] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
+    // Someone who has looked themselves up before gets a shortcut to their week.
+    const [returningPuuid] = useState(lastMyPlayer);
 
     const WRAP_YEAR = 2026;
 
@@ -181,6 +183,16 @@ export default function Home() {
                             {/* <p className="hero-search-note">No login required. We only use your public match history.</p> */}
                         </form>
 
+
+                        {returningPuuid && !isLoading &&
+                            <Link
+                                className="hero-returning-link"
+                                to={`/player/${returningPuuid}/week`}
+                                onClick={() => trackEvent('weekly_cta_click', { from: 'home' })}
+                            >
+                                Welcome back! See your week on the Rift ›
+                            </Link>
+                        }
 
                         {selectedPlayer && !isLoading && <p className="search-error">{selectedPlayer}</p>}
                         {isLoading &&

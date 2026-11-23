@@ -1,0 +1,311 @@
+/* Weekly recap page. Tokens come from the :root block in public/index.html. */
+
+.wk-page {
+    width: 100%;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: var(--space-5) var(--space-4) var(--space-7);
+    box-sizing: border-box;
+    color: var(--text-color);
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.wk-page *,
+.wk-page *::before,
+.wk-page *::after { box-sizing: border-box; }
+
+.wk-page p,
+.wk-page h1,
+.wk-page h2,
+.wk-page h3 { margin: 0; }
+
+.wk-muted { color: var(--text-muted-color); }
+
+.wk-loading,
+.wk-error {
+    padding: var(--space-6) 0;
+    text-align: center;
+    color: var(--text-muted-color);
+}
+
+/* Header */
+.wk-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.wk-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-color);
+    flex-shrink: 0;
+}
+
+.wk-header__text { min-width: 0; }
+
+.wk-eyebrow,
+.wk-card__title,
+.wk-tile__label {
+    font-size: var(--fs-2xs);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted-color);
+}
+
+.wk-name {
+    font-family: var(--font-display);
+    font-size: var(--fs-display-sm);
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+}
+
+.wk-tag {
+    color: var(--text-muted-color);
+    font-weight: 600;
+    font-size: 0.6em;
+    margin-left: 2px;
+}
+
+/* Week picker */
+.wk-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-2);
+    background: var(--second-bg-color);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+}
+
+.wk-nav__btn {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-strong);
+    background: var(--surface-2);
+    color: var(--text-color);
+    font-size: var(--fs-lg);
+    line-height: 1;
+    cursor: pointer;
+}
+
+.wk-nav__btn:disabled { opacity: 0.3; cursor: default; }
+
+.wk-nav__label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.wk-nav__range { font-weight: 800; font-size: var(--fs-sm); }
+.wk-nav__sub { font-size: var(--fs-2xs); color: var(--accent-text); font-weight: 700; }
+
+/* Since last visit */
+.wk-since {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--accent-background-color);
+    border: 1px solid var(--accent-color);
+}
+
+.wk-since__label { font-size: var(--fs-xs); color: var(--text-muted-color); }
+.wk-since__stats { font-weight: 800; color: var(--accent-text); }
+
+/* Hero */
+.wk-hero { padding: var(--space-3) 0 0; }
+
+.wk-hero__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-display-md);
+    line-height: 1.05;
+    color: var(--accent-text);
+}
+
+.wk-hero--empty .wk-hero__title { color: var(--text-color); font-size: var(--fs-display-sm); }
+
+.wk-hero__sub {
+    margin-top: var(--space-2) !important;
+    color: var(--text-muted-color);
+    font-size: var(--fs-sm);
+}
+
+/* Tiles */
+.wk-tiles {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-3);
+}
+
+.wk-tile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-3) var(--space-4);
+    background: var(--second-bg-color);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    min-width: 0;
+}
+
+.wk-tile__value { font-size: var(--fs-xl); font-weight: 800; }
+
+.wk-delta { font-size: var(--fs-2xs); font-weight: 700; }
+.wk-delta--up { color: var(--chart-3); }
+.wk-delta--down { color: var(--chart-2); }
+.wk-delta--flat { color: var(--text-muted-color); font-weight: 500; }
+
+/* Cards */
+.wk-card {
+    padding: var(--space-4);
+    background: var(--second-bg-color);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.wk-grid {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    align-items: start;
+    gap: var(--space-4);
+}
+
+/* Day strip */
+.wk-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--space-2);
+    height: 140px;
+}
+
+.wk-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.wk-day__count { font-size: var(--fs-2xs); font-weight: 700; min-height: 1em; }
+
+.wk-day__bar {
+    width: 100%;
+    max-width: 40px;
+    min-height: 3px;
+    border-radius: var(--radius-sm) var(--radius-sm) 2px 2px;
+    background: var(--chart-muted);
+}
+
+.wk-day__bar[data-max] { background: var(--accent-color); }
+.wk-day--future .wk-day__bar { background: transparent; border: 1px dashed var(--border-strong); }
+
+.wk-day__label { font-size: var(--fs-2xs); color: var(--text-muted-color); }
+.wk-day__label--today { color: var(--accent-text); font-weight: 800; }
+
+/* Champion of the week */
+.wk-champ { padding: 0; overflow: hidden; gap: 0; }
+
+.wk-champ__splash {
+    width: 100%;
+    aspect-ratio: 16 / 7;
+    object-fit: cover;
+    object-position: center 20%;
+    display: block;
+}
+
+.wk-champ__body { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-1); }
+
+.wk-champ__name { font-family: var(--font-display); font-size: var(--fs-2xl); font-weight: 800; }
+.wk-champ__meta { color: var(--text-muted-color); font-size: var(--fs-xs); }
+
+.wk-champ__rest {
+    list-style: none;
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.wk-champ__rest li { display: flex; align-items: center; gap: var(--space-2); font-size: var(--fs-xs); }
+.wk-champ__rest li .wk-muted { margin-left: auto; }
+.wk-champ__rest img { width: 28px; height: 28px; border-radius: var(--radius-sm); }
+
+/* Game of the week */
+.wk-game__row { display: flex; align-items: center; gap: var(--space-3); }
+.wk-game__icon { width: 56px; height: 56px; border-radius: var(--radius-md); flex-shrink: 0; }
+.wk-game__kda { font-size: var(--fs-xl); font-weight: 800; }
+.wk-game__row .wk-muted { font-size: var(--fs-2xs); }
+.wk-game__ratio { font-size: var(--fs-sm); font-weight: 700; color: var(--accent-text); }
+
+.wk-result {
+    margin-left: auto;
+    padding: 2px var(--space-2);
+    border-radius: var(--radius-pill);
+    font-size: var(--fs-2xs);
+    font-weight: 800;
+}
+
+.wk-result--win { background: rgba(25, 158, 112, 0.18); color: var(--chart-3); }
+.wk-result--loss { background: rgba(217, 89, 38, 0.18); color: var(--chart-2); }
+
+/* Awards */
+.wk-awards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--space-2);
+}
+
+.wk-award {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
+    border-left: 3px solid var(--accent-color);
+}
+
+.wk-award__title { font-weight: 800; }
+.wk-award__detail { font-size: var(--fs-2xs); color: var(--text-muted-color); }
+
+/* Year so far */
+.wk-year {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-3);
+}
+
+.wk-year > div { display: flex; flex-direction: column; font-size: var(--fs-2xs); }
+.wk-year__value { font-size: var(--fs-lg); font-weight: 800; }
+
+.wk-pace { font-size: var(--fs-xs); color: var(--text-muted-color); }
+.wk-pace strong { color: var(--text-color); }
+
+.wk-cta { margin-top: var(--space-2); }
+.wk-footnote { text-align: center; font-size: var(--fs-2xs); color: var(--text-muted-color); }
+
+@media (max-width: 720px) {
+    .wk-tiles,
+    .wk-year { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .wk-grid { grid-template-columns: 1fr; }
+}

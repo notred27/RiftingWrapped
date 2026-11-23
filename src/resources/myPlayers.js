@@ -24,6 +24,11 @@ export function rememberMyPlayer(puuid) {
 	}
 }
 
+/** The player this browser looked up most recently, or null. */
+export function lastMyPlayer() {
+	return read()[0] ?? null;
+}
+
 export function isMyPlayer(puuid) {
 	return read().includes(puuid);
 }
