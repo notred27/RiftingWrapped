@@ -147,7 +147,6 @@ export default function Home() {
                 <img className="heroOverlay" src={bg_image} alt="" aria-hidden="true" />
                 <div className="heroText">
                     <div className="hero-copy">
-                        <span className="hero-eyebrow">LEAGUE OF LEGENDS STATS</span>
                         <h1>Your Stats on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
                         <p style={{maxWidth:"760px", textWrap:"pretty"}}>
                             Track your <strong>League of Legends</strong> stats for what they really are: your main, your best (and worst) games, and exactly how many hours you've lost to the Rift.
