@@ -1316,6 +1316,10 @@ def _games_between(puuid: str, start: datetime, end: datetime) -> list:
                 "win": "$stats.win", "kda": "$stats.kda",
             }},
         ]):
+            # pymongo hands back naive datetimes (in UTC); make them aware so
+            # they compare with the week boundaries.
+            if doc["gameDate"].tzinfo is None:
+                doc["gameDate"] = doc["gameDate"].replace(tzinfo=timezone.utc)
             games[doc["matchId"]] = doc
     return sorted(games.values(), key=lambda g: g["gameDate"])
 
