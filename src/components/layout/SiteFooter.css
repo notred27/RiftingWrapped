@@ -5,8 +5,8 @@
     display: grid;
     grid-template-columns: 1fr auto;
     grid-template-areas:
-        "brand cta"
-        "desc  cols"
+        "brand cols"
+
         "bottom bottom";
     column-gap: 32px;
     row-gap: 28px;
@@ -19,6 +19,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    text-wrap-mode: nowrap;
 }
 
 .site-footer__brand-row {
@@ -96,10 +97,10 @@
 /* ---------- Description ---------- */
 .site-footer__desc {
     grid-area: desc;
-    max-width: 60ch;
+    max-width: 100ch;
     margin: 0;
     color: var(--text-muted-color);
-    font-size: var(--fs-xs);
+    font-size: 10px;
     line-height: 1.6;
     text-align: left;
 }

@@ -13,52 +13,52 @@ export default function SiteFooter() {
                     <span className="site-footer__wordmark">Rifting Wrapped</span>
                 </Link>
                 <span className="site-footer__tagline">
-                    League of Legends<br />Year in Review
+                    LOL Stats in Review
                 </span>
             </div>
 
-            <a
-                className="site-footer__cta"
-                href="https://ko-fi.com/notred27"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                <span className="site-footer__corner site-footer__corner--tl" />
-                <span className="site-footer__corner site-footer__corner--tr" />
-                <span className="site-footer__corner site-footer__corner--bl" />
-                <span className="site-footer__corner site-footer__corner--br" />
-                <span className="site-footer__cta-label">Support This Project</span>
-                <span className="site-footer__cta-value">Buy us a Ko-fi</span>
-            </a>
-
-            <p className="site-footer__desc">
-                All data used in Rifting Wrapped comes from the public League of Legends
-                matches a user has participated in. Rifting Wrapped isn't endorsed by Riot
-                Games and doesn't reflect the views or opinions of Riot Games or anyone
-                officially involved in producing or managing Riot Games properties. Riot Games,
-                and all associated properties are trademarks or registered trademarks of
-                Riot Games, Inc.
-            </p>
-
             <div className="site-footer__cols">
                 <div className="site-footer__col">
-                    <span className="site-footer__col-title">Site</span>
-                    <Link to="/">Home</Link>
+                    <span className="site-footer__col-title">For Players</span>
+                    <Link to="/">Yearly Review</Link>
+                    <Link to="/">How it Works</Link>
                     <Link to="/faq">FAQ</Link>
+                    {/* <Link to="/">Weekly Review</Link>
+                    <Link to="/">Yearly Review</Link> */}
+                </div>
+                <div className="site-footer__col">
+                    <span className="site-footer__col-title">Explore</span>
+                    <Link to="/">Leaderboards</Link>
+                    <Link to="/">Champ Stats</Link>
+                    <Link to="/">Player Stats</Link>
                 </div>
                 <div className="site-footer__col">
                     <span className="site-footer__col-title">Legal</span>
                     <Link to="/privacy">Privacy Policy</Link>
                     <Link to="/terms">Terms of Service</Link>
+                    {/* <Link to="/">Riot Disclaimer</Link> */}
+                </div>
+
+                <div className="site-footer__col">
+                    <span className="site-footer__col-title">Support Us</span>
+                    <Link to="https://ko-fi.com/notred27">Buy us a Ko-fi</Link>
                 </div>
             </div>
 
             <div className="site-footer__bottom">
                 <span className="site-footer__copyright">
-                    <img src='/favicon-32x32.png' alt='' />
-                    &copy; {year} Rifting Wrapped
+                    &copy; 2025 Rifting Wrapped. All Rights Reserved.
                 </span>
-                <Link to="/privacy">Privacy Policy</Link>
+
+
+                 <p className="site-footer__desc">
+                All data used in Rifting Wrapped comes from the public League of Legends
+                matches. Rifting Wrapped isn't endorsed by Riot
+                Games and doesn't reflect the views or opinions of Riot Games or anyone
+                officially involved in producing or managing Riot Games properties. Riot Games,
+                and all associated properties are trademarks or registered trademarks of
+                Riot Games, Inc.
+            </p>
             </div>
         </footer>
     );
