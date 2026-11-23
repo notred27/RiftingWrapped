@@ -19,15 +19,24 @@ MONGO_URI = os.getenv("MONGO_URI")
 WRAP_YEAR = int(os.getenv("WRAP_YEAR", "2026"))
 DB_NAME = os.getenv("DB_NAME", "rifting-wrapped")
 
-# How far back to look for new matches. Default 2 hours for normal runs;
-# override via env (e.g. LOOKBACK_SECONDS=604800 for a 7-day backfill after
-# downtime) without needing to edit this file.
+# How far back to look for new matches. Each run picks up from where the last
+# successful run started (minus RUN_OVERLAP_SECONDS), so a late or skipped
+# GitHub schedule - which in practice fires every 5-10 hours, not hourly -
+# doesn't drop the games played in between. Matches already stored are skipped
+# by a database check, so a wider window costs almost no Riot calls.
+#
+# LOOKBACK_SECONDS is the minimum window (and the window when there's no run
+# history yet); set it higher for a one-off backfill after downtime, e.g.
+# LOOKBACK_SECONDS=1814400 for 21 days (or the workflow's `lookback_days` input).
+# MAX_CATCHUP_SECONDS caps how far back an automatic catch-up goes.
 LOOKBACK_SECONDS = int(os.getenv("LOOKBACK_SECONDS", str(2 * 60 * 60)))
+RUN_OVERLAP_SECONDS = 60 * 60
+MAX_CATCHUP_SECONDS = int(os.getenv("MAX_CATCHUP_SECONDS", str(14 * 24 * 60 * 60)))
 
 # Never pull matches past the wrap year's boundary, even if WRAP_YEAR is
 # stale when this runs (e.g. right after New Year's).
 END_DATE = int(datetime(WRAP_YEAR + 1, 1, 1, tzinfo=timezone.utc).timestamp())
-cutoffDate = min(int(time.time()) - LOOKBACK_SECONDS, END_DATE)
+RUN_STARTED_AT = datetime.now(timezone.utc)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("sync")
@@ -47,6 +56,25 @@ yy = WRAP_YEAR % 100
 matches_collection = db[f"matches-{yy:02d}"]
 player_collection = db["tracked-players"]  # shared across all wrap years
 player_locations_collection = db[player_locations_name(WRAP_YEAR)]   # per-player kill/death grids
+
+scraper_runs = db["scraper-runs"]   # one document per successful run
+
+
+def compute_cutoff(now: datetime, last_run_started_at) -> int:
+    """Unix time to fetch matches from: the last successful run's start (less
+    an overlap), but at least LOOKBACK_SECONDS and at most MAX_CATCHUP_SECONDS back."""
+    now_ts = int(now.timestamp())
+    cutoff = now_ts - LOOKBACK_SECONDS
+    if last_run_started_at is not None:
+        if last_run_started_at.tzinfo is None:            # pymongo returns naive UTC
+            last_run_started_at = last_run_started_at.replace(tzinfo=timezone.utc)
+        cutoff = min(cutoff, int(last_run_started_at.timestamp()) - RUN_OVERLAP_SECONDS)
+    cutoff = max(cutoff, now_ts - max(MAX_CATCHUP_SECONDS, LOOKBACK_SECONDS))
+    return min(cutoff, END_DATE)
+
+
+_last_run = scraper_runs.find_one({"year": WRAP_YEAR}, sort=[("started_at", -1)])
+cutoffDate = compute_cutoff(RUN_STARTED_AT, _last_run["started_at"] if _last_run else None)
 
 tracked_players = list(player_collection.find({}, {"puuid": 1, "region": 1, "_id": 0}))
 tracked_puuids = {p["puuid"] for p in tracked_players}
@@ -174,6 +202,9 @@ if __name__ == "__main__":
 
     logger.info("Starting Riot match sync -> db '%s', collection 'matches-%02d'...", DB_NAME, yy)
     logger.info("Tracked players found: %d", len(tracked_puuids))
+    logger.info("Fetching matches since %s (last successful run started %s)",
+                datetime.fromtimestamp(cutoffDate, timezone.utc).isoformat(),
+                _last_run["started_at"].isoformat() if _last_run else "never")
 
     version = None
     try:
@@ -237,6 +268,16 @@ if __name__ == "__main__":
             offset += count
 
     sanity_check(matches_collection)
+
+    # Recorded only once every player was scanned, so a run that crashes part
+    # way leaves the next run to catch up from the previous successful one.
+    scraper_runs.insert_one({
+        "year": WRAP_YEAR,
+        "started_at": RUN_STARTED_AT,
+        "finished_at": datetime.now(timezone.utc),
+        "cutoff": datetime.fromtimestamp(cutoffDate, timezone.utc),
+        "processed": num_processed,
+    })
 
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:
