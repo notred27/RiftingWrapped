@@ -1,7 +1,7 @@
 import { changesSince, readLastVisit, recordVisit } from './lastVisit.js';
 import { weeklyAwards } from '../pages/Weekly/weeklyAwards.js';
 
-const totals = { games: 100, wins: 55, seconds: 180000, kills: 600 };
+const totals = { games: 100, wins: 55, seconds: 180000 };
 
 beforeEach(() => localStorage.clear());
 
@@ -32,7 +32,8 @@ test('weeklyAwards picks out standout weeks', () => {
 		thisWeek: {
 			games: 12, wins: 9, longestWinStreak: 4, uniqueChamps: 2, longestGameSeconds: 1800,
 			topChamps: [{ champion: 'Ahri', games: 10, wins: 8 }],
-			bestGame: { champion: 'Ahri', kills: 8, deaths: 0, assists: 6 },
+			bestGame: { champion: 'Ahri', kills: 20, deaths: 1, assists: 6 },   // not deathless, but another game was
+			deathlessGames: 1,
 			mostKillsGame: { kills: 8 },
 		},
 	};
