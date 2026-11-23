@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom';
 import './SiteFooter.css';
 
 export default function SiteFooter() {
-    const year = new Date().getFullYear();
-
     return (
         <footer className="site-footer">
             <div className="site-footer__brand">
