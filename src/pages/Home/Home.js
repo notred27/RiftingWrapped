@@ -125,11 +125,11 @@ export default function Home() {
         <>
             <Helmet defer={false}>
                 <link rel="canonical" href={`https://www.riftingwrapped.com/`} />
-                <title>Rifting Wrapped 2026 | Your League of Legends Year in Review</title>
-                <meta name="description" content={`Get a detailed year-end summary of your League of Legends gameplay! Discover your top champions, stats, and trends with a personalized LoL experience.`} />
+                <title>Rifting Wrapped | Your League of Legends Stats, Unwrapped</title>
+                <meta name="description" content={`Track your League of Legends stats: your top champions, your best (and worst) games, how many hours you play, and how each week stacks up.`} />
 
-                <meta property="og:title" content="Rifting Wrapped 2026 | Your League of Legends Year in Review" />
-                <meta property="og:description" content="See your top champion, your best (and worst) games, and exactly how many hours you spent on the Rift this year." />
+                <meta property="og:title" content="Rifting Wrapped | Your League of Legends Stats, Unwrapped" />
+                <meta property="og:description" content="See your top champions, your best (and worst) games, and exactly how many hours you've spent on the Rift." />
                 <meta property="og:image" content="https://www.riftingwrapped.com/android-chrome-512x512.png" />
                 <meta property="og:url" content="https://www.riftingwrapped.com/" />
                 <meta name="twitter:card" content="summary_large_image" />
@@ -147,10 +147,10 @@ export default function Home() {
                 <img className="heroOverlay" src={bg_image} alt="" aria-hidden="true" />
                 <div className="heroText">
                     <div className="hero-copy">
-                        <span className="hero-eyebrow">{WRAP_YEAR} SEASON RECAP</span>
-                        <h1>Your Year on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
+                        <span className="hero-eyebrow">LEAGUE OF LEGENDS STATS</span>
+                        <h1>Your Stats on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
                         <p style={{maxWidth:"760px", textWrap:"pretty"}}>
-                            See your <strong>{WRAP_YEAR}</strong> <strong>League of Legends</strong> year for what it really was: your main, your best (and worst) games, and exactly how many hours you lost to the Rift.
+                            Track your <strong>League of Legends</strong> stats for what they really are: your main, your best (and worst) games, and exactly how many hours you've lost to the Rift.
                         </p>
                     </div>
 
@@ -176,7 +176,7 @@ export default function Home() {
                                 </span>
 
                                 <button type="submit" id="submitBtn">
-                                    Unwrap My Year!
+                                    Unwrap My Stats!
                                 </button>
                             </div>
 
@@ -224,7 +224,7 @@ export default function Home() {
                 </div>
 
                 <h2 className="hero-join-line">
-                    Don't see your name? Join <span style={{ fontWeight: "700", color: "var(--accent-color)" }}><i>{numUsers}+ players</i></span> who've already gotten their <strong>Wraps</strong>.
+                    Don't see your name? Join <span style={{ fontWeight: "700", color: "var(--accent-color)" }}><i>{numUsers}+ players</i></span> who are already tracking their <strong>stats</strong>.
                 </h2>
             </div>
         </>
