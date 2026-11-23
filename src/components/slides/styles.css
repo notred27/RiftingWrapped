@@ -643,10 +643,6 @@
         font-size: clamp(30px, 9.5vw, 38px);
     }
 
-    .slide-media .kill-detail-map {
-        max-width: 150px;
-    }
-
     .champ-hero__splash {
         aspect-ratio: 16 / 6;
     }
@@ -663,5 +659,22 @@
        on desktop, and here they pushed the slide past one screen. */
     .slide-body .compact-entry:nth-of-type(n + 3) {
         display: none;
+    }
+}
+
+/* ---------- Short laptop windows ----------
+   Width says desktop but there's only ~600px of slide: tighter gaps so the
+   two-column slides fit one screen. */
+@media (min-width: 641px) and (max-height: 760px) {
+    .slide-card {
+        --slide-gap: var(--space-4);
+    }
+
+    .slide-card--split {
+        row-gap: var(--space-4);
+    }
+
+    .kda-chart {
+        height: 220px;
     }
 }

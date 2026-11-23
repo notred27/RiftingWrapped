@@ -89,8 +89,11 @@
             --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
             --font-display: "Bricolage Grotesque", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 
-            /* Type scale — fixed sizes for UI text, fluid clamp()s for the
-               slide-deck's big "flex" numbers and hero display moments. */
+            /* Type scale — fixed sizes for UI text (the same at every width,
+               16px body like most sites), fluid clamp()s for the slide-deck's
+               big "flex" numbers and hero display moments. The display sizes
+               also follow screen height (dvh) so a short laptop window
+               shrinks them instead of overflowing the slide. */
             --fs-2xs: 12px;
             --fs-xs: 14px;
             --fs-sm: 16px;
@@ -98,22 +101,9 @@
             --fs-lg: 24px;
             --fs-xl: 28px;
             --fs-2xl: 36px;
-            --fs-display-sm: clamp(20px, 5vw, 32px);
-            --fs-display-md: clamp(28px, 7vw, 44px);
-            --fs-display-lg: clamp(40px, 12vw, 72px);
-        }
-
-        /* Wider screens get a larger type scale so slides don't read as a
-           phone layout floating in empty space. */
-        @media (min-width: 1024px) {
-            :root {
-                --fs-xs: 15px;
-                --fs-sm: 17px;
-                --fs-md: 22px;
-                --fs-display-sm: 36px;
-                --fs-display-md: 52px;
-                --fs-display-lg: 84px;
-            }
+            --fs-display-sm: clamp(20px, min(5vw, 4dvh), 30px);
+            --fs-display-md: clamp(28px, min(7vw, 6dvh), 44px);
+            --fs-display-lg: clamp(40px, min(12vw, 9dvh), 64px);
         }
 
         /* Border-box reset. This lives here, with the tokens, because this block
