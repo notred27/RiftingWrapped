@@ -212,7 +212,7 @@ export default function Home() {
                 <div className="marquee-section">
                     <div className="marquee-frame">
                         <h2 className="hero-join-line">
-                    Don't see your name? Join <span style={{ fontWeight: "700", color: "var(--accent-color)" }}><i>{numUsers}+ players</i></span> who are already tracking their <strong>stats</strong>.
+                    Don't see your name? Join <span style={{ fontWeight: "700", color: "var(--accent-text)" }}><i>{numUsers}+ players</i></span> who are already tracking their <strong>stats</strong>.
                 </h2>
                         <div className="marquee-clip">
                             <PlayerMarquee />

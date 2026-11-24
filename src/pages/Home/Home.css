@@ -314,10 +314,12 @@ body,
 .marquee-corner--br { bottom: 0; right: 0; border-bottom: 1px solid; border-right: 1px solid; }
 
 
-.search-error {
+/* .heroText scope: otherwise `.heroText p` (muted gray, larger text) wins and
+   the error doesn't look like an error. */
+.heroText .search-error {
     max-width: 400px;
     font-size: var(--fs-xs);
-    color: var(--accent-color);
+    color: var(--danger);
 }
 
 .hero-search-note {

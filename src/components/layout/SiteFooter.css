@@ -78,7 +78,7 @@
 }
 
 .site-footer__cta:hover .site-footer__cta-value {
-    color: var(--accent-color);
+    color: var(--accent-text);
 }
 
 .site-footer__corner {

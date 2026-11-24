@@ -68,6 +68,10 @@
             --text-color: #FFFFFF;
             --text-muted-color: #9DA3A6;
 
+            /* Status. Errors get their own red so they never read as a
+               brand highlight; >= 5.7:1 on every surface. */
+            --danger: #f87171;
+
             /* Chart palette - validated for colour-blind separation and >= 3:1
                contrast on both background surfaces. Kills/deaths, damage types
                and roles each keep one colour everywhere they appear. */
@@ -75,11 +79,10 @@
             --chart-2: #d95926;           /* orange */
             --chart-3: #199e70;           /* aqua */
             --chart-4: #c98500;           /* yellow */
-            --chart-5: #d55181;           /* magenta */
             --chart-violet: #9085e9;
             --chart-kills: var(--chart-2);
             --chart-deaths: var(--chart-1);
-            --chart-muted: #4a515c;       /* non-highlighted bars */
+            --chart-muted: #68707c;       /* non-highlighted bars; >= 3:1 on every surface */
             --chart-grid: rgba(255, 255, 255, 0.07);
             --chart-axis: #9DA3A6;
 

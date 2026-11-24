@@ -17,7 +17,7 @@ export const theme = {
 	get bg() { return cssVar('--bg-color', '#0a0e14'); },
 	get accent() { return cssVar('--accent-color', '#c52184'); },
 	get accentText() { return cssVar('--accent-text', '#e0428f'); },
-	get muted() { return cssVar('--chart-muted', '#4a515c'); },
+	get muted() { return cssVar('--chart-muted', '#68707c'); },
 	get grid() { return cssVar('--chart-grid', 'rgba(255, 255, 255, 0.07)'); },
 	get axis() { return cssVar('--chart-axis', '#9DA3A6'); },
 	get kills() { return cssVar('--chart-kills', '#d95926'); },
