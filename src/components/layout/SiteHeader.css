@@ -2,7 +2,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px clamp(16px, 5vw, 64px);
+    padding: var(--space-3) clamp(var(--space-4), 5vw, 64px);
     background-color: var(--second-bg-color);
     color: var(--text-color);
     border-bottom: 1px solid var(--border-subtle);
@@ -14,7 +14,7 @@
 .site-header__brand {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2);
     text-decoration: none;
 }
 
@@ -33,7 +33,7 @@
 .site-header__nav {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: var(--space-5);
 }
 
 .site-header__nav a {
@@ -51,7 +51,7 @@
 
 .site-header__support {
     position: relative;
-    padding: 6px 14px;
+    padding: var(--space-2) var(--space-4);
 }
 
 .site-header__support:hover {
@@ -75,8 +75,8 @@
     .site-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
-        padding: 12px 16px;
+        gap: var(--space-3);
+        padding: var(--space-3) var(--space-4);
     }
 
     .site-header__nav {

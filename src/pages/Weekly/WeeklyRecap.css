@@ -68,8 +68,8 @@
 .wk-tag {
     color: var(--text-muted-color);
     font-weight: 600;
-    font-size: 0.6em;
-    margin-left: 2px;
+    font-size: var(--fs-xs);
+    margin-left: var(--space-1);
 }
 
 /* Week picker */
@@ -256,7 +256,7 @@
 
 .wk-result {
     margin-left: auto;
-    padding: 2px var(--space-2);
+    padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-pill);
     font-size: var(--fs-2xs);
     font-weight: 800;
@@ -278,7 +278,7 @@
 .wk-award {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-1);
     padding: var(--space-3);
     border-radius: var(--radius-md);
     background: var(--surface-2);

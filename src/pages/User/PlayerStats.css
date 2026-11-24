@@ -23,7 +23,7 @@
 @media (max-width: 768px) {
     #PositionBreakdownContainer {
         flex-direction: column;
-        gap: 15px;
+        gap: var(--space-4);
         width: 95vw;
         height: auto;
     }
@@ -44,7 +44,7 @@
 @media (max-width: 768px) {
     #DamageSectionContainer {
         grid-template-columns: 1fr;
-        gap: 15px;
+        gap: var(--space-4);
         min-width: auto;
         width: 95vw;
     }
@@ -54,14 +54,14 @@
 #ChampHistogram {
     width: 400px;
     margin-left: 50px;
-    margin-top: 30px;
+    margin-top: var(--space-6);
 }
 
 @media (max-width: 768px) {
     #ChampHistogram {
         width: 90vw;
         margin-left: 0;
-        margin-top: 20px;
+        margin-top: var(--space-5);
     }
 }
 
@@ -69,7 +69,7 @@
 #SurrenderGrid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    column-gap: 20px;
+    column-gap: var(--space-5);
     width: 80vw;
     height: 60px;
     justify-content: center;
@@ -87,7 +87,7 @@
 #ChampName {
     font-weight: 300;
     text-align: left;
-    margin-bottom: 5px;
+    margin-bottom: var(--space-1);
 }
 
 
@@ -106,7 +106,7 @@
 
 .roleHeader {
     font-weight: 800;
-    margin: 2px;
+    margin: var(--space-1);
 }
 
 
@@ -116,7 +116,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 20px;
+    gap: var(--space-5);
 }
 
 .centeredRow {
@@ -139,7 +139,7 @@
 }
 
 .centeredText {
-    margin: 5px;
+    margin: var(--space-1);
     text-align: center;
 }
 
@@ -160,7 +160,7 @@
 
 
 .tableEntry {
-    padding: 5px 0px 5px 0px;
+    padding: var(--space-1) 0px var(--space-1) 0px;
     display: grid;
     grid-template-columns: 20% 20% 20% 20% 20%;
     min-width: 600px;
@@ -174,7 +174,7 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    margin: 4px 0px 4px 0px;
+    margin: var(--space-1) 0px var(--space-1) 0px;
 }
 
 .tableEntry span {
@@ -188,7 +188,7 @@
     .tableEntry {
         grid-template-columns: 1fr 1fr;
         min-width: auto;
-        gap: 5px;
+        gap: var(--space-1);
     }
 }
 
@@ -247,7 +247,7 @@
     .champSectionWrapper {
         flex-direction: column;
         align-items: center;
-        gap: 20px;
+        gap: var(--space-5);
     }
 
     .champText {
@@ -345,7 +345,7 @@
 @media (max-width: 768px) {
     .splitColumn {
         flex-direction: column;
-        gap: 15px;
+        gap: var(--space-4);
     }
 
     .verticalSpacing {
@@ -354,7 +354,7 @@
 
     .chartContainer {
         width: 95vw;
-        margin: 20px auto;
+        margin: var(--space-5) auto;
     }
 }
 
@@ -362,7 +362,7 @@
 .champTableGrid {
     position: relative;
     width: 50px;
-    margin-left: 20px;
+    margin-left: var(--space-5);
 }
 
 
@@ -412,8 +412,8 @@
     font-weight: 500;
     color: var(--text-muted-color);
     text-align: center;
-    margin-top: 4px;
-    margin-bottom: 12px;
+    margin-top: var(--space-1);
+    margin-bottom: var(--space-3);
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }

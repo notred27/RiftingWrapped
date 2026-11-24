@@ -1,6 +1,6 @@
 export default function UserIntroFallback({ year }) {
     return (
-        <div style={{ textAlign: "center", opacity: "0.1", paddingTop: "30px" }}>
+        <div style={{ textAlign: "center", opacity: "0.1", paddingTop: "var(--space-6)" }}>
             <div
                 style={{
                     width: "200px",
@@ -19,7 +19,7 @@ export default function UserIntroFallback({ year }) {
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
-                    margin: "6px 0 2px",
+                    margin: "var(--space-2) 0 var(--space-1)",
                 }}
             >
                 USER#TAG

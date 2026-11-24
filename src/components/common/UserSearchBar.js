@@ -128,13 +128,13 @@ export default function UserSearchBar() {
     function renderRow(user) {
         return (
             <div style={{ color: "var(--text-color)", display: "flex", flexDirection: "row", justifyContent: "flex-start", alignItems: "center" }}>
-                <img alt="user-icon" src={user.icon} style={{ width: "25px", height: "25px", borderRadius: "4px", marginRight: "4px" }} />
+                <img alt="user-icon" src={user.icon} style={{ width: "25px", height: "25px", borderRadius: "4px", marginRight: "var(--space-1)" }} />
                 <span>{user.displayName}#{user.tag ?? ""}</span>
                 <span style={{
                     border: "1px solid rgba(255, 255, 255, 0.15)",
                     color: "var(--text-muted-color)",
-                    marginLeft: "6px",
-                    padding: "2px 5px",
+                    marginLeft: "var(--space-2)",
+                    padding: "var(--space-1) var(--space-1)",
                     borderRadius: "3px",
                     fontSize: "var(--fs-2xs)",
                     textTransform: "uppercase",
@@ -205,7 +205,7 @@ export default function UserSearchBar() {
                                             onClick={() => selectUser(user)}
                                             onMouseEnter={() => setHighlightIndex(i)}
                                             style={{
-                                                padding: "8px 10px",
+                                                padding: "var(--space-2) var(--space-3)",
                                                 cursor: "pointer",
                                             }}
                                         >

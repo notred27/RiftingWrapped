@@ -58,7 +58,7 @@ export default function SummaryCard({ year }) {
                         <p className="username">
                             {userInfo.displayName.toUpperCase()}<span className="tag">#{userInfo.tag.toUpperCase()}</span>
                         </p>
-                        <div style={{ marginTop: 2 }}>
+                        <div style={{ marginTop: "var(--space-1)" }}>
                             <span className="appName" style={{ background: "rgba(255,255,255,0.03)", fontWeight: 800 }}>
                                 RIFTING WRAPPED {year}
                             </span>
@@ -110,7 +110,7 @@ export default function SummaryCard({ year }) {
                     <div id="kill-stats" className="big-stat">
                         <div className="big-stat__text">
                             <div className="num">{(combatStats?.totalKills ?? 0).toLocaleString()}</div>
-                            <div className="label" style={{ paddingBottom: "4px" }}>Kills</div>
+                            <div className="label" style={{ paddingBottom: "var(--space-1)" }}>Kills</div>
                         </div>
 
                         <MapOverlay type="kills" />
@@ -121,7 +121,7 @@ export default function SummaryCard({ year }) {
                         <div className="big-stat__text">
 
                             <div className="num">{(combatStats?.totalDeaths ?? 0).toLocaleString()}</div>
-                            <div className="label" style={{ paddingBottom: "4px" }}>Deaths</div>
+                            <div className="label" style={{ paddingBottom: "var(--space-1)" }}>Deaths</div>
                         </div>
                         <MapOverlay type="deaths" />
 
@@ -142,7 +142,7 @@ export default function SummaryCard({ year }) {
 
 
                 <div className="card-footer">
-                    <img src="/favicon-32x32.png" alt="logo" style={{ height: "16px", width: "16px", paddingBottom: "2px" }} />
+                    <img src="/favicon-32x32.png" alt="logo" style={{ height: "16px", width: "16px", paddingBottom: "var(--space-1)" }} />
                     <div>RIFTINGWRAPPED.COM</div>
                 </div>
             </div>

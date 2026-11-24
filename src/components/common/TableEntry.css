@@ -1,11 +1,11 @@
 .compact-entry {
 	display: flex;
 	align-items: center;
-	gap: 12px;
+	gap: var(--space-3);
 	background: var(--second-bg-color);
 	border: 1px solid var(--border-subtle);
 	border-radius: var(--radius-md);
-	padding: 10px 12px;
+	padding: var(--space-3) var(--space-3);
 	cursor: pointer;
 	margin: 0 0 var(--space-2);
 }
@@ -54,9 +54,9 @@
    names ("Ranked Solo") also overflowed their column at this width. */
 @media (max-width: 640px) {
 	.compact-entry {
-		gap: 8px;
-		padding: 6px 8px;
-		margin: 0 0 6px;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-2);
+		margin: 0 0 var(--space-2);
 	}
 
 	.champion-icon-table {
@@ -66,7 +66,7 @@
 	}
 
 	.compact-entry-date {
-		font-size: 11px;
+		font-size: var(--fs-2xs);
 	}
 
 	.compact-entry-kda {

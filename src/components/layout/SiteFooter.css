@@ -1,15 +1,15 @@
 .site-footer {
     background-color: var(--second-bg-color);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding: clamp(24px, 4vh, 48px) clamp(16px, 5vw, 64px);
+    padding: clamp(var(--space-5), 4vh, var(--space-7)) clamp(var(--space-4), 5vw, 64px);
     display: grid;
     grid-template-columns: 1fr auto;
     grid-template-areas:
         "brand cols"
 
         "bottom bottom";
-    column-gap: 32px;
-    row-gap: 28px;
+    column-gap: var(--space-6);
+    row-gap: var(--space-6);
     align-items: start;
 }
 
@@ -18,14 +18,14 @@
     grid-area: brand;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--space-2);
     text-wrap-mode: nowrap;
 }
 
 .site-footer__brand-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2);
     color: var(--text-color);
     text-decoration: none;
 }
@@ -56,10 +56,10 @@
     grid-area: cta;
     position: relative;
     justify-self: end;
-    padding: 14px 22px;
+    padding: var(--space-4) var(--space-5);
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1);
     text-decoration: none;
     min-width: 220px;
 }
@@ -101,7 +101,7 @@
     max-width: 100ch;
     margin: 0;
     color: var(--text-muted-color);
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     line-height: 1.6;
     text-align: left;
 }
@@ -111,8 +111,8 @@
     grid-area: cols;
     display: grid;
     grid-template-columns: repeat(4, auto);
-    column-gap: 48px;
-    row-gap: 24px;
+    column-gap: var(--space-7);
+    row-gap: var(--space-5);
     justify-self: end;
 }
 
@@ -128,14 +128,14 @@
     color: var(--text-color);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin: 0 0 2px;
+    margin: 0 0 var(--space-1);
 }
 
-/* 44px tap rows; the old 8px gap is absorbed into the row height */
+/* 32px rows: tighter list, still above the 24px WCAG 2.2 AA tap-target minimum */
 .site-footer__col a {
     display: flex;
     align-items: center;
-    min-height: 44px;
+    min-height: var(--space-6);
     color: var(--text-muted-color);
     text-decoration: none;
     font-size: var(--fs-xs);
@@ -152,8 +152,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 16px;
-    padding-top: 20px;
+    gap: var(--space-4);
+    padding-top: var(--space-5);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     font-size: var(--fs-2xs);
     color: var(--text-muted-color);
@@ -162,7 +162,7 @@
 .site-footer__copyright {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-2);
 }
 
 .site-footer__copyright img {
@@ -192,7 +192,7 @@
 
     .site-footer__cols {
         grid-template-columns: repeat(2, max-content);
-        column-gap: clamp(32px, 10vw, 96px);
+        column-gap: clamp(var(--space-6), 10vw, 96px);
         justify-self: start;
     }
 }

@@ -12,7 +12,7 @@ const placeholderStyle = {
     textAlign: 'center',
     color: 'var(--text-muted-color)',
     fontSize: 'var(--fs-xs)',
-    padding: '20px 0',
+    padding: 'var(--space-5) 0',
 };
 
 export default function PlayerMarquee() {

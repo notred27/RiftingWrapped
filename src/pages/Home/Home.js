@@ -147,7 +147,7 @@ export default function Home() {
                 <img className="heroOverlay" src={bg_image} alt="" aria-hidden="true" />
                 <div className="heroText">
                     <div className="hero-copy">
-                        <h1>Your Stats on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
+                        <h1>Your Stats on the Rift, <span className="hero-title-accent">Unwrapped.</span></h1>
                         <p style={{maxWidth:"760px", textWrap:"pretty"}}>
                             How many hours have you really spent on League? Enter your Riot ID to see your champs, best and worst games, and time you spent on the Rift. Updates daily!
                         </p>
@@ -210,21 +210,16 @@ export default function Home() {
                 </div>
 
                 <div className="marquee-section">
-                    <span className="hero-eyebrow">Other Players' Wraps</span>
                     <div className="marquee-frame">
-                        <span className="marquee-corner marquee-corner--tl" />
-                        <span className="marquee-corner marquee-corner--tr" />
-                        <span className="marquee-corner marquee-corner--bl" />
-                        <span className="marquee-corner marquee-corner--br" />
+                        <h2 className="hero-join-line">
+                    Don't see your name? Join <span style={{ fontWeight: "700", color: "var(--accent-color)" }}><i>{numUsers}+ players</i></span> who are already tracking their <strong>stats</strong>.
+                </h2>
                         <div className="marquee-clip">
                             <PlayerMarquee />
                         </div>
                     </div>
                 </div>
 
-                <h2 className="hero-join-line">
-                    Don't see your name? Join <span style={{ fontWeight: "700", color: "var(--accent-color)" }}><i>{numUsers}+ players</i></span> who are already tracking their <strong>stats</strong>.
-                </h2>
             </div>
         </>
     );

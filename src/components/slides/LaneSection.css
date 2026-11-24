@@ -24,13 +24,13 @@
     border-radius: var(--radius-md);
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: var(--space-3);
 }
 
 .position-breakdown-role {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2);
     font-size: var(--fs-xs);
     color: var(--text-color);
     white-space: nowrap;

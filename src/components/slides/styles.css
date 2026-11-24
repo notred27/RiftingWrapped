@@ -238,7 +238,7 @@
     color: var(--accent-text);
     font-size: var(--fs-2xs);
     font-weight: 500;
-    padding: 4px 12px;
+    padding: var(--space-1) var(--space-3);
     border-radius: var(--radius-pill);
 }
 
@@ -285,14 +285,14 @@
 
 .intro-badge {
     display: inline-block;
-    margin-bottom: 24px;
+    margin-bottom: var(--space-5);
 }
 
 .intro-avatar-wrap {
     position: relative;
     width: 120px;
     height: 120px;
-    margin: 0 auto 20px;
+    margin: 0 auto var(--space-5);
 }
 
 .intro-avatar {
@@ -314,7 +314,7 @@
     color: var(--bg-color);
     font-size: var(--fs-2xs);
     font-weight: 700;
-    padding: 3px 9px;
+    padding: var(--space-1) var(--space-2);
     border-radius: 20px;
     border: 2px solid var(--bg-color);
 }
@@ -325,7 +325,7 @@
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    margin: 0 0 4px;
+    margin: 0 0 var(--space-1);
     animation: intro-fade-up 0.5s 0.1s ease both;
 }
 
@@ -333,7 +333,7 @@
     font-family: var(--font-display);
     font-size: var(--fs-display-md);
     font-weight: 800;
-    margin: 0 0 24px;
+    margin: 0 0 var(--space-5);
     letter-spacing: -0.01em;
     animation: intro-fade-up 0.5s 0.15s ease both;
 }
@@ -351,8 +351,8 @@
 .intro-swipe-cue {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    margin-top: 40px;
+    gap: var(--space-2);
+    margin-top: var(--space-7);
     color: var(--text-muted-color);
     font-size: var(--fs-2xs);
     font-weight: 700;
@@ -399,9 +399,9 @@
 .champ-hero {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: var(--space-5);
     text-align: left;
-    margin-bottom: 24px;
+    margin-bottom: var(--space-5);
 }
 
 .champ-hero__portrait {
@@ -421,7 +421,7 @@
 }
 
 .champ-hero__text .subtitle {
-    margin: 0 0 4px;
+    margin: 0 0 var(--space-1);
 }
 
 .champ-hero__name {
@@ -430,7 +430,7 @@
     font-weight: 900;
     color: var(--accent-text);
     line-height: 1;
-    margin: 0 0 6px;
+    margin: 0 0 var(--space-2);
 }
 
 @media (max-width: 768px) {
@@ -452,14 +452,6 @@
 @media (max-width: 640px) {
     .slide-card {
         --slide-gap: var(--space-4);
-    }
-
-    .slide-title {
-        font-size: clamp(34px, 11vw, 48px);
-    }
-
-    .slide-title--quiet {
-        font-size: clamp(26px, 8vw, 34px);
     }
 
     .slide-eyebrow {
@@ -491,7 +483,7 @@
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
     align-items: end;
-    gap: 4px;
+    gap: var(--space-1);
     height: 200px;
     width: 100%;
 }
@@ -528,7 +520,7 @@
 }
 
 .month-chart__value {
-    margin-bottom: 4px;
+    margin-bottom: var(--space-1);
     color: var(--text-muted-color);
     font-size: var(--fs-2xs);
     font-variant-numeric: tabular-nums;
@@ -540,16 +532,9 @@
 }
 
 .month-chart__label {
-    margin-top: 6px;
+    margin-top: var(--space-2);
     color: var(--text-muted-color);
     font-size: var(--fs-2xs);
-}
-
-@media (max-width: 400px) {
-    .month-chart__value,
-    .month-chart__label {
-        font-size: 10px;
-    }
 }
 
 /* ---------- Shared HTML chart legend ---------- */
@@ -568,7 +553,7 @@
 .chart-legend li {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-2);
 }
 
 .chart-legend__swatch {
@@ -614,7 +599,7 @@
     }
 
     .slide-card:has(.share-actions) .slide-title {
-        font-size: clamp(30px, 9.5vw, 40px);
+        font-size: var(--fs-display-md);
     }
 }
 
@@ -641,7 +626,7 @@
     }
 
     .slide-title {
-        font-size: clamp(30px, 9.5vw, 38px);
+        font-size: var(--fs-display-md);
     }
 
     .champ-hero__splash {

@@ -1,13 +1,9 @@
 #ping-stats {
   grid-area: 1 / 4 / 2 / 5;
-  max-height: 100px;
-  height: 100px;
 }
 
 #hour-stats {
   grid-area: 1 / 3 / 2 / 4;
-   max-height: 100px;
-  height: 100px;
 }
 
 
@@ -23,9 +19,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   justify-content: center;
-  padding: 16px;
+  padding: var(--space-4);
   background: transparent;
 }
 
@@ -35,7 +31,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-2);
   width: 100%;
 }
 
@@ -61,7 +57,7 @@
   text-align: center;
   background: var(--bg-grad);
   border-radius: var(--card-radius);
-  padding: 20px;
+  padding: var(--space-5);
   box-sizing: border-box;
 
 }
@@ -70,7 +66,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 14px;
+  gap: var(--space-4);
   margin-bottom: 0px;
   height: fit-content;
 }
@@ -94,12 +90,12 @@
 .username .tag {
   color: var(--muted);
   font-size: var(--fs-xl);
-  margin-left: 6px;
+  margin-left: var(--space-2);
   font-weight: 900;
 }
 
 .splash-wrap {
-  margin-top: 22px;
+  margin-top: var(--space-5);
   height: 780px;
   border-radius: 18px;
   overflow: hidden;
@@ -125,7 +121,6 @@
   height: 140px;
   overflow: hidden;
   border-radius: 10px;
-  margin-bottom: 10px;
 }
 
 .summary-splash img {
@@ -140,7 +135,7 @@
   position: absolute;
   left: 4px;
   top: 4px;
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(6px);
@@ -149,20 +144,21 @@
 }
 
 .stats-grid {
-  margin-top: 10px;
+  margin-top: var(--space-3);
   display: grid;
   /* minmax(0, ...) so a wide child (splash art, charts) can't floor a track and
      make the columns uneven */
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  align-items: center;
+  gap: var(--space-2);
+  /* bento: cells stretch to the tallest neighbour in their row */
+  align-items: stretch;
 }
 
 .stat-card {
   background: var(--second-bg-color);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 18px;
+  padding: var(--space-4);
   height: 100%;
   /* min-height: 100px; */
   box-sizing: border-box;
@@ -177,7 +173,7 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .stat-number {
@@ -193,8 +189,8 @@
   background: var(--second-bg-color);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 6px;
-  padding-top: 10px;
+  padding: var(--space-2);
+  padding-top: var(--space-3);
   text-align: center;
 }
 
@@ -217,15 +213,15 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 12px;
-  padding-top: 18px;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
   font-weight: 900;
 }
 
 
 .appName {
   font-family: var(--font-display);
-  padding: 6px 10px;
+  padding: var(--space-2) var(--space-3);
   border-radius: 10px;
   font-size: var(--fs-2xs);
 }
@@ -236,7 +232,7 @@
   grid-template-columns: auto auto;
   justify-content: center;
   align-items: end;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 
@@ -247,7 +243,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .role-stats__donut {
@@ -260,7 +256,7 @@
   /* The slide already has side padding; don't add more around the card. */
   .summary-wrapper {
     padding: 0;
-    gap: 10px;
+    gap: var(--space-3);
   }
 }
 
@@ -275,8 +271,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 6px;
-    padding: 8px 10px;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
     min-width: 0;
   }
 
@@ -293,7 +289,7 @@
     width: 100%;
     max-width: 420px;
     height: fit-content;
-    padding: 12px;
+    padding: var(--space-3);
     border-radius: 12px;
   }
 
@@ -320,17 +316,17 @@
   }
 
   .role-stats__body {
-    gap: 2px;
+    gap: var(--space-1);
   }
 
   .appName {
     font-size: var(--fs-2xs);
-    padding: 2px 4px;
+    padding: var(--space-1) var(--space-1);
     border-radius: 2px;
   }
 
   .top-row {
-    gap: 4px;
+    gap: var(--space-1);
   }
 
   .top-row img.avatar {
@@ -345,7 +341,7 @@
 
   .username .tag {
     font-size: var(--fs-xs);
-    margin-left: 6px;
+    margin-left: var(--space-2);
   }
 
   .splash-wrap {
@@ -356,15 +352,15 @@
   .overlay-badge {
     left: 4px;
     top: 4px;
-    padding: 6px 8px;
+    padding: var(--space-2) var(--space-2);
     font-size: var(--fs-2xs);
     border-radius: 8px;
   }
 
   .stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-    margin-top: 4px;
+    gap: var(--space-2);
+    margin-top: var(--space-1);
   }
 
   /* The two heatmaps are square, so at a ~120px column they set the row height.
@@ -386,7 +382,7 @@
   }
 
   .stat-card {
-    padding: 8px 6px;
+    padding: var(--space-2) var(--space-2);
     min-height: 0;
     border-radius: 10px;
     text-align: center;
@@ -400,7 +396,7 @@
 
   .stat-label {
     font-size: var(--fs-2xs);
-    margin-bottom: 4px;
+    margin-bottom: var(--space-1);
   }
 
   .stat-number {
@@ -415,21 +411,18 @@
 
   .card-footer {
     justify-content: center;
-    padding-top: 8px;
+    padding-top: var(--space-2);
     font-size: var(--fs-2xs);
-    gap: 8px;
+    gap: var(--space-2);
   }
 
 
   #ping-stats {
     grid-area: 4 / 1 / 5 / 2;
-    height: fit-content;
   }
 
   #hour-stats {
     grid-area: 4 / 2 / 5 / 3;
-    height: fit-content;
-
   }
 
 }
@@ -462,7 +455,7 @@
   }
 
   .stats-grid {
-    gap: 6px;
+    gap: var(--space-2);
   }
 }
 
@@ -472,11 +465,11 @@
 @media (min-width: 901px) and (max-height: 820px) {
   .summary-wrapper {
     padding: 0;
-    gap: 8px;
+    gap: var(--space-2);
   }
 
   .summary-card {
-    padding: 12px;
+    padding: var(--space-3);
   }
 
   .top-row img.avatar {
@@ -489,7 +482,7 @@
   }
 
   .stat-card {
-    padding: 12px;
+    padding: var(--space-3);
   }
 
   .big-stat .kill-detail-map > div {
@@ -498,6 +491,6 @@
   }
 
   .card-footer {
-    padding-top: 10px;
+    padding-top: var(--space-3);
   }
 }

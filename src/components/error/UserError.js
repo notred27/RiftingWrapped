@@ -5,7 +5,7 @@ export default function UserError({ error }) {
     if (message.includes("404")) status = 404;
 
     return (
-        <div className="fade-in" style={{ textAlign: "center", padding: "40px" }}>
+        <div className="fade-in" style={{ textAlign: "center", padding: "var(--space-7)" }}>
             <h1>{status === 404 ? "404 – User Not Found" : "500 – Internal Server Error"}</h1>
 
             {status === 404 ?

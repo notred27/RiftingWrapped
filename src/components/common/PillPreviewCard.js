@@ -6,7 +6,7 @@ export default function PillPreviewCard({ username, icon, hoursPlayed, champName
                 position: "relative",
                 overflow: "hidden",
                 borderRadius: "4px",
-                margin: "10px",
+                margin: "var(--space-3)",
                 ...style,
             }}
             aria-label={`${username}'s Rifting Wrapped profile`}
@@ -23,12 +23,12 @@ export default function PillPreviewCard({ username, icon, hoursPlayed, champName
                     style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 25%" }}
                 />
                 <div style={{ position: "absolute", bottom: "0", left: "0", width: "100%", height: "50px", backgroundColor: "var(--second-bg-color)", boxShadow: "2px -2px 2px 2px var(--second-bg-color)" }}>
-                    <p style={{ padding: "10px", margin: "0px", fontSize: "var(--fs-2xs)", textAlign: "left", textWrap:"pretty" }}><strong>
+                    <p style={{ padding: "var(--space-3)", margin: "0px", fontSize: "var(--fs-2xs)", textAlign: "left", textWrap:"pretty" }}><strong>
 
                         <img
                             src={icon}
                             alt="user-icon"
-                            style={{ width: "14px", float: "left", marginRight: "4px", borderRadius: "2px" }}
+                            style={{ width: "14px", float: "left", marginRight: "var(--space-1)", borderRadius: "2px" }}
                         />
 
                         {username} </strong>spent <strong>{hoursPlayed}</strong>hrs on the Rift this year.</p>
@@ -51,7 +51,7 @@ export default function PillPreviewCard({ username, icon, hoursPlayed, champName
 //     width: "100%",
 //     maxWidth: 400,
 //     minWidth: 320,
-//     margin: "12px auto",
+//     margin: "var(--space-3) auto",
 //     display: "block",
 //     textAlign: "left",
 //   },
@@ -67,13 +67,13 @@ export default function PillPreviewCard({ username, icon, hoursPlayed, champName
 //   },
 //   title: {
 //     fontSize: 16,
-//     margin: "0 0 8px",
+//     margin: "0 0 var(--space-2)",
 //     color: "white",
 //     // fontWeight: "bold",
 //   },
 //   description: {
 //     fontSize: 13,
-//     margin: "0 0 6px",
+//     margin: "0 0 var(--space-2)",
 //     color: "white",
 //     lineHeight: 1.4,
 //   },

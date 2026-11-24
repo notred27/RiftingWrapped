@@ -47,7 +47,7 @@
     /* Centred with auto margins on the child (below) rather than
        justify-content: center - with overflow-y: auto, centring pushes the top
        of a tall slide above the scroll origin where it can't be scrolled to. */
-    padding: 40px 32px 32px;
+    padding: var(--space-7) var(--space-6) var(--space-6);
     box-sizing: border-box;
     background: var(--slide-bg, var(--bg-color));
     color: var(--slide-fg, var(--text-color));
@@ -64,7 +64,7 @@
     left: 12px;
     right: 12px;
     display: flex;
-    gap: 4px;
+    gap: var(--space-1);
     z-index: 20;
 }
 .progress-segment {
@@ -141,7 +141,7 @@
 @media (max-width: 640px) {
     .slide {
         /* Top padding clears the progress bar pinned at the top of the deck. */
-        padding: 28px 16px 16px;
+        padding: var(--space-6) var(--space-4) var(--space-4);
     }
 }
 
@@ -149,6 +149,6 @@
    less padding above and below each slide. */
 @media (min-width: 641px) and (max-height: 760px) {
     .slide {
-        padding: 24px 32px 16px;
+        padding: var(--space-5) var(--space-6) var(--space-4);
     }
 }

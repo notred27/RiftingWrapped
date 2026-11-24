@@ -15,11 +15,11 @@ body,
 /* ---------- Hero / Header / Search ---------- */
 #UserSelectRow {
     width: 80vw;
-    padding: 20px 0;
+    padding: var(--space-5) 0;
 }
 
 #PlayerNameHeader {
-    margin-bottom: 10px;
+    margin-bottom: var(--space-3);
     font-weight: 900;
 }
 
@@ -28,7 +28,7 @@ body,
     width: 100%;
     background: linear-gradient(120deg, var(--bg-color) 0%, #000 100%);
     color: var(--text-color);
-    padding: clamp(40px, 8vh, 120px) clamp(16px, 5vw, 80px);
+    padding: clamp(var(--space-7), 8vh, 120px) clamp(var(--space-4), 5vw, 80px);
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -80,7 +80,7 @@ body,
     align-items: flex-start;
     max-width: 600px;
     position: relative;
-    gap: 40px;
+    gap: var(--space-7);
 }
 
 .hero-copy {
@@ -99,27 +99,36 @@ body,
     /* color: var(--text-muted-color); */
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin-bottom: 10px;
+    margin-bottom: var(--space-3);
 }
 
 .heroText h1 {
     font-family: var(--font-display);
     font-size: var(--fs-display-md);
-    margin-bottom: 20px;
-    margin-top: 10px;
+    margin-bottom: var(--space-5);
+    margin-top: var(--space-3);
+}
+
+.hero-title-accent {
+    display: block;
+    font-size: var(--fs-display-lg);
+    font-weight: 900;
+    font-style: italic;
+    /* 800 is the font's heaviest cut; a same-color stroke thickens it further */
+    -webkit-text-stroke: 0.03em currentColor;
 }
 
 .heroText p {
     font-size: var(--fs-md);
     color: var(--text-muted-color);
-    margin-bottom: 30px;
+    margin-bottom: var(--space-6);
 }
 
 /* ---------- Search form controls ---------- */
 .searchForm {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: var(--space-3);
     align-items: flex-start;
     width: 100%;
 }
@@ -138,7 +147,7 @@ body,
     flex-direction: row;
     flex-wrap: wrap;
     align-items: stretch;
-    gap: 10px;
+    gap: var(--space-3);
     width: 100%;
 }
 
@@ -170,7 +179,7 @@ body,
 .hero-search-corner--br { bottom: -1px; right: -1px; border-bottom: 1px solid; border-right: 1px solid; }
 
 #nameInput {
-    padding: 0 12px 0 24px;
+    padding: 0 var(--space-3) 0 var(--space-5);
     font-size: var(--fs-md);
     border: none;
     border-radius: var(--radius-pill) 0 0 var(--radius-pill);
@@ -213,7 +222,7 @@ body,
     appearance: none;
     -webkit-appearance: none;
     height: 100%;
-    padding: 0 22px 0 36px;
+    padding: 0 var(--space-5) 0 var(--space-6);
     border: none;
     border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
     background: transparent;
@@ -235,7 +244,7 @@ body,
 
 
 #submitBtn {
-    padding: 12px 24px;
+    padding: var(--space-3) var(--space-5);
     font-size: var(--fs-sm);
     background: var(--accent-color);
     color: var(--text-color);
@@ -286,7 +295,7 @@ body,
 .marquee-frame {
     position: relative;
     width: 100%;
-    padding: 12px;
+    padding: var(--space-3);
     border-radius: 4px;
 }
 
@@ -321,7 +330,7 @@ body,
 }
 
 .hero-join-line {
-    margin: 20px 0 30px;
+    margin: var(--space-5) 0 var(--space-2);
     max-width: 700px;
     font-size: var(--fs-sm);
     font-weight: normal;
@@ -412,13 +421,13 @@ iframe {
 
 @media (max-width:900px) {
     /* .heroContainer {
-        padding: 48px 16px;
+        padding: var(--space-7) var(--space-4);
     } */
 
     .heroText {
         max-width: 560px;
-        padding: 0 8px;
-        gap: 24px;
+        padding: 0 var(--space-2);
+        gap: var(--space-5);
     }
 
     .heroText h1 {
@@ -435,8 +444,8 @@ iframe {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 8px;
-        padding: 12px 16px;
+        gap: var(--space-2);
+        padding: var(--space-3) var(--space-4);
     }
 
     .siteHeader .logo {
@@ -446,13 +455,13 @@ iframe {
 
     .navMenu {
         display: flex;
-        gap: 12px;
+        gap: var(--space-3);
         flex-wrap: wrap;
         justify-content: center;
     }
 
     .heroContainer {
-        /* padding: 36px 12px; */
+        /* padding: var(--space-6) var(--space-3); */
         align-items: center;
         text-align: center;
     }
@@ -498,7 +507,7 @@ iframe {
 
     #nameInput {
         font-size: var(--fs-sm);
-        /* padding: 10px 12px; */
+        /* padding: var(--space-3) var(--space-3); */
         /* border-radius: 8px; */
         max-width: 100%;
     }
@@ -508,7 +517,7 @@ iframe {
     #submitBtn {
         min-width: 0;
         min-height: 48px;
-        padding: 12px;
+        padding: var(--space-3);
         margin-top: 0;
         width: 100%;
     }
@@ -519,31 +528,31 @@ iframe {
 
     .scrollContainer {
         max-width: 100%;
-        margin: 16px 0;
+        margin: var(--space-4) 0;
         --scroll-speed: 40s;
         mask: linear-gradient(90deg, transparent, white 10%, white 90%, transparent);
         -webkit-mask: linear-gradient(90deg, transparent, white 10%, white 90%, transparent);
     }
 
     .scrollContent {
-        gap: .75rem;
-        padding-block: .5rem;
+        gap: var(--space-3);
+        padding-block: var(--space-2);
         width: max-content;
     }
 
     #FooterNote {
         font-size: var(--fs-2xs);
-        padding: 12px 16px;
+        padding: var(--space-3) var(--space-4);
     }
 
     /* .heroContainer {
-        padding-left: 12px;
-        padding-right: 12px;
+        padding-left: var(--space-3);
+        padding-right: var(--space-3);
     } */
 
     .heroText {
-        padding-left: 6px;
-        padding-right: 6px;
+        padding-left: var(--space-2);
+        padding-right: var(--space-2);
     }
 }
 /* Shortcut to the weekly recap for people who've looked themselves up before */
