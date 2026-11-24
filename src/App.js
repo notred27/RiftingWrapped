@@ -1,6 +1,6 @@
-import { lazy } from 'react';
+import { lazy, useEffect } from 'react';
 
-import { Navigate, Route, Routes, useParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useNavigationType, useParams } from 'react-router-dom';
 
 import SiteFooter from './components/layout/SiteFooter.js';
 import SiteHeader from './components/layout/SiteHeader.js';
@@ -10,6 +10,7 @@ const Home = lazy(() => import('./pages/Home/Home.js'));
 const FAQ = lazy(() => import('./pages/Policy/FAQ.js'));
 const TOS = lazy(() => import('./pages/Policy/TOS.js'));
 const Privacy = lazy(() => import('./pages/Policy/Privacy.js'));
+const HowItWorks = lazy(() => import('./pages/Policy/HowItWorks.js'));
 const AddingPlayer = lazy(() => import('./pages/User/AddingPlayer.js'));
 const PlayerStats = lazy(() => import('./pages/User/PlayerStats.js'));
 const WeeklyRecap = lazy(() => import('./pages/Weekly/WeeklyRecap.js'));
@@ -29,6 +30,12 @@ function ShareRedirect() {
 
 export default function App() {
     usePageTracking();
+    const { pathname } = useLocation();
+    const navType = useNavigationType();
+    // New pages open at the top; back/forward (POP) keeps the browser's own scroll restore.
+    useEffect(() => {
+        if (navType !== 'POP') window.scrollTo(0, 0);
+    }, [pathname, navType]);
     return (
         <>
             {/* <div> */}
@@ -42,6 +49,7 @@ export default function App() {
                         <Route path="/addPlayer/:puuid" element={<AddingPlayer />} />
                         <Route path="/s/:year/:puuid" element={<ShareRedirect />} />
                         <Route path="/faq" element={<FAQ />} />
+                        <Route path="/how-it-works" element={<HowItWorks />} />
                         <Route path="/terms" element={<TOS />} />
                         <Route path="/privacy" element={<Privacy />} />
                     </Routes>

@@ -14,7 +14,6 @@ export default function TermsOfService() {
 
             <main className="policyContainer">
                 <header className="policyHeader">
-                    <span className="policyEyebrow">Legal</span>
                     <h1>Terms of Service</h1>
                     <p className="policySubtitle">The rules for using Rifting Wrapped.</p>
                     <p className="policyUpdated">Last updated: {LAST_UPDATED}</p>

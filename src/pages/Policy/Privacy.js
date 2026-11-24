@@ -14,7 +14,6 @@ export default function PrivacyPolicy() {
 
             <main className="policyContainer">
                 <header className="policyHeader">
-                    <span className="policyEyebrow">Legal</span>
                     <h1>Privacy Policy</h1>
                     <p className="policySubtitle">How Rifting Wrapped handles data.</p>
                     <p className="policyUpdated">Last updated: {LAST_UPDATED}</p>

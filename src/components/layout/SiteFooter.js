@@ -19,7 +19,7 @@ export default function SiteFooter() {
                 <div className="site-footer__col">
                     <span className="site-footer__col-title">For Players</span>
                     <Link to="/">Yearly Review</Link>
-                    <Link to="/">How it Works</Link>
+                    <Link to="/how-it-works">How it Works</Link>
                     <Link to="/faq">FAQ</Link>
                     {/* <Link to="/">Weekly Review</Link>
                     <Link to="/">Yearly Review</Link> */}
