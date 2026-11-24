@@ -149,7 +149,7 @@ export default function Home() {
                     <div className="hero-copy">
                         <h1>Your Stats on the Rift, <span style={{ fontWeight: "bolder", fontStyle: "italic" }}>Unwrapped.</span></h1>
                         <p style={{maxWidth:"760px", textWrap:"pretty"}}>
-                            Track your <strong>League of Legends</strong> stats for what they really are: your main, your best (and worst) games, and exactly how many hours you've lost to the Rift.
+                            How many hours have you really spent on League? Enter your Riot ID to see your champs, best and worst games, and time you spent on the Rift. Updates daily!
                         </p>
                     </div>
 
