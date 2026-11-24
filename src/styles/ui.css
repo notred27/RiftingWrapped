@@ -11,25 +11,22 @@
     border: 1px solid transparent;
     border-radius: var(--radius-md);
     font-size: var(--fs-xs);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     line-height: 1.2;
     text-align: center;
     text-decoration: none;
     white-space: nowrap;
     cursor: pointer;
-    transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
+    transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease, transform var(--duration-fast) ease;
 }
 
 /* Press feedback: every tappable control responds the instant it's pressed,
    not on release. Lives here (loaded before any route CSS) so it's one rule. */
 .btn:not(:disabled):active,
-#submitBtn:active,
-.champion-grid-nav:not(:disabled):active,
-.wk-nav__btn:active,
 .compact-entry:active,
 .share-preview:active {
     transform: scale(0.97);
-    transition: transform 100ms ease-out;
+    transition: transform var(--duration-fast) ease-out;
 }
 
 /* Inline links can't be transformed, so they dim instead. */
@@ -64,8 +61,54 @@
     background: var(--surface-2);
 }
 
+/* Soft translucent fill for controls that sit on busy or tinted surfaces. */
+.btn--ghost {
+    background: var(--border-subtle);
+    color: var(--text-color);
+}
+
+.btn--ghost:hover:not(:disabled) {
+    background: var(--border-strong);
+}
+
 .btn--block {
     width: 100%;
+}
+
+.btn--pill {
+    border-radius: var(--radius-pill);
+}
+
+/* Square icon-only button (arrows, chevrons): 44px, the minimum touch target. */
+.btn--icon {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    font-size: var(--fs-lg);
+    line-height: 1;
+}
+
+/* Compact 28px circle for tight spots; ::before keeps a 44px hit area. */
+.btn--icon.btn--sm {
+    position: relative;
+    width: 28px;
+    height: 28px;
+    min-height: 28px;
+    border: none;
+    border-radius: var(--radius-round);
+    font-size: var(--fs-sm);
+}
+
+.btn--icon.btn--sm::before {
+    content: "";
+    position: absolute;
+    inset: -8px;
+}
+
+/* Icon buttons are disabled at the ends of a range, not while loading. */
+.btn--icon:disabled {
+    opacity: 0.3;
+    cursor: default;
 }
 
 .btn-row {

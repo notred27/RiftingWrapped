@@ -73,7 +73,7 @@ export default function ChampGrid({
       <div className="champion-grid-container">
         <button
           type="button"
-          className="champion-grid-nav champion-grid-nav-left"
+          className="btn btn--ghost btn--icon btn--sm champion-grid-nav"
           onClick={(e) => scrollByPage(e, -1)}
           disabled={!canScrollLeft}
           aria-label="Show previous champions"
@@ -104,7 +104,7 @@ export default function ChampGrid({
 
         <button
           type="button"
-          className="champion-grid-nav champion-grid-nav-right"
+          className="btn btn--ghost btn--icon btn--sm champion-grid-nav"
           onClick={(e) => scrollByPage(e, 1)}
           disabled={!canScrollRight}
           aria-label="Show more champions"

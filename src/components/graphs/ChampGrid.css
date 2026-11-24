@@ -51,42 +51,19 @@
 .champion-icon {
   width: 100%;
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   object-fit: contain;
-  transition: opacity 0.2s;
+  transition: opacity var(--duration-base);
   display: block;
 }
 .champion-icon.not-played {
   opacity: 0.2;
 }
 
-/* 28px circle, 44px hit area via ::before: no room for a bigger button beside the grid on phones */
+/* Looks come from .btn .btn--ghost .btn--icon .btn--sm (a 28px circle with a
+   44px hit area: no room for a bigger button beside the grid on phones). */
 .champion-grid-nav {
-  position: relative;
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: none;
-  background: var(--border-subtle);
-  color: var(--text-color);
-  font-size: var(--fs-sm);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.champion-grid-nav::before {
-  content: "";
-  position: absolute;
-  inset: -8px;
-}
-.champion-grid-nav:disabled {
-  opacity: 0.25;
-  cursor: default;
-}
-.champion-grid-nav:not(:disabled):hover {
-  background: var(--border-strong);
 }
 
 .champion-grid-toggle {

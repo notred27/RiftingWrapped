@@ -134,12 +134,12 @@ function WeeklyContent({ puuid, weeksAgo, setWeek, isOwner }) {
 			</header>
 
 			<nav className="wk-nav" aria-label="Choose a week">
-				<button className="wk-nav__btn" onClick={() => setWeek(weeksAgo + 1)} disabled={weeksAgo >= MAX_WEEKS_AGO} aria-label="Previous week">‹</button>
+				<button className="btn btn--secondary btn--icon" onClick={() => setWeek(weeksAgo + 1)} disabled={weeksAgo >= MAX_WEEKS_AGO} aria-label="Previous week">‹</button>
 				<div className="wk-nav__label">
 					<span className="wk-nav__range">{recap ? weekLabel(recap.weekStart, recap.weekEnd) : '…'}</span>
 					<span className="wk-nav__sub">{weeksAgo === 0 ? 'This week so far' : weeksAgo === 1 ? 'Last week' : `${weeksAgo} weeks ago`}</span>
 				</div>
-				<button className="wk-nav__btn" onClick={() => setWeek(weeksAgo - 1)} disabled={weeksAgo === 0} aria-label="Next week">›</button>
+				<button className="btn btn--secondary btn--icon" onClick={() => setWeek(weeksAgo - 1)} disabled={weeksAgo === 0} aria-label="Next week">›</button>
 			</nav>
 
 			{error && <p className="wk-error">Couldn't load this week. Please try again in a moment.</p>}

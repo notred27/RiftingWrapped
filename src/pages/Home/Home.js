@@ -159,8 +159,6 @@ export default function Home() {
                     <div className="hero-form-wrap">
 
                         <form onSubmit={fetchPlayer} className="searchForm">
-                            <label className="hero-search-eyebrow" htmlFor="nameInput">Find Your Wrapped</label>
-
                             <div className="hero-search-row">
                                 <span className="hero-search-box">
                                     {/* <span className="hero-search-corner hero-search-corner--tl" />
@@ -176,7 +174,7 @@ export default function Home() {
                                     </PlayerListProvider>
                                 </span>
 
-                                <button type="submit" id="submitBtn">
+                                <button type="submit" id="submitBtn" className="btn btn--primary btn--pill">
                                     Unwrap My Stats!
                                 </button>
                             </div>

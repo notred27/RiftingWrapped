@@ -74,10 +74,36 @@
             --chart-axis: #9DA3A6;
 
             /* Shape and spacing */
+            --radius-xs: 4px;             /* bars, chips, tiny swatches */
             --radius-sm: 6px;
             --radius-md: 10px;
             --radius-lg: 16px;
+            --radius-xl: 24px;            /* the share/summary card */
             --radius-pill: 999px;
+            --radius-round: 50%;
+
+            /* Elevation: one shadow for anything that floats over the page. */
+            --shadow-raised: 0 12px 32px rgba(0, 0, 0, 0.35);
+
+            /* Weights actually loaded from Google Fonts (Lato 400/700/900,
+               Bricolage 600-900); anything else is synthesised or rounded. */
+            --weight-regular: 400;
+            --weight-semibold: 600;
+            --weight-bold: 700;
+            --weight-heavy: 800;
+            --weight-black: 900;
+
+            /* Motion */
+            --duration-fast: 120ms;       /* hovers, presses */
+            --duration-base: 200ms;       /* small state changes */
+            --duration-slow: 350ms;       /* slides, large movement */
+            --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+            /* Stacking order, lowest to highest */
+            --z-raised: 1;
+            --z-overlay: 20;              /* deck progress bar */
+            --z-controls: 30;             /* deck prev/next buttons */
+            --z-header: 1000;
             /* rem so spacing grows with the reader's browser text size
                (identical to 4/8/12/16/24/32/48px at the default 16px). */
             --space-1: 0.25rem;

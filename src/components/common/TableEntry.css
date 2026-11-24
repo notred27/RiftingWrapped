@@ -17,7 +17,7 @@
 .champion-icon-table {
 	width: 36px;
 	height: 36px;
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -39,7 +39,7 @@
 
 .compact-entry-kda {
 	font-size: var(--fs-xs);
-	font-weight: 500;
+	font-weight: var(--weight-regular);
 	color: var(--text-color);
 }
 
@@ -62,7 +62,7 @@
 	.champion-icon-table {
 		width: 28px;
 		height: 28px;
-		border-radius: 6px;
+		border-radius: var(--radius-sm);
 	}
 
 	.compact-entry-date {
