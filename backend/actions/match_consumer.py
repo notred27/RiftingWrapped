@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+from bson import ObjectId
 from dotenv import load_dotenv
 from pymongo import MongoClient, ReturnDocument
 
@@ -33,6 +34,9 @@ POLL_INTERVAL = float(os.getenv("POLL_INTERVAL", "10.0"))          # seconds to 
 # cancelled or crashed mid-match. Must exceed MAX_RUN_SECONDS so we never reset
 # a match another run is still working on.
 STALE_PROCESSING_SECONDS = int(os.getenv("STALE_PROCESSING_SECONDS", str(30 * 60)))
+# The producer moves a sign-up out of "starting" within a minute or two of the
+# API dispatching it; one still there after this never got a working run.
+STALE_STARTING_SECONDS = int(os.getenv("STALE_STARTING_SECONDS", str(60 * 60)))
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("consumer")
@@ -89,6 +93,9 @@ class Consumer:
         2. Players still marked "pending" with nothing left in the queue - e.g.
            a re-scan that found no new matches - get finalized. Previously
            only processing one of that player's matches could finalize them.
+        3. Players stuck in "starting" (the dispatched producer run never
+           started, or died before it knew their puuid) become "failed", so
+           the waiting page stops spinning and searching again retries them.
         """
         cutoff = datetime.fromtimestamp(time.time() - STALE_PROCESSING_SECONDS, tz=timezone.utc)
         reset = matches_collection.update_many(
@@ -116,6 +123,21 @@ class Consumer:
 
         for player in player_collection.find({"status": "pending"}, {"puuid": 1, "_id": 0}):
             self._finalize_player_if_done(player["puuid"])
+
+        starting_cutoff = datetime.fromtimestamp(time.time() - STALE_STARTING_SECONDS, tz=timezone.utc)
+        stuck = player_collection.update_many(
+            {
+                "status": "starting",
+                "$or": [
+                    {"updated_at": {"$lt": starting_cutoff}},
+                    # Sign-ups from before the API stamped updated_at: use the insert time.
+                    {"updated_at": {"$exists": False}, "_id": {"$lt": ObjectId.from_datetime(starting_cutoff)}},
+                ],
+            },
+            {"$set": {"status": "failed", "error": "Processing never started", "updated_at": datetime.now(timezone.utc)}},
+        )
+        if stuck.modified_count:
+            logger.warning("Marked %d players stuck in 'starting' as failed", stuck.modified_count)
 
     def _finalize_player_if_done(self, puuid: str):
         """

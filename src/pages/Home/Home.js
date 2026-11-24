@@ -62,8 +62,10 @@ export default function Home() {
 
             const lookupUrl = `${apiUrl}/users/by-riot-id/${encodeURIComponent(displayName)}/${encodeURIComponent(tag)}/${region}`;
             let response = await fetch(lookupUrl);
+            const found = response.ok ? await response.clone().json() : null;
 
-            if (response.status === 404) {
+            // A failed player registers again; the API restarts their processing.
+            if (response.status === 404 || found?.status === 'failed') {
                 trackEvent('register_start', { region });
                 setSelectedPlayer(`Registering ${displayName}... this can take a minute.`);
 
