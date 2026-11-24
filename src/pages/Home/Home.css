@@ -20,7 +20,7 @@ body,
 
 #PlayerNameHeader {
     margin-bottom: var(--space-3);
-    font-weight: 900;
+    font-weight: var(--weight-black);
 }
 
 .heroContainer {
@@ -28,7 +28,9 @@ body,
     width: 100%;
     background: linear-gradient(120deg, var(--bg-color) 0%, #000 100%);
     color: var(--text-color);
-    padding: clamp(var(--space-7), 8vh, 120px) clamp(var(--space-4), 5vw, 80px);
+    --hero-pad-y: clamp(var(--space-7), 8vh, 120px);
+    --hero-pad-x: clamp(var(--space-4), 5vw, 80px);
+    padding: var(--hero-pad-y) var(--hero-pad-x);
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -54,9 +56,9 @@ body,
     content: '';
     position: absolute;
     inset: 0;
-    background: 
-        /* linear-gradient(to right, #0f1923 2%, transparent 20%, transparent 80%, #0f1923 98%), */
-        linear-gradient(to bottom, transparent 70%, #0d1317 100%);
+    /* The fade lives only in the hero's bottom padding, so it starts below the
+       player carousel instead of dimming it. */
+    background: linear-gradient(to bottom, transparent calc(100% - var(--hero-pad-y)), #0d1317 100%);
     pointer-events: none;
     z-index: 0;
 }
@@ -80,7 +82,7 @@ body,
     align-items: flex-start;
     max-width: 600px;
     position: relative;
-    gap: var(--space-7);
+    gap: var(--space-5);
 }
 
 .hero-copy {
@@ -95,7 +97,7 @@ body,
 .hero-eyebrow {
     display: block;
     font-size: var(--fs-2xs);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     /* color: var(--text-muted-color); */
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -105,6 +107,8 @@ body,
 .heroText h1 {
     font-family: var(--font-display);
     font-size: var(--fs-display-md);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
     margin-bottom: var(--space-5);
     margin-top: var(--space-3);
 }
@@ -112,7 +116,7 @@ body,
 .hero-title-accent {
     display: block;
     font-size: var(--fs-display-lg);
-    font-weight: 900;
+    font-weight: var(--weight-black);
     font-style: italic;
     /* 800 is the font's heaviest cut; a same-color stroke thickens it further */
     -webkit-text-stroke: 0.03em currentColor;
@@ -121,7 +125,8 @@ body,
 .heroText p {
     font-size: var(--fs-md);
     color: var(--text-muted-color);
-    margin-bottom: var(--space-6);
+    /* No bottom margin: the search sits right under the subtitle, spaced only by .heroText's gap. */
+    margin-bottom: 0;
 }
 
 /* ---------- Search form controls ---------- */
@@ -131,15 +136,6 @@ body,
     gap: var(--space-3);
     align-items: flex-start;
     width: 100%;
-}
-
-.hero-search-eyebrow {
-    align-self: flex-start;
-    font-size: var(--fs-2xs);
-    font-weight: 700;
-    color: var(--text-muted-color);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
 }
 
 .hero-search-row {
@@ -202,7 +198,7 @@ body,
     border-left: 1px solid var(--border-subtle);
     border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
     color: var(--text-muted-color);
-    transition: background-color 120ms ease, color 120ms ease;
+    transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease;
 }
 
 .region-picker:hover {
@@ -228,7 +224,7 @@ body,
     background: transparent;
     color: var(--text-color);
     font-size: var(--fs-sm);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     cursor: pointer;
 }
 
@@ -243,25 +239,13 @@ body,
 
 
 
+/* Looks come from .btn .btn--primary .btn--pill; this is only its place in the search row. */
 #submitBtn {
     padding: var(--space-3) var(--space-5);
     font-size: var(--fs-sm);
-    background: var(--accent-color);
-    color: var(--text-color);
-    border: none;
-    cursor: pointer;
-    border-radius: var(--radius-pill);
-    transition: background .2s ease;
-    white-space: nowrap;
     flex: 0 0 auto;
     align-self: stretch;
-    font-weight: 700;
-    width: auto;
     max-width: 100%;
-}
-
-#submitBtn:hover {
-    background: var(--accent-hover);
 }
 
 /* The name input sets outline: none, so show focus on its container instead -
@@ -281,26 +265,39 @@ body,
 
 
 .marqueeContainer {
+    /* Card size, read by .player-card (PillPreviewCard.css): square on phones,
+       landscape on desktop so more of the champion splash shows. */
+    --marquee-card-w: 180px;
+    --marquee-card-h: 180px;
     width: 100%;
     mask: linear-gradient(90deg, transparent, white 5%, white 95%, transparent);
     -webkit-mask: linear-gradient(90deg, transparent, white 5%, white 95%, transparent);
 }
 
+/* Carousel: one step of air above the join line, a smaller one between the
+   line and the cards. The join line stays aligned with the hero text; the
+   cards run edge to edge (see .marquee-clip). */
 .marquee-section {
+    position: relative;
+    z-index: var(--z-raised);
     width: 100%;
-    max-width: 900px;
-    margin-top: clamp(120px, 8vh, 180px);
+    margin-top: clamp(var(--space-6), 8vh, var(--space-7));
 }
 
 .marquee-frame {
     position: relative;
     width: 100%;
-    padding: var(--space-3);
-    border-radius: 4px;
 }
 
+@media (min-width: 769px) {
+    .marqueeContainer {
+        --marquee-card-w: 288px;
+    }
+}
+
+/* Full-bleed: pull out through the hero's side padding to the viewport edges. */
 .marquee-clip {
-    width: 100%;
+    margin-inline: calc(-1 * var(--hero-pad-x));
     overflow: hidden;
 }
 
@@ -330,20 +327,20 @@ body,
 }
 
 .hero-join-line {
-    margin: var(--space-5) 0 var(--space-2);
+    margin: 0 0 var(--space-4);
     max-width: 700px;
     font-size: var(--fs-sm);
-    font-weight: normal;
+    font-weight: var(--weight-regular);
     color: var(--text-muted-color);
     line-height: 1.6;
     text-align: left;
-    z-index: 1;
+    z-index: var(--z-raised);
     position: relative;
 }
 
 /* ---------- Loading dots & animations ---------- */
 .loading-text {
-    font-weight: bold;
+    font-weight: var(--weight-bold);
     animation: fadeInOut 2s infinite;
 }
 
@@ -450,7 +447,7 @@ iframe {
 
     .siteHeader .logo {
         font-size: var(--fs-sm);
-        font-weight: 800;
+        font-weight: var(--weight-heavy);
     }
 
     .navMenu {
@@ -482,10 +479,6 @@ iframe {
         max-width: 360px;
         align-items: center;
         margin: 0 auto;
-    }
-
-    .hero-search-eyebrow {
-        align-self: center;
     }
 
     .hero-search-row {
@@ -561,7 +554,7 @@ iframe {
     margin-top: var(--space-3);
     color: var(--accent-text);
     font-size: var(--fs-xs);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     text-decoration: none;
 }
 

@@ -151,6 +151,7 @@ export default function UserSearchBar() {
                 <input
                     ref={inputRef}
                     id="nameInput"
+                    aria-label="Riot ID (Game Name#Tag)"
                     type="text"
                     name="summoner-search"
                     autoComplete="off"

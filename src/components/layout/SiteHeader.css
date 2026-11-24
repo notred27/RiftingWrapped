@@ -3,12 +3,33 @@
     justify-content: space-between;
     align-items: center;
     padding: var(--space-3) clamp(var(--space-4), 5vw, 64px);
-    background-color: var(--second-bg-color);
+    /* Translucent material: pages scroll underneath it instead of the bar
+       taking a fixed opaque strip. */
+    background-color: color-mix(in srgb, var(--second-bg-color) 72%, transparent);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
     color: var(--text-color);
     border-bottom: 1px solid var(--border-subtle);
-    position: relative;
+    position: sticky;
     top: 0;
-    z-index: 1000;
+    z-index: var(--z-header);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    .site-header {
+        background-color: var(--second-bg-color);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+}
+
+@media (prefers-contrast: more) {
+    .site-header {
+        background-color: var(--second-bg-color);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        border-bottom-color: var(--border-strong);
+    }
 }
 
 .site-header__brand {
@@ -26,7 +47,7 @@
 .site-header__wordmark {
     font-family: var(--font-display);
     font-size: var(--fs-md);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     color: var(--text-color);
 }
 
@@ -40,7 +61,7 @@
     color: var(--text-muted-color);
     text-decoration: none;
     font-size: var(--fs-xs);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     text-transform: uppercase;
     letter-spacing: 0.1em;
 }

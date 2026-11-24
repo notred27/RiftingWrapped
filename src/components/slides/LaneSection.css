@@ -41,7 +41,7 @@
 .position-breakdown-swatch {
     width: 10px;
     height: 10px;
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
     flex-shrink: 0;
     display: inline-block;
 }
@@ -79,5 +79,5 @@
 /* Win rate stays in text ink - the swatch beside the role carries its colour. */
 .position-breakdown-wr {
     color: var(--text-color);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
 }

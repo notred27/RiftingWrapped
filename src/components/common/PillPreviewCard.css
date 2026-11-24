@@ -1,0 +1,80 @@
+/* Size comes from --marquee-card-w/-h on .marqueeContainer (Home.css):
+   square on phones, landscape on desktop. */
+.player-card {
+    position: relative;
+    display: block;
+    flex: none;
+    width: var(--marquee-card-w, 180px);
+    height: var(--marquee-card-h, 180px);
+    margin: var(--space-3) var(--space-4) var(--space-3) var(--space-3);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--second-bg-color);
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.player-card__art {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 25%;
+}
+
+/* Bottom fade so the hours stay readable over any splash. */
+.player-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, color-mix(in srgb, var(--bg-color) 85%, transparent) 0%, transparent 60%);
+}
+
+.player-card__name {
+    position: absolute;
+    top: var(--space-2);
+    left: var(--space-2);
+    z-index: var(--z-raised);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    max-width: calc(100% - 2 * var(--space-2));
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--bg-color) 65%, transparent);
+    font-size: var(--fs-2xs);
+    font-weight: var(--weight-bold);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.player-card__icon {
+    width: 14px;
+    height: 14px;
+    flex: none;
+    border-radius: var(--radius-xs);
+}
+
+.player-card__hours {
+    position: absolute;
+    left: var(--space-3);
+    bottom: var(--space-3);
+    z-index: var(--z-raised);
+    font-family: var(--font-display);
+    font-size: var(--fs-2xl);
+    font-weight: var(--weight-heavy);
+    line-height: 1;
+    letter-spacing: var(--tracking-display);
+    color: var(--accent-text);
+}
+
+.player-card__unit {
+    margin-left: var(--space-1);
+    font-family: var(--font-body);
+    font-size: var(--fs-sm);
+    font-weight: var(--weight-bold);
+    letter-spacing: 0;
+    color: var(--text-color);
+}

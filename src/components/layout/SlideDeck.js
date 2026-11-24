@@ -7,9 +7,29 @@ import './SlideDeck.css';
 
 // Fraction of the deck's width, on each side, that counts as a "tap to navigate" zone.
 const TAP_ZONE_FRACTION = 0.3;
-const SWIPE_THRESHOLD = 50;
 // Movement under this is a tap; anything more is a drag (scroll or swipe).
 const TAP_SLOP = 10;
+// Scroll-like deceleration used to project where a flick would come to rest.
+const DECELERATION = 0.998;
+// Initial slope of the track's ease-out curve, cubic-bezier(0.22, 1, ...): the
+// release animation starts at (slope * distance / duration), so solving for the
+// duration lets it begin at exactly the finger's speed.
+const EASE_OUT_SLOPE = 1 / 0.22;
+
+// Apple's momentum projection: distance (px) a flick at v px/s travels before stopping.
+export const project = (v) => (v / 1000) * DECELERATION / (1 - DECELERATION);
+
+// Past an edge the track follows less and less the further you pull.
+export const rubberband = (overshoot, dimension, c = 0.55) =>
+    (overshoot * dimension * c) / (dimension + c * Math.abs(overshoot));
+
+// Slide a release lands on: nearest to the projected endpoint, at most one away
+// from where the drag started, and inside the deck.
+export const pickTarget = (offsetPx, velocity, width, startIndex, lastIndex) => {
+    const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+    const nearest = Math.round(-(offsetPx + project(velocity)) / width);
+    return clamp(clamp(nearest, startIndex - 1, startIndex + 1), 0, lastIndex);
+};
 // How many slides either side of the current one stay mounted. 1 keeps the next
 // slide warm so it has already loaded by the time you swipe to it.
 const PRELOAD_RADIUS = 1;
@@ -17,8 +37,11 @@ const PRELOAD_RADIUS = 1;
 export default function SlideDeck({ children, renderFallback }) {
     const slides = Children.toArray(children);
     const [index, setIndex] = useState(0);
-    const touchStart = useRef(null);
+    const drag = useRef(null);
     const draggedRef = useRef(false);
+    const trackRef = useRef(null);
+    const indexRef = useRef(index);
+    indexRef.current = index;
 
     const lastIndex = slides.length - 1;
 
@@ -50,38 +73,88 @@ export default function SlideDeck({ children, renderFallback }) {
         }
     };
 
+    // Touch drags move the track 1:1 with the finger. A touch landing mid-animation
+    // grabs the track where it is on screen (its live transform), not where it
+    // was heading, so a slide change can be caught and reversed.
     const onTouchStart = (e) => {
+        const track = trackRef.current;
         const t = e.touches[0];
-        touchStart.current = { x: t.clientX, y: t.clientY };
+        const live = new DOMMatrix(getComputedStyle(track).transform).m41;
+        track.style.transition = 'none';
+        track.style.transform = `translateX(${live}px)`;
+        drag.current = {
+            x: t.clientX,
+            y: t.clientY,
+            base: live,
+            offset: live,
+            width: track.offsetWidth,
+            startIndex: indexRef.current,
+            axis: null,
+            history: [{ x: t.clientX, t: e.timeStamp }],
+        };
         draggedRef.current = false;
     };
 
-    const onTouchEnd = (e) => {
-        const start = touchStart.current;
-        touchStart.current = null;
-        if (!start) return;
+    const onTouchMove = (e) => {
+        const d = drag.current;
+        if (!d) return;
+        const t = e.touches[0];
+        const dx = t.clientX - d.x;
+        const dy = t.clientY - d.y;
 
-        const t = e.changedTouches[0];
-        const dx = t.clientX - start.x;
-        const dy = t.clientY - start.y;
-
-        // Barely moved: a real tap. Let it through to onClick, which decides
-        // whether it landed in an edge zone.
-        if (Math.abs(dx) < TAP_SLOP && Math.abs(dy) < TAP_SLOP) return;
-
-        draggedRef.current = true;
-
-        // Vertical-dominant movement is the user scrolling, not swiping. Bail out
-        // rather than navigating - this is what used to make an up/down scroll near
-        // either edge jump to the next slide, since a vertical drag falls under the
-        // horizontal swipe threshold and used to be treated as an edge tap.
-        if (Math.abs(dy) >= Math.abs(dx)) return;
-
-        if (dx <= -SWIPE_THRESHOLD) {
-            next();
-        } else if (dx >= SWIPE_THRESHOLD) {
-            prev();
+        // Lock to one axis once past the slop. Vertical-dominant movement is the
+        // user scrolling the slide, so the track stays put.
+        if (!d.axis && Math.max(Math.abs(dx), Math.abs(dy)) >= TAP_SLOP) {
+            d.axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
         }
+        if (d.axis !== 'x') return;
+
+        const min = -lastIndex * d.width;
+        let offset = d.base + dx;
+        if (offset > 0) offset = rubberband(offset, d.width);
+        else if (offset < min) offset = min + rubberband(offset - min, d.width);
+        d.offset = offset;
+        trackRef.current.style.transform = `translateX(${offset}px)`;
+
+        d.history.push({ x: t.clientX, t: e.timeStamp });
+        if (d.history.length > 5) d.history.shift();
+    };
+
+    const onTouchEnd = (e) => {
+        const d = drag.current;
+        drag.current = null;
+        if (!d) return;
+        const track = trackRef.current;
+
+        // Any movement past the slop was a drag (swipe or scroll), so swallow the
+        // synthetic click; a real tap goes through to onClick's edge zones.
+        if (d.axis) draggedRef.current = true;
+
+        let target = d.startIndex;
+        let duration = '';
+        if (d.axis === 'x') {
+            const first = d.history[0];
+            const last = d.history[d.history.length - 1];
+            const dt = last.t - first.t;
+            const velocity = dt > 0 ? ((last.x - first.x) / dt) * 1000 : 0;
+            target = pickTarget(d.offset, velocity, d.width, d.startIndex, lastIndex);
+
+            // Start the settle at the finger's speed so there's no seam between
+            // dragging and animating.
+            const remaining = Math.abs(-target * d.width - d.offset);
+            if (Math.abs(velocity) > 1 && remaining > 0) {
+                const s = (EASE_OUT_SLOPE * remaining) / Math.abs(velocity);
+                duration = `${Math.min(0.5, Math.max(0.2, s))}s`;
+            }
+        }
+
+        // Hand the track back to CSS: set the destination explicitly (React only
+        // rewrites the style when index changes) and let the transition run from
+        // wherever the finger left it.
+        track.style.transition = '';
+        track.style.transitionDuration = duration;
+        track.style.transform = `translateX(-${target * 100}%)`;
+        setIndex(target);
     };
 
 
@@ -115,7 +188,9 @@ export default function SlideDeck({ children, renderFallback }) {
             className="slide-deck"
             onClick={onClick}
             onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
+            onTouchCancel={onTouchEnd}
             role="group"
             aria-roledescription="carousel"
             aria-label="Your Rifting Wrapped"
@@ -147,6 +222,9 @@ export default function SlideDeck({ children, renderFallback }) {
 
             <div
                 className="slide-track"
+                ref={trackRef}
+                // A flick's speed-matched duration is for that one settle only.
+                onTransitionEnd={(e) => { if (e.target === e.currentTarget) e.currentTarget.style.transitionDuration = ''; }}
                 style={{ transform: `translateX(-${index * 100}%)` }}
             >
                 {slides.map((slide, i) => {

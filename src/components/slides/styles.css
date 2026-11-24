@@ -46,7 +46,7 @@
     max-width: 36ch;
     color: var(--text-muted-color);
     font-size: var(--fs-sm);
-    font-weight: 500;
+    font-weight: var(--weight-regular);
     line-height: 1.35;
     text-wrap: balance;
 }
@@ -55,9 +55,9 @@
     margin: 0;
     font-family: var(--font-display);
     font-size: var(--fs-display-lg);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.02em;
+    font-weight: var(--weight-heavy);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
     color: var(--accent-text);
     text-wrap: balance;
     overflow-wrap: anywhere;
@@ -80,7 +80,7 @@
 .slide-subtitle strong,
 .slide-eyebrow strong {
     color: var(--text-color);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
 }
 
 /* ---------- Media + body ---------- */
@@ -101,7 +101,7 @@
     margin: 0 0 var(--space-2);
     color: var(--text-muted-color);
     font-size: var(--fs-2xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     letter-spacing: 0.06em;
     text-transform: uppercase;
 }
@@ -202,7 +202,7 @@
     margin: 0;
     color: var(--text-muted-color);
     font-size: var(--fs-2xs);
-    font-weight: 500;
+    font-weight: var(--weight-regular);
     line-height: 1.3;
 }
 
@@ -210,7 +210,7 @@
     margin: 0;
     font-family: var(--font-display);
     font-size: var(--fs-md);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     line-height: 1.1;
     overflow-wrap: anywhere;
 }
@@ -237,7 +237,7 @@
     background: var(--accent-background-color);
     color: var(--accent-text);
     font-size: var(--fs-2xs);
-    font-weight: 500;
+    font-weight: var(--weight-regular);
     padding: var(--space-1) var(--space-3);
     border-radius: var(--radius-pill);
 }
@@ -247,7 +247,7 @@
     margin: 0;
     color: var(--text-muted-color);
     font-size: var(--fs-xs);
-    font-weight: 400;
+    font-weight: var(--weight-regular);
 }
 
 .slide-card p {
@@ -256,7 +256,7 @@
 
 .emphasize {
     color: var(--text-color);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
 }
 
 .emphasize-sm {
@@ -265,20 +265,21 @@
 
 .emphasize-md {
     font-size: var(--fs-md);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
 }
 
 .emphasize-lg {
     font-family: var(--font-display);
     font-size: var(--fs-display-sm);
-    font-weight: 800;
+    font-weight: var(--weight-heavy);
 }
 
 .emphasize-xlg {
     font-family: var(--font-display);
     font-size: var(--fs-display-lg);
-    font-weight: 800;
+    font-weight: var(--weight-heavy);
     line-height: 1;
+    letter-spacing: var(--tracking-display);
     color: var(--accent-text);
 }
 
@@ -298,12 +299,12 @@
 .intro-avatar {
     width: 120px;
     height: 120px;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     object-fit: cover;
     /* border: 3px solid var(--accent-color); */
     /* box-shadow: 0 0 0 6px var(--accent-background-color),
                 0 8px 24px rgba(0, 0, 0, 0.4); */
-    animation: intro-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: intro-pop 0.5s var(--ease-out) both;
 }
 
 .intro-level-badge {
@@ -313,16 +314,16 @@
     background: var(--accent-color);
     color: var(--bg-color);
     font-size: var(--fs-2xs);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     padding: var(--space-1) var(--space-2);
-    border-radius: 20px;
+    border-radius: var(--radius-pill);
     border: 2px solid var(--bg-color);
 }
 
 .intro-eyebrow {
     color: var(--text-muted-color);
     font-size: var(--fs-xs);
-    font-weight: 500;
+    font-weight: var(--weight-regular);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     margin: 0 0 var(--space-1);
@@ -332,16 +333,17 @@
 .intro-name {
     font-family: var(--font-display);
     font-size: var(--fs-display-md);
-    font-weight: 800;
+    font-weight: var(--weight-heavy);
     margin: 0 0 var(--space-5);
-    letter-spacing: -0.01em;
+    letter-spacing: var(--tracking-display);
+    line-height: var(--leading-display);
     animation: intro-fade-up 0.5s 0.15s ease both;
 }
 
 /* Regular body text, not a second headline under the name. */
 .intro-headline {
     font-size: var(--fs-sm);
-    font-weight: 400;
+    font-weight: var(--weight-regular);
     line-height: 1.5;
     max-width: 34ch;
     margin: 0 auto;
@@ -355,7 +357,7 @@
     margin-top: var(--space-7);
     color: var(--text-muted-color);
     font-size: var(--fs-2xs);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     animation: intro-fade-up 0.5s 0.5s ease both;
@@ -369,7 +371,7 @@
 .intro-swipe-cue__chevron {
     display: inline-block;
     font-size: var(--fs-sm);
-    animation: intro-swipe-nudge 1.4s ease-in-out infinite;
+    animation: intro-swipe-nudge 1.4s ease-in-out 1s 3; /* hint, then rest */
 }
 
 @keyframes intro-swipe-nudge {
@@ -408,7 +410,7 @@
     width: 120px;
     height: 120px;
     flex-shrink: 0;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     object-fit: cover;
     object-position: center 20%;
     mask-image: linear-gradient(to right, black 55%, transparent 100%);
@@ -427,7 +429,7 @@
 .champ-hero__name {
     font-family: var(--font-display);
     font-size: var(--fs-display-sm);
-    font-weight: 900;
+    font-weight: var(--weight-black);
     color: var(--accent-text);
     line-height: 1;
     margin: 0 0 var(--space-2);
@@ -511,8 +513,8 @@
     max-width: 36px;
     min-height: 2px;
     background: var(--chart-muted);
-    border-radius: 4px 4px 0 0;
-    transition: height 0.4s ease;
+    border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+    transition: height var(--duration-slow) ease;
 }
 
 .month-chart__bar.is-top {
@@ -528,7 +530,7 @@
 
 .month-chart__value.is-top {
     color: var(--text-color);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
 }
 
 .month-chart__label {
@@ -560,7 +562,7 @@
     display: inline-block;
     width: 10px;
     height: 10px;
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
 }
 
 /* ---------- Share slide ---------- */
@@ -605,7 +607,7 @@
 
 .text-link {
     color: var(--accent-text);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     text-decoration: underline;
     text-underline-offset: 3px;
 }
