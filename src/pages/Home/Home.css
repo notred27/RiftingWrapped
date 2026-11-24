@@ -265,6 +265,10 @@ body,
 
 
 .marqueeContainer {
+    /* Card size, read by SpotlightMarqueeContent: square on phones,
+       landscape on desktop so more of the champion splash shows. */
+    --marquee-card-w: 180px;
+    --marquee-card-h: 180px;
     width: 100%;
     mask: linear-gradient(90deg, transparent, white 5%, white 95%, transparent);
     -webkit-mask: linear-gradient(90deg, transparent, white 5%, white 95%, transparent);
@@ -283,6 +287,12 @@ body,
 .marquee-frame {
     position: relative;
     width: 100%;
+}
+
+@media (min-width: 769px) {
+    .marqueeContainer {
+        --marquee-card-w: 288px;
+    }
 }
 
 /* Full-bleed: pull out through the hero's side padding to the viewport edges. */
