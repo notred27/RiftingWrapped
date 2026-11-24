@@ -1,84 +1,27 @@
-export default function PillPreviewCard({ username, icon, hoursPlayed, champName, shareUrl, style }) {
+import './PillPreviewCard.css';
+
+// Spotlight card in the Home carousel: champion splash, the player's name in a
+// chip, and their hours as the headline number.
+export default function PillPreviewCard({ username, icon, hoursPlayed, champName, shareUrl }) {
     return (
-        <div
-            style={{
-                height: "160px",
-                position: "relative",
-                overflow: "hidden",
-                borderRadius: "4px",
-                margin: "var(--space-3)",
-                ...style,
-            }}
-            aria-label={`${username}'s Rifting Wrapped profile`}
-            aria-hidden="false"
+        <a
+            className="player-card"
+            href={shareUrl}
+            aria-label={`${username}'s Rifting Wrapped: ${hoursPlayed} hours on the Rift`}
         >
-            <a
-                href={shareUrl}
-                style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}
-            >
-                <img
-                    loading='lazy'
-                    src={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champName}_0.jpg`}
-                    alt={`${champName} splash`}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 25%" }}
-                />
-                <div style={{ position: "absolute", bottom: "0", left: "0", width: "100%", height: "50px", backgroundColor: "var(--second-bg-color)", boxShadow: "2px -2px 2px 2px var(--second-bg-color)" }}>
-                    <p style={{ padding: "var(--space-3)", margin: "0px", fontSize: "var(--fs-2xs)", textAlign: "left", textWrap:"pretty" }}><strong>
-
-                        <img
-                            src={icon}
-                            alt="user-icon"
-                            style={{ width: "14px", float: "left", marginRight: "var(--space-1)", borderRadius: "2px" }}
-                        />
-
-                        {username} </strong>spent <strong>{hoursPlayed}</strong>hrs on the Rift this year.</p>
-                </div>
-            </a>
-        </div>
+            <img
+                className="player-card__art"
+                loading="lazy"
+                src={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champName}_0.jpg`}
+                alt=""
+            />
+            <span className="player-card__name">
+                <img className="player-card__icon" src={icon} alt="" />
+                {username}
+            </span>
+            <span className="player-card__hours">
+                {hoursPlayed}<span className="player-card__unit">hrs</span>
+            </span>
+        </a>
     );
-};
-
-// const styles = {
-//   card: {
-//     border: "1px solid #0f2331",
-//     background: "url(https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Warwick_0.jpg)",
-//     borderRadius: 8,
-//     boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-//     overflow: "hidden",
-//     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-//     cursor: "pointer",
-//     transition: "transform 0.2s ease",
-//     width: "100%",
-//     maxWidth: 400,
-//     minWidth: 320,
-//     margin: "var(--space-3) auto",
-//     display: "block",
-//     textAlign: "left",
-//   },
-//   image: {
-//     width: "100%",
-//     height: "auto",
-//     aspectRatio: "16/9",
-//     objectFit: "cover",
-//   },
-//   content: {
-//     padding: 12,
-//     backgroundColor: "#0f2331",
-//   },
-//   title: {
-//     fontSize: 16,
-//     margin: "0 0 var(--space-2)",
-//     color: "white",
-//     // fontWeight: "bold",
-//   },
-//   description: {
-//     fontSize: 13,
-//     margin: "0 0 var(--space-2)",
-//     color: "white",
-//     lineHeight: 1.4,
-//   },
-//   note: {
-//     fontSize: 12,
-//     color: "#929292ff",
-//   },
-// };
+}

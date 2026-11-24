@@ -24,6 +24,7 @@
    not on release. Lives here (loaded before any route CSS) so it's one rule. */
 .btn:not(:disabled):active,
 .compact-entry:active,
+.player-card:active,
 .share-preview:active {
     transform: scale(0.97);
     transition: transform var(--duration-fast) ease-out;
