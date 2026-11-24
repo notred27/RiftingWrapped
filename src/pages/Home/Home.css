@@ -29,7 +29,8 @@ body,
     background: linear-gradient(120deg, var(--bg-color) 0%, #000 100%);
     color: var(--text-color);
     --hero-pad-y: clamp(var(--space-7), 8vh, 120px);
-    padding: var(--hero-pad-y) clamp(var(--space-4), 5vw, 80px);
+    --hero-pad-x: clamp(var(--space-4), 5vw, 80px);
+    padding: var(--hero-pad-y) var(--hero-pad-x);
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -270,12 +271,12 @@ body,
 }
 
 /* Carousel: one step of air above the join line, a smaller one between the
-   line and the cards, and its left edge flush with the hero text. */
+   line and the cards. The join line stays aligned with the hero text; the
+   cards run edge to edge (see .marquee-clip). */
 .marquee-section {
     position: relative;
     z-index: var(--z-raised);
     width: 100%;
-    max-width: 900px;
     margin-top: clamp(var(--space-6), 8vh, var(--space-7));
 }
 
@@ -284,8 +285,9 @@ body,
     width: 100%;
 }
 
+/* Full-bleed: pull out through the hero's side padding to the viewport edges. */
 .marquee-clip {
-    width: 100%;
+    margin-inline: calc(-1 * var(--hero-pad-x));
     overflow: hidden;
 }
 
