@@ -400,6 +400,32 @@ def get_user_info_by_name(displayName, tag, region):
 MAX_DISPLAYNAME_LEN = 20
 MAX_TAG_LEN = 6
 RIOT_TIMEOUT = 5  # seconds
+GITHUB_TIMEOUT = 10  # seconds; a dispatch that times out deletes the new player, so be patient
+
+
+def riot_get(url, riot_key):
+    """GET a Riot URL, retrying once on a rate limit (429) or a 5xx.
+
+    The Actions workers share this Riot key, so short 429 bursts are normal;
+    failing the sign-up on the first one turned them into lost registrations.
+    Network errors are not retried: two 5s timeouts per call would push the
+    whole sign-up past gunicorn's 30s worker timeout.
+    """
+    r = requests.get(url, headers={"X-Riot-Token": riot_key}, timeout=RIOT_TIMEOUT)
+    if r.status_code == 429 or r.status_code >= 500:
+        retry_after = r.headers.get("Retry-After", "")
+        # Cap the wait: this request holds a worker and the visitor is watching a spinner.
+        time.sleep(min(int(retry_after), 2) if retry_after.isdigit() else 1)
+        r = requests.get(url, headers={"X-Riot-Token": riot_key}, timeout=RIOT_TIMEOUT)
+    return r
+
+
+def riot_error(r, what):
+    """Response for a Riot call that came back neither 200 nor 404."""
+    logger.warning("Riot %s returned %s: %s", what, r.status_code, r.text[:200])
+    if r.status_code == 429:
+        return jsonify({"error": "Service Unavailable", "message": "Riot's servers are busy right now. Please try again in a minute."}), 503
+    return jsonify({"error": "Bad Gateway", "message": "Riot API encountered an error"}), 502
 
 @app.route('/users', methods=['POST'])
 @limiter.limit(
@@ -434,7 +460,7 @@ def add_by_display_name():
 
     riot_key = os.getenv("RIOT_API_KEY")
     if not riot_key:
-        print("Missing Riot API key in environment (add logger)")
+        logger.error("Missing RIOT_API_KEY in environment")
         return jsonify({"error": "Server Misconfiguration", "message": "Riot API key missing"}), 500
 
     # quote() the name and tag: they're user input going into a URL path, and
@@ -445,16 +471,16 @@ def add_by_display_name():
     )
 
     try:
-        r = requests.get(riot_url, headers={"X-Riot-Token": riot_key}, timeout=RIOT_TIMEOUT)
+        r = riot_get(riot_url, riot_key)
     except requests.RequestException:
-        print("Riot API request failed")
+        logger.exception("Riot account lookup failed for %s#%s (%s)", displayName, tag, region)
         return jsonify({"error": "Bad Gateway", "message": "Failed to contact Riot API"}), 502
 
     if r.status_code == 404:
         return jsonify({"error": "Not Found", "message": "User not found on Riot's servers"}), 404
 
     if r.status_code != 200:
-        return jsonify({"error": "Bad Gateway", "message": "Riot API encountered an error"}), 502
+        return riot_error(r, "account lookup")
 
     try:
         riot_data = r.json()
@@ -469,8 +495,9 @@ def add_by_display_name():
     # Confirm the account actually lives on the region the user selected.
     summoner_check_url = f'https://{region.lower()}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}'
     try:
-        sr = requests.get(summoner_check_url, headers={"X-Riot-Token": riot_key}, timeout=RIOT_TIMEOUT)
+        sr = riot_get(summoner_check_url, riot_key)
     except requests.RequestException:
+        logger.exception("Riot summoner check failed for %s (%s)", puuid, region)
         return jsonify({"error": "Bad Gateway", "message": "Failed to contact Riot API"}), 502
 
     if sr.status_code == 404:
@@ -480,10 +507,12 @@ def add_by_display_name():
         }), 404
 
     if sr.status_code != 200:
-        return jsonify({"error": "Bad Gateway", "message": "Riot API encountered an error validating region"}), 502
+        return riot_error(sr, "summoner check")
 
     existing = player_collection.find_one({"puuid": puuid}, {"_id": 0})
-    if existing:
+    # A failed player gets another go: otherwise "search again" (what the
+    # failed page tells them to do) could never get past this 409.
+    if existing and existing.get("status") != "failed":
         return jsonify({"error": "Conflict", "message": "User exists", "user": existing}), 409
 
     user_doc = {
@@ -493,7 +522,10 @@ def add_by_display_name():
             "puuid": puuid,
             "region": region,
             "status": "starting",
+            # The consumer fails players left in "starting" too long (the run never started).
+            "updated_at": datetime.now(timezone.utc),
         },
+        "$unset": {"error": ""},
     }
 
     result = player_collection.update_one({"puuid": puuid}, user_doc, upsert=True)
@@ -510,7 +542,7 @@ def add_by_display_name():
             "ref": "master",
             "inputs": {"displayName": displayName, "tag": tag, "region": region}
         }
-        gh_resp = requests.post(url, headers=headers, json=payload, timeout=RIOT_TIMEOUT)
+        gh_resp = requests.post(url, headers=headers, json=payload, timeout=GITHUB_TIMEOUT)
         triggered = gh_resp.status_code == 204
         if triggered:
             logger.info("GitHub Action triggered for %s#%s in %s", displayName, tag, region)
@@ -524,6 +556,8 @@ def add_by_display_name():
         # leave them on the waiting page forever and make a retry return 409.
         if result.upserted_id:
             player_collection.delete_one({"puuid": puuid, "status": "starting"})
+        else:
+            player_collection.update_one({"puuid": puuid, "status": "starting"}, {"$set": {"status": "failed"}})
         return jsonify({"error": "Bad Gateway", "message": "Couldn't start processing your account. Please try again in a few minutes."}), 502
 
     status_code = 201 if result.upserted_id else 200
