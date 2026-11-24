@@ -32,12 +32,12 @@ export default function PlayerSEO({ puuid, year }) {
 
                 {playerData &&
                     <>
-                        <title>{playerData["username"]}'s Rifting Wrapped {year} | Your League of Legends Year in Review</title>
-                        <meta name="description" content={`See how ${playerData["username"]} performed on the Rift in ${year}`} />
+                        <title>{`${playerData["username"]}'s LoL Wrapped ${year} | Rifting Wrapped`}</title>
+                        <meta name="description" content={`${playerData["username"]}'s League of Legends year in review for ${year}: most played champions, hours on the Rift, best and worst games, and more.`} />
                         <link rel="preload" as="image" href={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${playerData["champName"]}_0.jpg`} />
 
-                        <meta property="og:title" content={`${playerData["username"]}'s Rifting Wrapped ${year} | Your League of Legends Year in Review`} />
-                        <meta property="og:description" content={`See ${playerData["username"]}'s total hours, most played champion, and more on League of Legends this year!`} />
+                        <meta property="og:title" content={`${playerData["username"]}'s LoL Wrapped ${year} | Rifting Wrapped`} />
+                        <meta property="og:description" content={`See ${playerData["username"]}'s ${year} League of Legends year in review: total hours, most played champion, and more.`} />
                         <meta property="og:image" content={`${process.env.REACT_APP_API_ENDPOINT}/share/${puuid}/image.jpg?year=${year}`} />
                         <meta property="og:url" content={`https://www.riftingwrapped.com/player/${puuid}`} />
                         <meta name="twitter:card" content="summary_large_image" />

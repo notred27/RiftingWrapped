@@ -54,7 +54,8 @@ export default function FAQ({ items = DEFAULT_FAQ }) {
     return (
         <>
             <Helmet defer={false}>
-                <title>FAQ | Rifting Wrapped</title>
+                <title>FAQ: How League of Legends Wrapped Works | Rifting Wrapped</title>
+                <meta name="description" content="How Rifting Wrapped builds your League of Legends Wrapped: where the stats come from, how long it takes, privacy, and sharing your LoL year in review." />
                 <link rel="canonical" href={`https://www.riftingwrapped.com/faq`} />
             </Helmet>
 

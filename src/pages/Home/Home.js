@@ -127,11 +127,11 @@ export default function Home() {
         <>
             <Helmet defer={false}>
                 <link rel="canonical" href={`https://www.riftingwrapped.com/`} />
-                <title>Rifting Wrapped | Your League of Legends Stats, Unwrapped</title>
-                <meta name="description" content={`Track your League of Legends stats: your top champions, your best (and worst) games, how many hours you play, and how each week stacks up.`} />
+                <title>{`Rifting Wrapped ${WRAP_YEAR} | League of Legends Wrapped & LoL Stats`}</title>
+                <meta name="description" content={`Your League of Legends Wrapped for ${WRAP_YEAR}: top champions, best and worst games, hours played and a shareable year in review. Free LoL stats, updated daily.`} />
 
-                <meta property="og:title" content="Rifting Wrapped | Your League of Legends Stats, Unwrapped" />
-                <meta property="og:description" content="See your top champions, your best (and worst) games, and exactly how many hours you've spent on the Rift." />
+                <meta property="og:title" content={`Rifting Wrapped ${WRAP_YEAR} | League of Legends Wrapped & LoL Stats`} />
+                <meta property="og:description" content={`Your LoL year in review: top champions, best (and worst) games, and exactly how many hours you've spent on the Rift in ${WRAP_YEAR}.`} />
                 <meta property="og:image" content="https://www.riftingwrapped.com/android-chrome-512x512.png" />
                 <meta property="og:url" content="https://www.riftingwrapped.com/" />
                 <meta name="twitter:card" content="summary_large_image" />
