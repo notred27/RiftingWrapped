@@ -77,7 +77,8 @@
 .progress-fill {
     height: 100%;
     background: var(--accent-color);
-    transition: width 0.2s;
+    transform-origin: left;
+    transition: transform 0.2s;
 }
 
 /* Visually hidden, but still in the tab order and readable by assistive tech. */

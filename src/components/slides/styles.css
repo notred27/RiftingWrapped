@@ -56,8 +56,8 @@
     font-family: var(--font-display);
     font-size: var(--fs-display-lg);
     font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.02em;
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
     color: var(--accent-text);
     text-wrap: balance;
     overflow-wrap: anywhere;
@@ -279,6 +279,7 @@
     font-size: var(--fs-display-lg);
     font-weight: 800;
     line-height: 1;
+    letter-spacing: var(--tracking-display);
     color: var(--accent-text);
 }
 
@@ -334,7 +335,8 @@
     font-size: var(--fs-display-md);
     font-weight: 800;
     margin: 0 0 var(--space-5);
-    letter-spacing: -0.01em;
+    letter-spacing: var(--tracking-display);
+    line-height: var(--leading-display);
     animation: intro-fade-up 0.5s 0.15s ease both;
 }
 
@@ -369,7 +371,7 @@
 .intro-swipe-cue__chevron {
     display: inline-block;
     font-size: var(--fs-sm);
-    animation: intro-swipe-nudge 1.4s ease-in-out infinite;
+    animation: intro-swipe-nudge 1.4s ease-in-out 1s 3; /* hint, then rest */
 }
 
 @keyframes intro-swipe-nudge {

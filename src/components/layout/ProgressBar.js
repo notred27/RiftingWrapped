@@ -5,7 +5,7 @@ export default function ProgressBar({ total, current }) {
                 <div key={i} className="progress-segment">
                     <div
                         className="progress-fill"
-                        style={{ width: i < current ? '100%' : i === current ? '100%' : '0%' }}
+                        style={{ transform: `scaleX(${i <= current ? 1 : 0})` }}
                     />
                 </div>
             ))}
