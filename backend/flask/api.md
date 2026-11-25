@@ -411,3 +411,11 @@ curl "<API_DOMAIN>/highestStatGames/<PUUID>?stat=deaths&year=2025"
 - [`/leaderboards?period={week|year}&year={year}`](): Top 10 tracked players by `games`, `hours`, `kills`, `winRate` and `kda`, for the leaderboards page (`/leaderboards`). `year` is required only for `period=year`; `period=week` (the default is `year`) covers this week so far, Monday to Sunday in UTC, across whichever `matches-YY` collections the week touches. Win rate and KDA only rank players with at least `minGames` games (10 a week, 100 a year). Results are cached in memory for 10 minutes (`LEADERBOARD_CACHE_SECONDS`).
 
   Returns `period`, `start`/`end` (ISO), `minGames`, `updatedAt` and `boards`: `{games|hours|kills|winRate|kda: [{puuid, displayName, tag, region, icon, games, wins, hours, kills, winRate, kda}]}`. `400` for an unknown `period` or a missing `year`.
+
+### Friends boards
+
+A board is a list of up to 50 tracked players, stored in the `boards` collection as `{_id, members: [puuid], created_at, last_viewed_at}`. Its id is the invite link (`/leaderboards/<id>`): anyone with it can view the board and join as any tracked player. There are no accounts, so members can't be removed. Boards nobody opens for 180 days are deleted by a TTL index on `last_viewed_at`.
+
+- `POST /boards` with JSON `{"puuid": "..."}` (optional, the first member): creates a board and returns `201 {"id": "<8 chars>"}`. `404` if the player isn't tracked. Limited to 10 an hour and 30 a day per IP.
+- `GET /boards/<id>?period={week|year}&year={year}`: the board's `members` (`puuid, displayName, tag, region, icon`), `maxMembers` and the same `period`, `start`, `end`, `minGames`, `updatedAt` and `boards` as `/leaderboards`, except every member is ranked (members with no games show zeros) and win rate/KDA need 3 games a week or 20 a year. Not cached. `404` for an unknown board.
+- `POST /boards/<id>/join` with JSON `{"puuid": "..."}`: adds a tracked player. Joining twice is fine. `404` for an unknown board or player, `409` when the board is full. Limited to 20 an hour per IP.

@@ -5,6 +5,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from werkzeug.middleware.proxy_fix import ProxyFix
 import hmac
+import secrets
 import logging
 import requests
 from pymongo import MongoClient
@@ -1248,13 +1249,20 @@ LEADERBOARD_MIN_GAMES = {"week": 10, "year": 100}
 _leaderboard_cache = {}           # (period, year) -> (built_at, payload)
 
 
-def _leaderboard_totals(start: datetime, end: datetime) -> list:
-    """Per-player totals for finished games in [start, end), across wrap-year collections."""
-    totals = {}
+def _leaderboard_totals(start: datetime, end: datetime, puuids=None) -> list:
+    """
+    Per-player totals for finished games in [start, end), across wrap-year
+    collections. With `puuids`, only those players, each listed even with no games.
+    """
+    empty = {"games": 0, "wins": 0, "seconds": 0, "kills": 0, "deaths": 0, "assists": 0}
+    totals = {} if puuids is None else {p: dict(empty) for p in puuids}
+    match = {"stats": {"$exists": True}}
+    if puuids is not None:
+        match["puuid"] = {"$in": list(puuids)}
     last = (end - timedelta(microseconds=1)).year
     for year in range(start.year, last + 1):
         for r in get_matches_collection(year).aggregate([
-            {"$match": {"stats": {"$exists": True}}},
+            {"$match": match},
             {"$addFields": {"gameDate": {"$toDate": "$matchInfo.gameCreated"}}},
             {"$match": {"gameDate": {"$gte": start, "$lt": end}}},
             {"$group": {
@@ -1267,13 +1275,14 @@ def _leaderboard_totals(start: datetime, end: datetime) -> list:
                 "assists": {"$sum": "$stats.assists"},
             }},
         ], allowDiskUse=True):
-            t = totals.setdefault(r["_id"], {"games": 0, "wins": 0, "seconds": 0, "kills": 0, "deaths": 0, "assists": 0})
+            t = totals.setdefault(r["_id"], dict(empty))
             for field in t:
                 t[field] += r.get(field) or 0
     return [{"puuid": puuid, **t} for puuid, t in totals.items()]
 
 
-def _build_leaderboards(period: str, year: int) -> dict:
+def _build_leaderboards(period: str, year: int, puuids=None) -> dict:
+    """The public boards, or with `puuids` a friends board that ranks every member."""
     if period == "week":
         now = datetime.now(timezone.utc)
         start = (now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
@@ -1282,13 +1291,13 @@ def _build_leaderboards(period: str, year: int) -> dict:
         start = datetime(year, 1, 1, tzinfo=timezone.utc)
         end = datetime(year + 1, 1, 1, tzinfo=timezone.utc)
 
-    rows = _leaderboard_totals(start, end)
+    rows = _leaderboard_totals(start, end, puuids)
     for r in rows:
         r["hours"] = round(r["seconds"] / 3600, 1)
         r["winRate"] = round(r["wins"] / r["games"] * 100, 1) if r["games"] else 0
         r["kda"] = round((r["kills"] + r["assists"]) / max(1, r["deaths"]), 2)
 
-    min_games = LEADERBOARD_MIN_GAMES[period]
+    min_games = (BOARD_MIN_GAMES if puuids is not None else LEADERBOARD_MIN_GAMES)[period]
     qualified = [r for r in rows if r["games"] >= min_games]
     boards = {
         "games": sorted(rows, key=lambda r: -r["games"]),
@@ -1297,7 +1306,8 @@ def _build_leaderboards(period: str, year: int) -> dict:
         "winRate": sorted(qualified, key=lambda r: (-r["winRate"], -r["games"])),
         "kda": sorted(qualified, key=lambda r: (-r["kda"], -r["games"])),
     }
-    boards = {name: board[:LEADERBOARD_SIZE] for name, board in boards.items()}
+    if puuids is None:
+        boards = {name: board[:LEADERBOARD_SIZE] for name, board in boards.items()}
 
     puuids = {r["puuid"] for board in boards.values() for r in board}
     players = {p["puuid"]: p for p in player_collection.find(
@@ -1339,6 +1349,94 @@ def get_leaderboards():
     payload = _build_leaderboards(period, year)
     _leaderboard_cache[key] = (time.time(), payload)
     return jsonify(payload)
+
+
+# ----------------------------------------------------------------------------
+# Friends boards
+# ----------------------------------------------------------------------------
+# A board is just a list of members: {_id, members: [puuid], created_at,
+# last_viewed_at}. The id is the invite link, and anyone who has it can join
+# as any tracked player (no accounts yet, so no removing or moderation).
+# Stats are worked out on each view from the members' matches.
+board_collection = db["boards"]
+BOARD_MAX_MEMBERS = 50
+BOARD_MIN_GAMES = {"week": 3, "year": 20}     # friends play less than the public top 10
+BOARD_RETENTION = timedelta(days=180)         # boards nobody opens for this long are deleted
+BOARD_ID_RE = re.compile(r"^[A-Za-z0-9_-]{8}$")
+_board_indexes_ready = False
+
+
+def _ensure_board_indexes():
+    global _board_indexes_ready
+    if _board_indexes_ready:
+        return
+    board_collection.create_index("last_viewed_at", expireAfterSeconds=int(BOARD_RETENTION.total_seconds()), name="expire")
+    _board_indexes_ready = True
+
+
+def _board_or_404(board_id: str) -> dict:
+    board = board_collection.find_one({"_id": board_id}) if BOARD_ID_RE.match(board_id) else None
+    if not board:
+        abort(404, description="Board not found")
+    return board
+
+
+def _tracked_puuid_from_body() -> str:
+    """The `puuid` in a JSON body, if it belongs to a tracked player; 400/404 otherwise."""
+    puuid = str((request.get_json(silent=True) or {}).get("puuid") or "")
+    if not puuid or len(puuid) > 100:
+        abort(400, description="`puuid` is required")
+    if not player_collection.find_one({"puuid": puuid}, {"_id": 1}):
+        abort(404, description="Player not found. Look yourself up on the home page first.")
+    return puuid
+
+
+@app.route('/boards', methods=['POST'])
+@limiter.limit("10 per hour;30 per day", error_message="Too many boards created. Try again later.")
+def create_board():
+    """New board, with the player in the body (if any) as its first member. Returns its id."""
+    members = [_tracked_puuid_from_body()] if (request.get_json(silent=True) or {}).get("puuid") else []
+    _ensure_board_indexes()
+    now = datetime.now(timezone.utc)
+    board_id = secrets.token_urlsafe(6)          # 8 URL-safe characters
+    board_collection.insert_one({"_id": board_id, "members": members, "created_at": now, "last_viewed_at": now})
+    return jsonify({"id": board_id}), 201
+
+
+@app.route('/boards/<board_id>', methods=['GET'])
+def get_board(board_id):
+    """A board's members and their rankings for `period` (week or year, as /leaderboards)."""
+    period = request.args.get("period", default="year")
+    if period not in BOARD_MIN_GAMES:
+        abort(400, description="`period` must be `week` or `year`")
+    year = require_year_param() if period == "year" else WRAP_YEAR
+    board = _board_or_404(board_id)
+    board_collection.update_one({"_id": board_id}, {"$set": {"last_viewed_at": datetime.now(timezone.utc)}})
+
+    members = list(player_collection.find(
+        {"puuid": {"$in": board["members"]}},
+        {"_id": 0, "puuid": 1, "displayName": 1, "tag": 1, "region": 1, "icon": 1},
+    ))
+    payload = _build_leaderboards(period, year, [m["puuid"] for m in members])
+    return jsonify({"id": board_id, "maxMembers": BOARD_MAX_MEMBERS, "members": members, **payload})
+
+
+@app.route('/boards/<board_id>/join', methods=['POST'])
+@limiter.limit("20 per hour", error_message="Too many requests. Try again later.")
+def join_board(board_id):
+    """Add the tracked player in the body to the board. Joining twice is a no-op."""
+    puuid = _tracked_puuid_from_body()
+    board = _board_or_404(board_id)
+    if puuid in board["members"]:
+        return jsonify({"joined": True}), 200
+    # Only matches while there's room, so two joins at once can't pass the cap.
+    result = board_collection.update_one(
+        {"_id": board_id, f"members.{BOARD_MAX_MEMBERS - 1}": {"$exists": False}},
+        {"$addToSet": {"members": puuid}},
+    )
+    if result.matched_count == 0:
+        return jsonify({"error": "Conflict", "message": f"This board is full ({BOARD_MAX_MEMBERS} players)."}), 409
+    return jsonify({"joined": True}), 200
 
 
 # ----------------------------------------------------------------------------

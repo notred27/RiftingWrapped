@@ -135,3 +135,116 @@ li:nth-child(-n+3) .lb-rank { color: var(--accent-text); }
     font-size: var(--fs-sm);
     font-variant-numeric: tabular-nums;
 }
+
+.lb-row--me { background: var(--surface-2); }
+
+/* Friends boards */
+.lb-friends {
+    margin-top: var(--space-5);
+    padding: var(--space-4);
+    background: var(--second-bg-color);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+}
+.lb-friends__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+.lb-friends h2 { margin: 0; font-size: var(--fs-md); font-weight: var(--weight-heavy); }
+.lb-friends p { margin: var(--space-1) 0 0; font-size: var(--fs-xs); color: var(--text-muted-color); }
+.lb-friends__error { color: var(--danger); }
+.lb-friends__list { list-style: none; margin: var(--space-3) 0 0; padding: 0; }
+.lb-friends__board {
+    display: flex;
+    gap: var(--space-3);
+    padding: var(--space-2);
+    border-radius: var(--radius-sm);
+    color: inherit;
+    text-decoration: none;
+}
+.lb-friends__board:hover,
+.lb-friends__board:focus-visible { background: var(--surface-2); }
+.lb-friends__count { font-size: var(--fs-xs); color: var(--text-muted-color); white-space: nowrap; }
+
+/* A friends board page */
+.bd-invite {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+}
+.bd-invite__url {
+    font-size: var(--fs-xs);
+    color: var(--text-muted-color);
+    overflow-wrap: anywhere;
+}
+
+.bd-you,
+.bd-note {
+    text-align: center;
+    color: var(--text-muted-color);
+    font-size: var(--fs-sm);
+}
+.bd-note { font-size: var(--fs-xs); margin-top: var(--space-4); }
+
+.bd-join {
+    max-width: 640px;
+    margin: var(--space-5) auto 0;
+    text-align: center;
+}
+.bd-join h2 { font-size: var(--fs-md); font-weight: var(--weight-heavy); margin: 0 0 var(--space-3); }
+.bd-join__row { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; }
+.bd-join__search {
+    display: flex;
+    flex: 1 1 260px;
+    height: 48px;
+    background: var(--second-bg-color);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-pill);
+}
+/* GenericSearch's input and select carry ids Home.css also styles; these win inside the form. */
+.bd-join #nameInput {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0 var(--space-3) 0 var(--space-4);
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    font-size: var(--fs-sm);
+    outline: none;
+    border-radius: var(--radius-pill) 0 0 var(--radius-pill);
+}
+.bd-join .region-picker {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border-left: 1px solid var(--border-subtle);
+    color: var(--text-muted-color);
+}
+.bd-join .region-picker__chevron {
+    position: absolute;
+    left: 10px;
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+}
+.bd-join #regionSelect {
+    appearance: none;
+    -webkit-appearance: none;
+    height: 100%;
+    padding: 0 var(--space-4) 0 var(--space-6);
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    font-weight: var(--weight-bold);
+    cursor: pointer;
+    border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+}
+.bd-join__search:focus-within { outline: 2px solid var(--accent-color); outline-offset: 2px; }
+.bd-join__message { margin-top: var(--space-2); font-size: var(--fs-sm); color: var(--text-muted-color); }

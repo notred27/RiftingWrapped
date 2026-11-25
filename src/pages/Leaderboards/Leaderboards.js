@@ -2,11 +2,13 @@ import './Leaderboards.css';
 
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { fetchCached } from '../../resources/fetchCached.js';
+import { myBoards } from '../../resources/myBoards.js';
+import { isMyPlayer, lastMyPlayer } from '../../resources/myPlayers.js';
 
-const WRAP_YEAR = 2026;
+export const WRAP_YEAR = 2026;
 const CACHE_MS = 10 * 60 * 1000;      // the API rebuilds boards every 10 minutes
 
 const PERIODS = [
@@ -22,14 +24,26 @@ const BOARDS = [
     { id: 'kda', title: 'Best KDA', value: (p) => p.kda.toFixed(2), rate: true },
 ];
 
+/** The week/year choice, kept in the URL (?period=week) so links keep it. */
+export function usePeriod() {
+    const [params, setParams] = useSearchParams();
+    const period = params.get('period') === 'week' ? 'week' : 'year';
+    const setPeriod = (p) => setParams(p === 'year' ? {} : { period: p }, { replace: true });
+    return [period, setPeriod];
+}
+
+/** Query string for an API call for `period`. */
+export function periodQuery(period) {
+    return period === 'year' ? `period=year&year=${WRAP_YEAR}` : 'period=week';
+}
+
 function useLeaderboards(period) {
     const [state, setState] = useState({ period: null, data: null, error: null });
 
     useEffect(() => {
         let cancelled = false;
-        const query = period === 'year' ? `period=year&year=${WRAP_YEAR}` : 'period=week';
         fetchCached(
-            `${process.env.REACT_APP_API_ENDPOINT}/leaderboards?${query}`,
+            `${process.env.REACT_APP_API_ENDPOINT}/leaderboards?${periodQuery(period)}`,
             `leaderboards-${period}-${WRAP_YEAR}`,
             CACHE_MS
         ).then(
@@ -40,6 +54,18 @@ function useLeaderboards(period) {
     }, [period]);
 
     return state.period === period ? state : { data: null, error: null };
+}
+
+export function PeriodToggle({ period, onChange }) {
+    return (
+        <div className="lb-toggle" role="group" aria-label="Time period">
+            {PERIODS.map((p) => (
+                <button key={p.id} type="button" aria-pressed={period === p.id} onClick={() => onChange(p.id)}>
+                    {p.label}
+                </button>
+            ))}
+        </div>
+    );
 }
 
 function Board({ board, players, period, minGames }) {
@@ -54,7 +80,7 @@ function Board({ board, players, period, minGames }) {
                     {players.map((p, i) => (
                         <li key={p.puuid}>
                             <Link
-                                className="lb-row"
+                                className={`lb-row${isMyPlayer(p.puuid) ? ' lb-row--me' : ''}`}
                                 to={period === 'week' ? `/player/${p.puuid}/week` : `/player/${p.puuid}?year=${WRAP_YEAR}`}
                             >
                                 <span className="lb-rank">{i + 1}</span>
@@ -74,9 +100,72 @@ function Board({ board, players, period, minGames }) {
     );
 }
 
+export function BoardGrid({ data, period }) {
+    return (
+        <div className="lb-grid">
+            {BOARDS.map((b) => (
+                <Board key={b.id} board={b} players={data.boards[b.id] ?? []} period={period} minGames={data.minGames} />
+            ))}
+        </div>
+    );
+}
+
+function FriendsBoards() {
+    const navigate = useNavigate();
+    const [boards] = useState(myBoards);
+    const [creating, setCreating] = useState(false);
+    const [error, setError] = useState(null);
+
+    async function createBoard() {
+        setCreating(true);
+        setError(null);
+        try {
+            // The player this browser last looked up starts as the first member.
+            const puuid = lastMyPlayer();
+            const res = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/boards`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(puuid ? { puuid } : {}),
+            });
+            const body = await res.json().catch(() => null);
+            if (!res.ok) throw new Error(body?.message || "Couldn't create a board. Please try again.");
+            navigate(`/leaderboards/${body.id}`);
+        } catch (err) {
+            setError(err.message);
+            setCreating(false);
+        }
+    }
+
+    return (
+        <section className="lb-friends">
+            <div className="lb-friends__head">
+                <div>
+                    <h2>Friends boards</h2>
+                    <p>Rank yourself against your friends. Share the invite link and anyone can join.</p>
+                </div>
+                <button type="button" className="btn btn--primary btn--pill" onClick={createBoard} disabled={creating}>
+                    {creating ? 'Creating…' : 'Create a board'}
+                </button>
+            </div>
+            {error && <p className="lb-friends__error" role="alert">{error}</p>}
+            {boards.length > 0 && (
+                <ul className="lb-friends__list">
+                    {boards.map((b) => (
+                        <li key={b.id}>
+                            <Link className="lb-friends__board" to={`/leaderboards/${b.id}`}>
+                                <span className="lb-name">{b.names.length ? b.names.join(', ') : 'No members yet'}</span>
+                                <span className="lb-friends__count">{b.count} {b.count === 1 ? 'player' : 'players'}</span>
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </section>
+    );
+}
+
 export default function Leaderboards() {
-    const [params, setParams] = useSearchParams();
-    const period = params.get('period') === 'week' ? 'week' : 'year';
+    const [period, setPeriod] = usePeriod();
     const { data, error } = useLeaderboards(period);
 
     return (
@@ -93,29 +182,13 @@ export default function Leaderboards() {
                     <p>The top Rifting Wrapped players, updated every 10 minutes.</p>
                 </header>
 
-                <div className="lb-toggle" role="group" aria-label="Time period">
-                    {PERIODS.map((p) => (
-                        <button
-                            key={p.id}
-                            type="button"
-                            aria-pressed={period === p.id}
-                            onClick={() => setParams(p.id === 'year' ? {} : { period: p.id }, { replace: true })}
-                        >
-                            {p.label}
-                        </button>
-                    ))}
-                </div>
+                <FriendsBoards />
+
+                <PeriodToggle period={period} onChange={setPeriod} />
 
                 {error && <p className="lb-status">Couldn't load the leaderboards. Please try again in a moment.</p>}
                 {!data && !error && <p className="lb-status">Loading leaderboards…</p>}
-
-                {data && (
-                    <div className="lb-grid">
-                        {BOARDS.map((b) => (
-                            <Board key={b.id} board={b} players={data.boards[b.id] ?? []} period={period} minGames={data.minGames} />
-                        ))}
-                    </div>
-                )}
+                {data && <BoardGrid data={data} period={period} />}
             </div>
         </>
     );

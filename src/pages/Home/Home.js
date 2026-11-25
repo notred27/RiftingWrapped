@@ -8,6 +8,7 @@ import { fetchCached } from '../../resources/fetchCached';
 import { trackEvent } from '../../resources/analytics';
 import { isWrapReady } from '../../resources/playerStatus';
 import { lastMyPlayer, rememberMyPlayer } from '../../resources/myPlayers.js';
+import { findOrRegisterPlayer, parseRiotId } from '../../resources/findOrRegisterPlayer.js';
 
 import UserSearchBar from '../../components/common/UserSearchBar';
 import PlayerMarquee from '../../components/common/PlayerMarquee';
@@ -44,67 +45,22 @@ export default function Home() {
         setIsLoading(true);
         setSelectedPlayer("");
 
-        const apiUrl = process.env.REACT_APP_API_ENDPOINT;
-
         try {
             const region = document.getElementById("regionSelect").value;
-            const names = document.getElementById("nameInput").value.split("#").map((n) => n.trim());
+            const riotId = parseRiotId(document.getElementById("nameInput").value);
 
-            if (names.length !== 2 || !names[0] || !names[1]) {
+            if (!riotId) {
                 setSelectedPlayer("Enter your Riot ID as Game Name#Tag (e.g. Faker#KR1).");
                 setIsLoading(false);
                 return;
             }
 
-            const [displayName, tag] = names;
+            const [displayName, tag] = riotId;
             setSelectedPlayer(displayName);
             trackEvent('search_submit', { region });
 
-            const lookupUrl = `${apiUrl}/users/by-riot-id/${encodeURIComponent(displayName)}/${encodeURIComponent(tag)}/${region}`;
-            let response = await fetch(lookupUrl);
-            const found = response.ok ? await response.clone().json() : null;
-
-            // A failed player registers again; the API restarts their processing.
-            if (response.status === 404 || found?.status === 'failed') {
-                trackEvent('register_start', { region });
-                setSelectedPlayer(`Registering ${displayName}... this can take a minute.`);
-
-                const addResponse = await fetch(`${apiUrl}/users`, {
-                    method: "POST",
-                    body: new URLSearchParams({ displayName, tag, region }),
-                });
-
-                const addBody = await addResponse.json().catch(() => null);
-
-                if (!addResponse.ok && addResponse.status !== 409) {
-                    trackEvent('register_fail', { region, status: addResponse.status });
-                    setSelectedPlayer(
-                        addBody?.message ||
-                        "Failed to find user. Please check that your name and region are correct."
-                    );
-                    setIsLoading(false);
-                    return;
-                }
-
-                response = await fetch(lookupUrl);
-            }
-
-            if (!response.ok) {
-                setSelectedPlayer("User could not be fetched after creation.");
-                setIsLoading(false);
-                return;
-            }
-
-            const result = await response.json();
-            const { puuid, status } = result;
-
-            if (!puuid) {
-                setSelectedPlayer(
-                    "Registration didn't complete successfully. Please try again."
-                );
-                setIsLoading(false);
-                return;
-            }
+            const { puuid, status } = await findOrRegisterPlayer(displayName, tag, region,
+                () => setSelectedPlayer(`Registering ${displayName}... this can take a minute.`));
 
             trackEvent('search_success', { region, ready: isWrapReady(status) });
             rememberMyPlayer(puuid);
@@ -115,7 +71,7 @@ export default function Home() {
             );
         } catch (err) {
             console.error(err);
-            setSelectedPlayer("Unexpected error. Please try again later.");
+            setSelectedPlayer(err.message || "Unexpected error. Please try again later.");
         } finally {
             setIsLoading(false);
         }

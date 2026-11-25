@@ -6,6 +6,7 @@ import { useLocation } from 'react-router-dom';
 const DYNAMIC_ROUTES = [
 	{ prefix: '/addPlayer/', group: 'Add Player', path: '/addPlayer/:puuid' },
 	{ prefix: '/player/', group: 'Player Profile', path: '/player/:puuid' },
+	{ prefix: '/leaderboards/', group: 'Friends Board', path: '/leaderboards/:boardId' },
 ];
 
 const STATIC_GROUPS = {

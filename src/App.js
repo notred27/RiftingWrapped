@@ -15,6 +15,7 @@ const AddingPlayer = lazy(() => import('./pages/User/AddingPlayer.js'));
 const PlayerStats = lazy(() => import('./pages/User/PlayerStats.js'));
 const WeeklyRecap = lazy(() => import('./pages/Weekly/WeeklyRecap.js'));
 const Leaderboards = lazy(() => import('./pages/Leaderboards/Leaderboards.js'));
+const FriendBoard = lazy(() => import('./pages/Leaderboards/FriendBoard.js'));
 
 
 
@@ -50,6 +51,7 @@ export default function App() {
                         <Route path="/addPlayer/:puuid" element={<AddingPlayer />} />
                         <Route path="/s/:year/:puuid" element={<ShareRedirect />} />
                         <Route path="/leaderboards" element={<Leaderboards />} />
+                        <Route path="/leaderboards/:boardId" element={<FriendBoard />} />
                         <Route path="/faq" element={<FAQ />} />
                         <Route path="/how-it-works" element={<HowItWorks />} />
                         <Route path="/terms" element={<TOS />} />
