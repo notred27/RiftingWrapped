@@ -1236,6 +1236,112 @@ def get_spotlight_players():
 
 
 # ----------------------------------------------------------------------------
+# Leaderboards
+# ----------------------------------------------------------------------------
+# Top tracked players for this week (Monday to Sunday, UTC, since the board is
+# the same for everyone) or a whole wrap year. Every request would scan the
+# match collection, so one result per (period, year) is kept in memory.
+LEADERBOARD_CACHE_SECONDS = int(os.getenv("LEADERBOARD_CACHE_SECONDS", "600"))
+LEADERBOARD_SIZE = 10
+# Rates need enough games to mean something; a 1-0 week isn't a 100% win rate.
+LEADERBOARD_MIN_GAMES = {"week": 10, "year": 100}
+_leaderboard_cache = {}           # (period, year) -> (built_at, payload)
+
+
+def _leaderboard_totals(start: datetime, end: datetime) -> list:
+    """Per-player totals for finished games in [start, end), across wrap-year collections."""
+    totals = {}
+    last = (end - timedelta(microseconds=1)).year
+    for year in range(start.year, last + 1):
+        for r in get_matches_collection(year).aggregate([
+            {"$match": {"stats": {"$exists": True}}},
+            {"$addFields": {"gameDate": {"$toDate": "$matchInfo.gameCreated"}}},
+            {"$match": {"gameDate": {"$gte": start, "$lt": end}}},
+            {"$group": {
+                "_id": "$puuid",
+                "games": {"$sum": 1},
+                "wins": {"$sum": {"$cond": ["$stats.win", 1, 0]}},
+                "seconds": {"$sum": "$matchInfo.gameDuration"},
+                "kills": {"$sum": "$stats.kills"},
+                "deaths": {"$sum": "$stats.deaths"},
+                "assists": {"$sum": "$stats.assists"},
+            }},
+        ], allowDiskUse=True):
+            t = totals.setdefault(r["_id"], {"games": 0, "wins": 0, "seconds": 0, "kills": 0, "deaths": 0, "assists": 0})
+            for field in t:
+                t[field] += r.get(field) or 0
+    return [{"puuid": puuid, **t} for puuid, t in totals.items()]
+
+
+def _build_leaderboards(period: str, year: int) -> dict:
+    if period == "week":
+        now = datetime.now(timezone.utc)
+        start = (now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
+        end = start + timedelta(weeks=1)
+    else:
+        start = datetime(year, 1, 1, tzinfo=timezone.utc)
+        end = datetime(year + 1, 1, 1, tzinfo=timezone.utc)
+
+    rows = _leaderboard_totals(start, end)
+    for r in rows:
+        r["hours"] = round(r["seconds"] / 3600, 1)
+        r["winRate"] = round(r["wins"] / r["games"] * 100, 1) if r["games"] else 0
+        r["kda"] = round((r["kills"] + r["assists"]) / max(1, r["deaths"]), 2)
+
+    min_games = LEADERBOARD_MIN_GAMES[period]
+    qualified = [r for r in rows if r["games"] >= min_games]
+    boards = {
+        "games": sorted(rows, key=lambda r: -r["games"]),
+        "hours": sorted(rows, key=lambda r: -r["seconds"]),
+        "kills": sorted(rows, key=lambda r: -r["kills"]),
+        "winRate": sorted(qualified, key=lambda r: (-r["winRate"], -r["games"])),
+        "kda": sorted(qualified, key=lambda r: (-r["kda"], -r["games"])),
+    }
+    boards = {name: board[:LEADERBOARD_SIZE] for name, board in boards.items()}
+
+    puuids = {r["puuid"] for board in boards.values() for r in board}
+    players = {p["puuid"]: p for p in player_collection.find(
+        {"puuid": {"$in": list(puuids)}},
+        {"_id": 0, "puuid": 1, "displayName": 1, "tag": 1, "region": 1, "icon": 1},
+    )}
+    for name, board in boards.items():
+        boards[name] = [
+            {**players[r["puuid"]], **{k: r[k] for k in ("games", "wins", "hours", "kills", "winRate", "kda")}}
+            for r in board if r["puuid"] in players       # skip players deleted since their games were stored
+        ]
+
+    return {
+        "period": period,
+        "start": start.isoformat(),
+        "end": end.isoformat(),
+        "minGames": min_games,
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "boards": boards,
+    }
+
+
+@app.route('/leaderboards', methods=['GET'])
+def get_leaderboards():
+    """
+    `period` is "week" (this week so far) or "year" (the wrap year in `year`).
+    Returns the top players by games, hours, kills, win rate and KDA.
+    """
+    period = request.args.get("period", default="year")
+    if period not in LEADERBOARD_MIN_GAMES:
+        abort(400, description="`period` must be `week` or `year`")
+    year = require_year_param() if period == "year" else WRAP_YEAR
+
+    key = (period, year)
+    cached = _leaderboard_cache.get(key)
+    if cached and time.time() - cached[0] < LEADERBOARD_CACHE_SECONDS:
+        return jsonify(cached[1])
+
+    payload = _build_leaderboards(period, year)
+    _leaderboard_cache[key] = (time.time(), payload)
+    return jsonify(payload)
+
+
+# ----------------------------------------------------------------------------
 # Weekly recap
 # ----------------------------------------------------------------------------
 # The yearly Wrapped is a once-a-year visit; this is the reason to come back
@@ -1542,7 +1648,7 @@ CACHEABLE_ENDPOINTS = {
 }
 STATS_CACHE_SECONDS = int(os.getenv("STATS_CACHE_SECONDS", "120"))
 LIST_CACHE_SECONDS = int(os.getenv("LIST_CACHE_SECONDS", "300"))
-LIST_ENDPOINTS = {"get_all_users", "get_user_count", "get_spotlight_players"}
+LIST_ENDPOINTS = {"get_all_users", "get_user_count", "get_spotlight_players", "get_leaderboards"}
 
 
 @app.after_request
