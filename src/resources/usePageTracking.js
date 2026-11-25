@@ -10,6 +10,7 @@ const DYNAMIC_ROUTES = [
 
 const STATIC_GROUPS = {
 	'/': 'Home',
+	'/leaderboards': 'Leaderboards',
 	'/faq': 'FAQ',
 	'/how-it-works': 'How It Works',
 	'/terms': 'Legal',

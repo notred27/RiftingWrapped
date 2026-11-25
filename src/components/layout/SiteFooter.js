@@ -26,7 +26,7 @@ export default function SiteFooter() {
                 </div>
                 <div className="site-footer__col">
                     <span className="site-footer__col-title">Explore</span>
-                    <Link to="/">Leaderboards</Link>
+                    <Link to="/leaderboards">Leaderboards</Link>
                     <Link to="/">Champ Stats</Link>
                     <Link to="/">Player Stats</Link>
                 </div>

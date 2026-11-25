@@ -405,3 +405,9 @@ curl "<API_DOMAIN>/highestStatGames/<PUUID>?stat=deaths&year=2025"
   | `tz` | `0` | Viewer's UTC offset in minutes, as JavaScript's `Date.getTimezoneOffset()` returns it (positive west of UTC). Weeks are cut at local midnight. |
 
   Returns `weekStart`/`weekEnd` (ISO), `thisWeek` (totals plus `topChamps`, `days` (games per day, Monday first), `bestGame`, `mostKillsGame`, `longestWinStreak`, `uniqueChamps`, `deathlessGames`), `lastWeek` (totals, for week-over-week changes), `yearToDate`, `weeklyStreak` (weeks in a row with a game, not broken until the current week ends), `activeWeeks`, `bestWeekGames` (busiest earlier week this year) and `paceHours` (projected year-end hours; current week only). `400` for an out-of-range `week`/`tz`, `404` for an unknown player.
+
+### Leaderboards
+
+- [`/leaderboards?period={week|year}&year={year}`](): Top 10 tracked players by `games`, `hours`, `kills`, `winRate` and `kda`, for the leaderboards page (`/leaderboards`). `year` is required only for `period=year`; `period=week` (the default is `year`) covers this week so far, Monday to Sunday in UTC, across whichever `matches-YY` collections the week touches. Win rate and KDA only rank players with at least `minGames` games (10 a week, 100 a year). Results are cached in memory for 10 minutes (`LEADERBOARD_CACHE_SECONDS`).
+
+  Returns `period`, `start`/`end` (ISO), `minGames`, `updatedAt` and `boards`: `{games|hours|kills|winRate|kda: [{puuid, displayName, tag, region, icon, games, wins, hours, kills, winRate, kda}]}`. `400` for an unknown `period` or a missing `year`.
