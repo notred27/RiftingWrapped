@@ -52,6 +52,20 @@ def test_existing_player_is_a_409():
     assert r.status_code == 409
 
 
+def test_renamed_player_gets_new_name_not_a_dead_end():
+    # Stored as an old Riot ID; Riot now returns "Faker#KR1" for the same puuid.
+    r, _, players = post([ACCOUNT, SUMMONER], existing={"puuid": "P1", "status": "done", "displayName": "OldName", "tag": "OLD", "region": "KR"})
+    assert r.status_code == 409 and r.get_json()["user"]["displayName"] == "Faker"
+    query, update = players.update_one.call_args[0]
+    assert query == {"puuid": "P1"} and "name_seen_at" in update["$set"]
+    assert {k: update["$set"][k] for k in ("displayName", "tag", "region")} == {"displayName": "Faker", "tag": "KR1", "region": "KR"}
+
+
+def test_unchanged_existing_player_is_not_rewritten():
+    r, _, players = post([ACCOUNT, SUMMONER], existing={"puuid": "P1", "status": "done", "displayName": "Faker", "tag": "KR1", "region": "KR"})
+    assert r.status_code == 409 and not players.update_one.called
+
+
 def test_failed_player_registers_again():
     r, _, players = post([ACCOUNT, SUMMONER], existing={"puuid": "P1", "status": "failed"})
     assert r.status_code == 200
