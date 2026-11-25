@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import DuplicateKeyError
 
-from match_doc import build_match_fields, build_match_update, add_to_player_grid, player_locations_name
+from match_doc import build_match_fields, build_match_update, add_to_player_grid, player_locations_name, riot_id_update
 from scrape_window import compute_cutoff
 from riot import RiotSession, get_routing_region
 
@@ -71,6 +71,9 @@ tracked_puuids = {p["puuid"] for p in tracked_players}
 puuid_region = {p["puuid"]: p.get("region", "NA1") for p in tracked_players}
 
 
+newest_names = {}   # puuid -> riot_id_update() from the player's newest match this run
+
+
 def match_id_exists(match_id, puuid):
     return matches_collection.count_documents({"matchId": match_id, "puuid": puuid}, limit=1) > 0
 
@@ -103,6 +106,13 @@ def store_match(match_data, timeline_data):
 
         if puuid not in tracked_puuids:
             continue
+
+        # Riot IDs can change; recent matches carry the current one. Keep only
+        # each player's newest this run and save them all once at the end.
+        name_update = riot_id_update(match_data, player)
+        if name_update and (puuid not in newest_names
+                            or name_update[1]["$set"]["name_seen_at"] > newest_names[puuid][1]["$set"]["name_seen_at"]):
+            newest_names[puuid] = name_update
 
         if match_id_exists(match_id, puuid):
             continue
@@ -218,6 +228,11 @@ if __name__ == "__main__":
                     time.sleep(1)
 
             offset += count
+
+    # One write per player who played, so players don't have to search again after renaming.
+    for name_update in newest_names.values():
+        player_collection.update_one(*name_update)
+    logger.info("Refreshed Riot IDs for %d players", len(newest_names))
 
     # Recorded only when every player was scanned and every match stored, so a
     # crash, a skipped player or a failed download (e.g. a Riot 503) makes the

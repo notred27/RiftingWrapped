@@ -24,6 +24,25 @@ from datetime import datetime, timezone
 
 from pymongo.errors import DuplicateKeyError
 
+def riot_id_update(match_data: dict, participant: dict):
+    """
+    (filter, update) that saves a tracked player's Riot ID as it was in this
+    match, or None if the match doesn't carry one. Matches can arrive out of
+    order (a catch-up run goes newest first), so a name only replaces one seen
+    in a later game or set at sign-up: the `name_seen_at` check stops an old
+    match from undoing a rename.
+    """
+    name, tag = participant.get("riotIdGameName"), participant.get("riotIdTagline")
+    created = match_data.get("info", {}).get("gameCreation")
+    if not (name and tag and created):
+        return None
+    seen_at = datetime.fromtimestamp(created / 1000, timezone.utc)
+    return (
+        {"puuid": participant["puuid"], "$or": [{"name_seen_at": {"$lt": seen_at}}, {"name_seen_at": {"$exists": False}}]},
+        {"$set": {"displayName": name, "tag": tag, "name_seen_at": seen_at}},
+    )
+
+
 # Queues whose timelines we keep kill/death positions for (Summoner's Rift).
 SUMMONERS_RIFT_QUEUES = {400, 420, 430, 440, 480, 490}
 

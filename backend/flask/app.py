@@ -518,7 +518,8 @@ def add_by_display_name():
         # name so looking it up works, instead of a 409 the client can't resolve.
         current = {"displayName": displayName, "tag": tag, "region": region}
         if any(existing.get(k) != v for k, v in current.items()):
-            player_collection.update_one({"puuid": puuid}, {"$set": current})
+            # name_seen_at: the hourly scraper won't overwrite this with an older match's name.
+            player_collection.update_one({"puuid": puuid}, {"$set": {**current, "name_seen_at": datetime.now(timezone.utc)}})
             logger.info("Renamed %s#%s to %s#%s (%s)", existing.get("displayName"), existing.get("tag"), displayName, tag, region)
             existing = {**existing, **current}
         return jsonify({"error": "Conflict", "message": "User exists", "user": existing}), 409
@@ -529,6 +530,7 @@ def add_by_display_name():
             "tag": tag,
             "puuid": puuid,
             "region": region,
+            "name_seen_at": datetime.now(timezone.utc),
             "status": "starting",
             # The consumer fails players left in "starting" too long (the run never started).
             "updated_at": datetime.now(timezone.utc),
