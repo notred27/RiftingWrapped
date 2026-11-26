@@ -106,7 +106,9 @@ body,
 
 .heroText h1 {
     font-family: var(--font-display);
-    font-size: var(--fs-display-md);
+    /* "Your Stats on the Rift," is ~10.1em wide: on very small phones shrink so it
+       stays on one line (and "Unwrapped" can match it) instead of wrapping. */
+    font-size: min(var(--fs-display-md), calc((100vw - 3.5rem) / 10.4));
     line-height: var(--leading-display);
     letter-spacing: var(--tracking-display);
     margin-bottom: var(--space-5);
@@ -115,9 +117,11 @@ body,
 
 .hero-title-accent {
     display: block;
-    font-size: var(--fs-display-lg);
+    /* As wide as "Your Stats on the Rift," at any size: the two lines' width-per-em,
+       measured in Bricolage Grotesque (800 vs 900). Re-measure if either text changes. */
+    font-size: calc(1em * 1.794);
+    letter-spacing: var(--tracking-display);   /* re-declared so the em scales with this size */
     font-weight: var(--weight-black);
-    font-style: italic;
     /* 800 is the font's heaviest cut; a same-color stroke thickens it further */
     -webkit-text-stroke: 0.03em currentColor;
 }
@@ -281,7 +285,8 @@ body,
     position: relative;
     z-index: var(--z-raised);
     width: 100%;
-    margin-top: clamp(var(--space-6), 8vh, var(--space-7));
+    /* A clear break from the hero, so the join line heads the cards, not the search. */
+    margin-top: clamp(var(--space-7), 10vh, 5rem);
 }
 
 .marquee-frame {
@@ -328,17 +333,20 @@ body,
     color: var(--text-muted-color);
 }
 
+/* Section header for the player cards. */
 .hero-join-line {
-    margin: 0 0 var(--space-4);
-    max-width: 700px;
-    font-size: var(--fs-sm);
-    font-weight: var(--weight-regular);
-    color: var(--text-muted-color);
-    line-height: 1.6;
-    text-align: left;
-    z-index: var(--z-raised);
     position: relative;
+    z-index: var(--z-raised);
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-display);
+    font-size: var(--fs-lg);
+    font-weight: var(--weight-heavy);
+    line-height: 1.2;
+    color: var(--text-color);
+    text-align: left;
 }
+
+.hero-join-count { color: var(--accent-text); }
 
 /* ---------- Loading dots & animations ---------- */
 .loading-text {
@@ -495,8 +503,6 @@ iframe {
     }
 
     .hero-join-line {
-        margin-left: auto;
-        margin-right: auto;
         text-align: center;
     }
 
@@ -550,16 +556,167 @@ iframe {
         padding-right: var(--space-2);
     }
 }
-/* Shortcut to the weekly recap for people who've looked themselves up before */
-.hero-returning-link {
-    display: inline-block;
-    margin-top: var(--space-3);
-    color: var(--accent-text);
-    font-size: var(--fs-xs);
-    font-weight: var(--weight-bold);
-    text-decoration: none;
+/* ---------- Layout B: search on the left, this week's top players on the right ---------- */
+.hero-main {
+    position: relative;
+    z-index: var(--z-raised);
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-6);
 }
 
-.hero-returning-link:hover {
-    text-decoration: underline;
+.heroText { flex: 999 1 480px; min-width: 0; }
+
+/* Year / week switch above the search; the submit button's label follows it. */
+.hero-mode {
+    display: flex;
+    width: fit-content;
+    padding: 3px;
+    gap: 2px;
+    background: var(--second-bg-color);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-pill);
+}
+/* Compact on purpose: it's a setting for the search, not a second call to action. */
+.hero-mode button {
+    min-height: 32px;
+    padding: 0 var(--space-4);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--text-muted-color);
+    font: inherit;
+    font-size: var(--fs-xs);
+    font-weight: var(--weight-bold);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease;
+}
+/* Submit button labels stacked in one cell: the button sizes to the wider one. */
+.submit-labels { display: grid; }
+.submit-labels > span { grid-area: 1 / 1; }
+.submit-labels > .is-hidden { visibility: hidden; }   /* also hides it from screen readers */
+
+.hero-mode button[aria-pressed="true"] {
+    background: var(--accent-color);
+    color: #fff;
+}
+.hero-mode button:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+.hero-lb {
+    flex: 1 1 320px;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-5);
+    background: color-mix(in srgb, var(--second-bg-color) 92%, transparent);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    text-align: left;
+}
+.hero-lb__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+.hero-lb__head h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--fs-md);
+    font-weight: var(--weight-heavy);
+}
+
+.hero-lb__status {
+    margin: 0;
+    color: var(--text-muted-color);
+    font-size: var(--fs-sm);
+}
+.hero-lb__list { list-style: none; margin: 0; padding: 0; }
+.hero-lb__row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2);
+    border-radius: var(--radius-sm);
+    color: var(--text-color);
+    text-decoration: none;
+}
+.hero-lb__row:hover,
+.hero-lb__row:focus-visible { background: var(--surface-2); }
+.hero-lb__rank {
+    width: 1.5em;
+    text-align: right;
+    font-weight: var(--weight-bold);
+    color: var(--text-muted-color);
+    font-variant-numeric: tabular-nums;
+}
+.hero-lb__list li:nth-child(-n+3) .hero-lb__rank { color: var(--accent-text); }
+.hero-lb__icon {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: var(--radius-round);
+    background: var(--surface-2);
+}
+.hero-lb__name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--fs-sm);
+    font-weight: var(--weight-semibold);
+}
+.hero-lb__tag { margin-left: 2px; color: var(--text-muted-color); font-weight: var(--weight-regular); }
+.hero-lb__value { font-weight: var(--weight-heavy); font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
+.hero-lb__all { width: 100%; }
+
+@media (max-width: 768px) {
+    .hero-main { justify-content: center; }
+    .hero-mode { margin: 0 auto; }
+    /* Still a comfortable thumb target on touch screens. */
+    .hero-mode button { min-height: 40px; padding: 0 var(--space-4); white-space: nowrap; }
+    .marquee-section { margin-top: var(--space-7); }
+
+    /* Phones: search, then player cards, then this week's top players last.
+       .hero-main steps aside so the panel becomes a direct item of .heroContainer
+       (a flex column) and can be ordered after the cards. */
+    .hero-main { display: contents; }
+    .hero-lb {
+        order: 1;
+        position: relative;
+        z-index: var(--z-raised);
+        width: 100%;
+        max-width: 360px;
+        margin-top: var(--space-7);
+    }
+}
+
+/* ---------- Short laptop windows (e.g. XPS 13/15: ~1280-1536 wide, ~650-850 tall) ----------
+   The headline scales with the window, but text, controls and cards are fixed sizes, so
+   on a short screen they crowd the hero and push the player cards below the fold. Tighten
+   those, leave the headline alone. Phones and tall desktops are unaffected. */
+@media (min-width: 769px) and (max-height: 860px) {
+    .heroContainer {
+        --hero-pad-y: clamp(var(--space-5), 4vh, var(--space-7));
+        min-height: 0;
+    }
+    .heroText { gap: var(--space-4); }
+    .heroText h1 { margin-bottom: var(--space-3); }
+    .heroText p { font-size: var(--fs-sm); }
+    .hero-search-box { height: 48px; }
+    .hero-lb { padding: var(--space-4); gap: var(--space-2); }
+    .hero-lb__row { padding: 6px var(--space-2); }
+    .marquee-section { margin-top: var(--space-6); }
+    .marqueeContainer {
+        --marquee-card-w: 224px;
+        --marquee-card-h: 150px;
+    }
 }
