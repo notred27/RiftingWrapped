@@ -52,7 +52,6 @@ db = client[DB_NAME]
 yy = WRAP_YEAR % 100
 matches_collection = db[f"matches-{yy:02d}"]
 player_collection = db["tracked-players"]
-dlq_collection = db.get_collection("producer-dlq")
  
  
 class Producer:
@@ -65,7 +64,7 @@ class Producer:
         try:
             matches_collection.create_index(
                 [("puuid", ASCENDING), ("matchId", ASCENDING)],
-                unique=True, name="unique_puuid_matchId", background=True,
+                unique=True, name="unique_puuid_matchId",
             )
             # The leaderboards' date range: the weekly board reads one week of matches.
             matches_collection.create_index([("matchInfo.gameCreated", ASCENDING)], name="game_created")
@@ -274,11 +273,6 @@ class Producer:
                 )
             else:
                 logger.error("Cannot mark player failed: puuid is None. Error: %s", err_msg)
-            dlq_collection.insert_one({
-                "puuid": puuid,
-                "error": err_msg,
-                "time": datetime.now(timezone.utc),
-            })
         except Exception:
             logger.exception("Failed to mark player failed in DB.")
  

@@ -60,7 +60,6 @@ yy = WRAP_YEAR % 100
 matches_collection = db[f"matches-{yy:02d}"]
 player_locations_collection = db[player_locations_name(WRAP_YEAR)]   # per-player kill/death grids
 player_collection = db["tracked-players"]
-dlq_collection = db.get_collection("producer-dlq")
 runs_collection = db["consumer-runs"]   # per-run throughput, for queue wait estimates
 stop = threading.Event()                # set on Ctrl-C so every region's thread winds down
 
