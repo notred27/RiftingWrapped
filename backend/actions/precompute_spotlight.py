@@ -1,6 +1,6 @@
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from math import floor
 from random import sample
 from pymongo import MongoClient
@@ -12,6 +12,10 @@ MONGO_URI = os.environ["MONGO_URI"]
 WRAP_YEAR = int(os.environ.get("WRAP_YEAR", "2026"))
 POOL_SIZE = int(os.environ.get("SPOTLIGHT_POOL_SIZE", "30"))
 MIN_HOURS_PLAYED = int(os.environ.get("SPOTLIGHT_MIN_HOURS", "50"))
+# Building the pool reads every finished player's matches, and the API picks
+# random cards from it on every request, so a daily rebuild is plenty.
+MAX_AGE = timedelta(hours=int(os.environ.get("SPOTLIGHT_MAX_AGE_HOURS", "24")))
+FORCE = os.environ.get("SPOTLIGHT_FORCE", "").lower() == "true"
 
 client = MongoClient(MONGO_URI)
 db = client["rifting-wrapped"]
@@ -87,6 +91,15 @@ def build_spotlight_pool():
 
 
 def main():
+    cached = cache_collection.find_one({"_id": f"spotlight-{WRAP_YEAR}"}, {"updatedAt": 1})
+    updated = cached and cached.get("updatedAt")
+    if updated and not FORCE:
+        if updated.tzinfo is None:
+            updated = updated.replace(tzinfo=timezone.utc)   # pymongo returns naive UTC
+        if datetime.now(timezone.utc) - updated < MAX_AGE:
+            print(f"Spotlight cache is from {updated.isoformat()}; rebuilt at most daily, skipping")
+            return
+
     cards = build_spotlight_pool()
 
     cache_collection.update_one(

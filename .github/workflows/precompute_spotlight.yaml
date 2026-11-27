@@ -35,6 +35,8 @@ jobs:
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
           WRAP_YEAR: ${{ vars.WRAP_YEAR }}
+          # The script rebuilds at most daily; a manual run always rebuilds.
+          SPOTLIGHT_FORCE: ${{ github.event_name == 'workflow_dispatch' }}
         run: python backend/actions/precompute_spotlight.py
 
       - name: Rebuild leaderboard cache
