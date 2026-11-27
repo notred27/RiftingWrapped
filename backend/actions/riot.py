@@ -22,6 +22,9 @@ MATCH_ROUTING = {
     "asia": {"KR", "JP1"},
     "sea": {"SG2", "OC1", "TW2", "VN2", "PH2", "TH2"},
 }
+# Every valid platform code. A region goes into the host name of requests that
+# carry the Riot key, so anything else must be rejected, never requested.
+PLATFORMS = set().union(*MATCH_ROUTING.values())
 
 
 def get_routing_region(region: str, api_endpoint: bool = False) -> str:

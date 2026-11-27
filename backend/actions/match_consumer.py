@@ -16,7 +16,7 @@ from match_doc import (
 )
 from notify import send_ready_emails
 from precompute_leaderboards import refresh_leaderboards
-from riot import RiotSession, get_routing_region, MATCH_ROUTING
+from riot import RiotSession, get_routing_region, MATCH_ROUTING, PLATFORMS
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
@@ -187,6 +187,8 @@ class Consumer:
         puuid = match_doc["puuid"]
         region = match_doc.get("region", "NA1")
         try:
+            if region.upper() not in PLATFORMS:
+                raise ValueError(f"Unknown region {region!r}")   # never put it in a host name with the key
             R = get_routing_region(region)
             match_data = self.rs.safe_request("GET", f"https://{R}.api.riotgames.com/lol/match/v5/matches/{match_id}")
             timeline_data = self.rs.safe_request("GET", f"https://{R}.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline")

@@ -11,7 +11,7 @@ from pymongo.errors import DuplicateKeyError
 
 from match_doc import build_match_fields, build_match_update, add_to_player_grid, player_locations_name, riot_id_update
 from scrape_window import compute_cutoff
-from riot import RiotSession, get_routing_region
+from riot import RiotSession, get_routing_region, PLATFORMS
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
@@ -169,7 +169,10 @@ if __name__ == "__main__":
     failed_matches = 0
 
     for user_puuid in tracked_puuids:
-        region = puuid_region.get(user_puuid, "NA1")
+        region = (puuid_region.get(user_puuid) or "NA1").upper()
+        if region not in PLATFORMS:
+            logger.warning("Skipping %s: unknown region %r", user_puuid, region)
+            continue
         offset = 0
         count = 100
 

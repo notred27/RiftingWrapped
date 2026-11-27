@@ -10,7 +10,7 @@ from urllib.parse import quote
 import requests
 from dotenv import load_dotenv
 from match_doc import PRIORITY_NEW_PLAYER, PRIORITY_RESCAN
-from riot import RiotSession, get_routing_region
+from riot import RiotSession, get_routing_region, PLATFORMS
 from pymongo import MongoClient, ASCENDING, UpdateOne
 from pymongo.errors import BulkWriteError
  
@@ -272,6 +272,9 @@ def main():
  
     # Uppercase like the API does: the consumer's per-region threads match platform codes exactly.
     username, tag, region = sys.argv[1], sys.argv[2], sys.argv[3].strip().upper()
+    if region not in PLATFORMS:
+        logger.error("Unknown region %r", region)
+        sys.exit(2)
  
     p = Producer(RIOT_API_KEY)
     puuid = None

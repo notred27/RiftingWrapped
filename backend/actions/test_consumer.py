@@ -36,6 +36,18 @@ def test_every_platform_has_exactly_one_runner():
             assert len(owners) == 1, (p, owners)
 
 
+def test_unknown_region_fails_the_match_without_calling_riot():
+    c = match_consumer.Consumer("key", "americas")
+    matches, players = mock.Mock(), mock.Mock()
+    matches.count_documents.return_value = 1                     # player still has work: no finalize
+    with mock.patch.object(match_consumer, "matches_collection", matches), \
+         mock.patch.object(match_consumer, "player_collection", players), \
+         mock.patch.object(c.rs, "safe_request") as riot:
+        c.process_match({"_id": 1, "matchId": "X_1", "puuid": "p", "region": "evil.com/#"})
+    assert riot.call_count == 0
+    assert matches.update_one.call_args.args[1]["$set"]["status"] == "failed"
+
+
 def test_a_failing_region_stops_every_region():
     c = match_consumer.Consumer("key", "europe")
     with mock.patch.object(c, "process_next_match", side_effect=Exception("db blip")), \
