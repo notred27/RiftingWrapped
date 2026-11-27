@@ -8,6 +8,8 @@ Only needs pymongo - keep Flask out of here so the job can import it.
 """
 from datetime import datetime, timedelta, timezone
 
+from stat_fields import F
+
 LEADERBOARD_SIZE = 10
 # Rates need enough games to mean something; a 1-0 week isn't a 100% win rate.
 LEADERBOARD_MIN_GAMES = {"week": 10, "year": 100}
@@ -43,11 +45,11 @@ def leaderboard_totals(db, start: datetime, end: datetime, puuids=None) -> list:
             {"$group": {
                 "_id": "$puuid",
                 "games": {"$sum": 1},
-                "wins": {"$sum": {"$cond": ["$stats.win", 1, 0]}},
+                "wins": {"$sum": {"$cond": [F("win"), 1, 0]}},
                 "seconds": {"$sum": "$matchInfo.gameDuration"},
-                "kills": {"$sum": "$stats.kills"},
-                "deaths": {"$sum": "$stats.deaths"},
-                "assists": {"$sum": "$stats.assists"},
+                "kills": {"$sum": F("kills")},
+                "deaths": {"$sum": F("deaths")},
+                "assists": {"$sum": F("assists")},
             }},
         ], allowDiskUse=True):
             t = totals.setdefault(r["_id"], dict(empty))

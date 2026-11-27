@@ -5,7 +5,9 @@ import requests
 
 from datetime import datetime, timezone
 
-from match_doc import GRID_SIZE, cell_index, player_locations_inc, riot_id_update
+from match_doc import GRID_SIZE, build_match_fields, cell_index, extract_match_stats, player_locations_inc, riot_id_update
+from shorten_stat_names import short_stats_expr
+from stat_fields import F, P, STAT_FIELDS, expand, shorten
 from riot import RiotSession, get_routing_region
 
 
@@ -35,6 +37,40 @@ def test_riot_id_update_only_replaces_older_names():
     assert query == {"puuid": "P1", "$or": [{"name_seen_at": {"$lt": seen}}, {"name_seen_at": {"$exists": False}}]}
     assert riot_id_update(match, {"puuid": "P1", "riotIdGameName": "", "riotIdTagline": "oaks"}) is None
     assert riot_id_update({"info": {}}, {"puuid": "P1", "riotIdGameName": "jar", "riotIdTagline": "oaks"}) is None
+
+
+MATCH = {"info": {"queueId": 450, "gameCreation": 1_764_000_000_000, "gameDuration": 1200,
+                  "teams": [{"teamId": 100, "objectives": {"baron": {"kills": 1}, "dragon": {"kills": 2}}}],
+                  "participants": [{"puuid": "p", "participantId": 1, "teamId": 100, "championName": "Ahri",
+                                    "kills": 7, "deaths": 2, "assists": 5, "win": True, "pushPings": 3}]}}
+
+
+def test_stats_are_stored_short_and_expand_back():
+    long = extract_match_stats(MATCH, MATCH["info"]["participants"][0])
+    stored = build_match_fields(MATCH, {}, "p")["stats"]
+    assert stored["ch"] == "Ahri" and stored["k"] == 7 and stored["e"]["b"] == 1 and stored["p"]["pu"] == 3
+    assert expand(stored) == long and shorten(long) == stored
+    assert P("kills") == "stats.k" and F("epicMonsters.barons") == "$stats.e.b" and P("pings.pushPings") == "stats.p.pu"
+
+
+def test_short_names_are_unique_and_migration_matches_the_writer():
+    top = [e[0] if isinstance(e, tuple) else e for e in STAT_FIELDS.values()]
+    assert len(top) == len(set(top))
+    for e in STAT_FIELDS.values():
+        if isinstance(e, tuple):
+            assert len(e[1]) == len(set(e[1].values()))
+
+    # Evaluate the migration's expression against a long-named document, as MongoDB would.
+    long = extract_match_stats(MATCH, MATCH["info"]["participants"][0])
+
+    def resolve(expr):
+        if isinstance(expr, dict):
+            return {k: v for k, v in ((k, resolve(v)) for k, v in expr.items()) if v is not None}
+        node = {"stats": long}
+        for part in expr[1:].split("."):
+            node = node.get(part) if isinstance(node, dict) else None
+        return node
+    assert resolve(short_stats_expr()) == shorten(long)
 
 
 def test_routing_regions():

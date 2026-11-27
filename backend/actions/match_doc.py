@@ -12,7 +12,7 @@ A finished ("done") match document looks like:
     {
       "_id", "puuid", "matchId", "status": "done", "queueId",
       "matchInfo": {"gameCreated", "gameDuration"},
-      "stats": {...see extract_match_stats...},
+      "stats": {...extract_match_stats, stored with short names (backend/flask/stat_fields.py)...},
       "locations": {"kills": [{x, y}], "deaths": [{x, y}]},
     }
 
@@ -20,9 +20,14 @@ Only add a field here if the API (backend/flask/app.py) or the frontend reads
 it - every byte is repeated in every match of every player.
 """
 
+import os
+import sys
 from datetime import datetime, timezone
 
 from pymongo.errors import DuplicateKeyError
+
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "flask"))
+from stat_fields import shorten  # noqa: E402  (stored stat names, shared with the API)
 
 def riot_id_update(match_data: dict, participant: dict):
     """
@@ -175,7 +180,7 @@ def build_match_fields(match_data: dict, timeline_data: dict, puuid: str) -> dic
             "gameCreated": datetime.fromtimestamp(info.get("gameCreation", 0) / 1000, tz=timezone.utc),
             "gameDuration": info.get("gameDuration", 0),
         },
-        "stats": extract_match_stats(match_data, participant),
+        "stats": shorten(extract_match_stats(match_data, participant)),
         "locations": get_kill_death_positions(timeline_data, participant["participantId"], queue_id),
     }
 

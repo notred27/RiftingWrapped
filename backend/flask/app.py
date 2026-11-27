@@ -21,6 +21,7 @@ from math import ceil, floor
 from collections import OrderedDict
 
 from share_image import render_share_image
+from stat_fields import F, P, expand
 from leaderboards import BOARD_MIN_GAMES, LEADERBOARD_MIN_GAMES, build_leaderboards, cached_leaderboards
 
 app = Flask(__name__, template_folder='./templates')
@@ -709,7 +710,7 @@ def get_champ_counts(puuid):
     pipeline = [
         {"$match": completed_matches(puuid)},
         {"$group": {
-            "_id": "$stats.champion",
+            "_id": F("champion"),
             "count": {"$sum": 1},
         }},
         {"$sort": {"count": -1}}
@@ -765,17 +766,17 @@ def get_damage(puuid):
         {"$match": completed_matches(puuid)},
         {"$group": {
             "_id": puuid,
-            "magicDamageTaken": {"$sum": "$stats.magicDamageTaken"},
-            "physicalDamageTaken": {"$sum": "$stats.physicalDamageTaken"},
-            "trueDamageTaken": {"$sum": "$stats.trueDamageTaken"},
+            "magicDamageTaken": {"$sum": F("magicDamageTaken")},
+            "physicalDamageTaken": {"$sum": F("physicalDamageTaken")},
+            "trueDamageTaken": {"$sum": F("trueDamageTaken")},
 
-            "magicDamageDealt": {"$sum": "$stats.magicDamageDealt"},
-            "physicalDamageDealt": {"$sum": "$stats.physicalDamageDealt"},
-            "trueDamageDealt": {"$sum": "$stats.trueDamageDealt"},
+            "magicDamageDealt": {"$sum": F("magicDamageDealt")},
+            "physicalDamageDealt": {"$sum": F("physicalDamageDealt")},
+            "trueDamageDealt": {"$sum": F("trueDamageDealt")},
 
-            "avgTaken": {"$avg": {"$add": ["$stats.magicDamageTaken", "$stats.physicalDamageTaken", "$stats.trueDamageTaken"]}},
-            "avgDealt": {"$avg": {"$add": ["$stats.magicDamageDealt", "$stats.physicalDamageDealt", "$stats.trueDamageDealt"]}},
-            "timeCC": {"$sum": "$stats.timeCCingOthers"},
+            "avgTaken": {"$avg": {"$add": [F("magicDamageTaken"), F("physicalDamageTaken"), F("trueDamageTaken")]}},
+            "avgDealt": {"$avg": {"$add": [F("magicDamageDealt"), F("physicalDamageDealt"), F("trueDamageDealt")]}},
+            "timeCC": {"$sum": F("timeCCingOthers")},
         }},
     ]
 
@@ -793,11 +794,11 @@ def get_forfeit(puuid):
         {"$group": {
             "_id": puuid,
             "numGames": {"$sum": 1},
-            "numSurrenders": {"$sum": {"$cond": ["$stats.gameEndedInSurrender", 1, 0]}},
-            "numSurrendersWon": {"$sum": {"$cond": [{"$and": ["$stats.gameEndedInSurrender", "$stats.win"]}, 1, 0]}},
-            "gamesEndingBefore16": {"$sum": {"$cond": [{"$and": ["$stats.gameEndedInSurrender", {"$lt": ["$matchInfo.gameDuration", 960]}]}, 1, 0]}},
-            "totalSurrenderTime": {"$sum": {"$cond": ["$stats.gameEndedInSurrender", "$matchInfo.gameDuration", 0]}},
-            "totalNonSurrenderTime": {"$sum": {"$cond": ["$stats.gameEndedInSurrender", 0, "$matchInfo.gameDuration"]}},
+            "numSurrenders": {"$sum": {"$cond": [F("gameEndedInSurrender"), 1, 0]}},
+            "numSurrendersWon": {"$sum": {"$cond": [{"$and": [F("gameEndedInSurrender"), F("win")]}, 1, 0]}},
+            "gamesEndingBefore16": {"$sum": {"$cond": [{"$and": [F("gameEndedInSurrender"), {"$lt": ["$matchInfo.gameDuration", 960]}]}, 1, 0]}},
+            "totalSurrenderTime": {"$sum": {"$cond": [F("gameEndedInSurrender"), "$matchInfo.gameDuration", 0]}},
+            "totalNonSurrenderTime": {"$sum": {"$cond": [F("gameEndedInSurrender"), 0, "$matchInfo.gameDuration"]}},
         }},
     ]
 
@@ -815,13 +816,13 @@ def get_objectives(puuid):
         {"$group": {
             "_id": puuid,
             "numGames": {"$sum": 1},
-            "barons": {"$sum": "$stats.epicMonsters.barons"},
-            "dragons": {"$sum": "$stats.epicMonsters.dragons"},
-            "riftHeralds": {"$sum": "$stats.epicMonsters.riftHeralds"},
-            "voidGrubs": {"$sum": "$stats.epicMonsters.voidGrubs"},
-            "atakhans": {"$sum": "$stats.epicMonsters.atakhan"},
-            "towers": {"$sum": "$stats.turretKills"},
-            "inhibitors": {"$sum": "$stats.inhibitors"}
+            "barons": {"$sum": F("epicMonsters.barons")},
+            "dragons": {"$sum": F("epicMonsters.dragons")},
+            "riftHeralds": {"$sum": F("epicMonsters.riftHeralds")},
+            "voidGrubs": {"$sum": F("epicMonsters.voidGrubs")},
+            "atakhans": {"$sum": F("epicMonsters.atakhan")},
+            "towers": {"$sum": F("turretKills")},
+            "inhibitors": {"$sum": F("inhibitors")}
         }},
     ]
 
@@ -837,9 +838,9 @@ def get_role(puuid):
     pipeline = [
         {"$match": completed_matches(puuid)},
         {"$group": {
-            "_id": "$stats.position",
+            "_id": F("position"),
             "count": {"$sum": 1},
-            "winsInRole": {"$sum": {"$cond": ["$stats.win", 1, 0]}},
+            "winsInRole": {"$sum": {"$cond": [F("win"), 1, 0]}},
         }},
     ]
 
@@ -858,17 +859,17 @@ def get_matchTotals(puuid):
             "$group": {
                 "_id": puuid,
                 "numGames": {"$sum": 1},
-                "totalKills": {"$sum": "$stats.kills"},
-                "totalDeaths": {"$sum": "$stats.deaths"},
-                "totalTimeDead": {"$sum": "$stats.timeSpentDead"},
-                "totalKillingSprees": {"$sum": "$stats.killingSprees"},
-                "totalTowerTakedowns": {"$sum": "$stats.towerTakedowns"},
+                "totalKills": {"$sum": F("kills")},
+                "totalDeaths": {"$sum": F("deaths")},
+                "totalTimeDead": {"$sum": F("timeSpentDead")},
+                "totalKillingSprees": {"$sum": F("killingSprees")},
+                "totalTowerTakedowns": {"$sum": F("towerTakedowns")},
                 "positiveWR": {
                     "$sum": {
                         "$cond": [
                             {"$and": [
-                                {"$gte": [{"$add": ["$stats.kills", "$stats.assists"]}, "$stats.deaths"]},
-                                {"$eq": ["$stats.win", True]}
+                                {"$gte": [{"$add": [F("kills"), F("assists")]}, F("deaths")]},
+                                {"$eq": [F("win"), True]}
                             ]},
                             1, 0
                         ]
@@ -878,18 +879,18 @@ def get_matchTotals(puuid):
                     "$sum": {
                         "$cond": [
                             {"$and": [
-                                {"$lt": [{"$add": ["$stats.kills", "$stats.assists"]}, "$stats.deaths"]},
-                                {"$eq": ["$stats.win", True]}
+                                {"$lt": [{"$add": [F("kills"), F("assists")]}, F("deaths")]},
+                                {"$eq": [F("win"), True]}
                             ]},
                             1, 0
                         ]
                     }
                 },
                 "totalPositiveGames": {
-                    "$sum": {"$cond": [{"$gte": [{"$add": ["$stats.kills", "$stats.assists"]}, "$stats.deaths"]}, 1, 0]}
+                    "$sum": {"$cond": [{"$gte": [{"$add": [F("kills"), F("assists")]}, F("deaths")]}, 1, 0]}
                 },
                 "totalNegativeGames": {
-                    "$sum": {"$cond": [{"$lt": [{"$add": ["$stats.kills", "$stats.assists"]}, "$stats.deaths"]}, 1, 0]}
+                    "$sum": {"$cond": [{"$lt": [{"$add": [F("kills"), F("assists")]}, F("deaths")]}, 1, 0]}
                 },
             }
         },
@@ -900,9 +901,9 @@ def get_matchTotals(puuid):
 
 
 ALLOWED_GAME_STATS = {
-    'kills': 'stats.kills',
-    'deaths': 'stats.deaths',
-    'assists': 'stats.assists'
+    'kills': P("kills"),
+    'deaths': P("deaths"),
+    'assists': P("assists")
 }
 
 MAX_GAMES_LIMIT = 10
@@ -938,6 +939,7 @@ def get_highest_games(puuid):
     for doc in results:
         if '_id' in doc:
             doc['_id'] = str(doc['_id'])
+        doc['stats'] = expand(doc.get('stats'))   # stored with short names (stat_fields.py)
 
     return jsonify(results)
 
@@ -951,8 +953,8 @@ def get_kill_frequency(puuid):
         # `$type: "number"` excludes matches with a missing/null/corrupted
         # kills field at the database level, instead of letting a single bad
         # record crash max() below with a None-vs-int comparison.
-        {"$match": {"puuid": puuid, "stats.kills": {"$type": "number"}}},
-        {"$group": {"_id": "$stats.kills", "count": {"$sum": 1}}}
+        {"$match": {"puuid": puuid, P("kills"): {"$type": "number"}}},
+        {"$group": {"_id": F("kills"), "count": {"$sum": 1}}}
     ]
 
     results = list(matches_collection.aggregate(pipeline))
@@ -974,8 +976,8 @@ def get_death_frequency(puuid):
     matches_collection = get_matches_collection(year_param)
 
     pipeline = [
-        {"$match": {"puuid": puuid, "stats.deaths": {"$type": "number"}}},
-        {"$group": {"_id": "$stats.deaths", "count": {"$sum": 1}}}
+        {"$match": {"puuid": puuid, P("deaths"): {"$type": "number"}}},
+        {"$group": {"_id": F("deaths"), "count": {"$sum": 1}}}
     ]
 
     results = list(matches_collection.aggregate(pipeline))
@@ -999,11 +1001,11 @@ def get_kda_extremes(puuid):
     base_pipeline = [{"$match": completed_matches(puuid)}]
 
     best_kda_pipeline = base_pipeline + [
-        {"$sort": {"stats.kda": -1, "matchInfo.gameDuration": -1}},
+        {"$sort": {P("kda"): -1, "matchInfo.gameDuration": -1}},
         {"$limit": 1}
     ]
     worst_kda_pipeline = base_pipeline + [
-        {"$sort": {"stats.kda": 1, "matchInfo.gameDuration": -1}},
+        {"$sort": {P("kda"): 1, "matchInfo.gameDuration": -1}},
         {"$limit": 1}
     ]
 
@@ -1013,6 +1015,8 @@ def get_kda_extremes(puuid):
     def convert_id(doc):
         if "_id" in doc:
             doc["_id"] = str(doc["_id"])
+        if "stats" in doc:
+            doc["stats"] = expand(doc["stats"])   # stored with short names (stat_fields.py)
         return doc
 
     return jsonify({
@@ -1044,7 +1048,7 @@ def get_cs_extremes(puuid):
 
     base_pipeline = [
         {"$match": completed_matches(puuid)},
-        {"$addFields": {"totalCs": {"$add": ["$stats.cs", "$stats.jungleCs"]}}}
+        {"$addFields": {"totalCs": {"$add": [F("cs"), F("jungleCs")]}}}
     ]
 
     best_cs_pipeline = base_pipeline + [
@@ -1067,13 +1071,13 @@ def get_cs_extremes(puuid):
             "$group": {
                 "_id": None,
                 "numGames": {"$sum": 1},
-                "totalMinions": {"$sum": "$stats.cs"},
-                "totalJungleMinions": {"$sum": "$stats.jungleCs"},
+                "totalMinions": {"$sum": F("cs")},
+                "totalJungleMinions": {"$sum": F("jungleCs")},
                 "lowCsGames": {
                     "$sum": {
                         "$cond": [
                             {"$and": [
-                                {"$lt": [{"$add": ["$stats.cs", "$stats.jungleCs"]}, 100]},
+                                {"$lt": [{"$add": [F("cs"), F("jungleCs")]}, 100]},
                                 {"$gt": ["$matchInfo.gameDuration", 900]},
                                 {"$in": ["$queueId", [400, 420, 430, 440, 480]]}
                             ]},
@@ -1089,6 +1093,8 @@ def get_cs_extremes(puuid):
         for doc in results:
             if '_id' in doc:
                 doc['_id'] = str(doc['_id'])
+            if 'stats' in doc:
+                doc['stats'] = expand(doc['stats'])   # stored with short names (stat_fields.py)
         return results
 
     best_cs = convert_id(list(matches_collection.aggregate(best_cs_pipeline)))
@@ -1108,15 +1114,15 @@ def get_ping_sums(puuid):
         {
             "$group": {
                 "_id": puuid,
-                "All In": {"$sum": "$stats.pings.allInPings"},
-                "Assist Me": {"$sum": "$stats.pings.assistMePings"},
-                "Command Ping": {"$sum": "$stats.pings.commandPings"},
-                "Enemy Missing": {"$sum": "$stats.pings.enemyMissingPings"},
-                "Enemy Vision": {"$sum": "$stats.pings.enemyVisionPings"},
-                "Get Back": {"$sum": "$stats.pings.getBackPings"},
-                "Need Vision": {"$sum": "$stats.pings.needVisionPings"},
-                "On My Way": {"$sum": "$stats.pings.onMyWayPings"},
-                "Push": {"$sum": "$stats.pings.pushPings"},
+                "All In": {"$sum": F("pings.allInPings")},
+                "Assist Me": {"$sum": F("pings.assistMePings")},
+                "Command Ping": {"$sum": F("pings.commandPings")},
+                "Enemy Missing": {"$sum": F("pings.enemyMissingPings")},
+                "Enemy Vision": {"$sum": F("pings.enemyVisionPings")},
+                "Get Back": {"$sum": F("pings.getBackPings")},
+                "Need Vision": {"$sum": F("pings.needVisionPings")},
+                "On My Way": {"$sum": F("pings.onMyWayPings")},
+                "Push": {"$sum": F("pings.pushPings")},
             },
         },
         {"$project": {"_id": 0}}
@@ -1143,10 +1149,10 @@ def get_total_stats(puuid):
                 {"$subtract": ["$matchInfo.gameDuration", 900]},
                 0,
             ]}},
-            "totalTimeDead": {"$sum": "$stats.timeSpentDead"},
-            "timeCCingOthers": {"$sum": "$stats.timeCCingOthers"},
-            "barons": {"$sum": "$stats.epicMonsters.barons"},
-            "dragons": {"$sum": "$stats.epicMonsters.dragons"},
+            "totalTimeDead": {"$sum": F("timeSpentDead")},
+            "timeCCingOthers": {"$sum": F("timeCCingOthers")},
+            "barons": {"$sum": F("epicMonsters.barons")},
+            "dragons": {"$sum": F("epicMonsters.dragons")},
         }},
         {"$project": {"_id": 0}}
     ]
@@ -1178,13 +1184,13 @@ def _share_stats(puuid: str, year_param: int):
         {"$group": {
             "_id": None,
             "games": {"$sum": 1},
-            "wins": {"$sum": {"$cond": ["$stats.win", 1, 0]}},
+            "wins": {"$sum": {"$cond": [F("win"), 1, 0]}},
             "seconds": {"$sum": "$matchInfo.gameDuration"},
         }},
     ]))
     champ = list(matches_collection.aggregate([
         {"$match": completed_matches(puuid)},
-        {"$group": {"_id": "$stats.champion", "count": {"$sum": 1}}},
+        {"$group": {"_id": F("champion"), "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},
         {"$limit": 1},
     ]))
@@ -1517,9 +1523,9 @@ def _games_between(puuid: str, start: datetime, end: datetime) -> list:
             {"$project": {
                 "_id": 0, "matchId": 1, "gameDate": 1,
                 "duration": "$matchInfo.gameDuration",
-                "champion": "$stats.champion",
-                "kills": "$stats.kills", "deaths": "$stats.deaths", "assists": "$stats.assists",
-                "win": "$stats.win", "kda": "$stats.kda",
+                "champion": F("champion"),
+                "kills": F("kills"), "deaths": F("deaths"), "assists": F("assists"),
+                "win": F("win"), "kda": F("kda"),
             }},
         ]):
             # pymongo hands back naive datetimes (in UTC); make them aware so
@@ -1597,7 +1603,7 @@ def _weeks_played(puuid: str, year: int, tz_name: str) -> dict:
                 "unit": "week", "startOfWeek": "monday", "timezone": tz_name,
             }},
             "games": {"$sum": 1},
-            "wins": {"$sum": {"$cond": ["$stats.win", 1, 0]}},
+            "wins": {"$sum": {"$cond": [F("win"), 1, 0]}},
             "seconds": {"$sum": "$matchInfo.gameDuration"},
         }},
     ])

@@ -1,8 +1,12 @@
 import os
+import sys
 from datetime import datetime, timezone
 from math import floor
 from random import sample
 from pymongo import MongoClient
+
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "flask"))
+from stat_fields import F  # noqa: E402  (stored stat names, shared with the API)
 
 MONGO_URI = os.environ["MONGO_URI"]
 WRAP_YEAR = int(os.environ.get("WRAP_YEAR", "2026"))
@@ -52,7 +56,7 @@ def build_spotlight_pool():
     # Precompute other stats
     champ_results = matches_collection.aggregate([
         {"$match": {"puuid": {"$in": puuids}}},
-        {"$group": {"_id": {"puuid": "$puuid", "champ": "$stats.champion"}, "count": {"$sum": 1}}},
+        {"$group": {"_id": {"puuid": "$puuid", "champ": F("champion")}, "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},
     ])
 
