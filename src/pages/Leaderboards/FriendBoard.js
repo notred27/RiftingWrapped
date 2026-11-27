@@ -33,7 +33,7 @@ function useBoard(id, period, version) {
 }
 
 function InviteLink({ id }) {
-    const url = `${window.location.origin}/leaderboards/${id}?ref=invite`;
+    const url = `${window.location.origin}/b/${id}`;     // link-preview page, then redirects with ?ref=invite
     const [copied, setCopied] = useState(false);
 
     async function copy() {

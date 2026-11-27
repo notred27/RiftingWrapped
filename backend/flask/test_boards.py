@@ -53,6 +53,26 @@ def test_create_board_returns_url_safe_id():
     assert doc["members"] == ["amy"] and doc["_id"] == res.get_json()["id"]
 
 
+def test_invite_page_previews_board_then_redirects():
+    boards = mock.Mock()
+    boards.find_one.side_effect = lambda q: {"_id": "abcdEFGH", "members": ["amy", "ben"]} if q["_id"] == "abcdEFGH" else None
+    with mock.patch.object(api, "board_collection", boards), mock.patch.object(api, "player_collection", fake_players()):
+        html = client.get("/board-invite/abcdEFGH").get_data(as_text=True)
+        assert 'content="Join Amy&#39;s friends board"' in html and "2 players ranked" in html
+        assert "/leaderboards/abcdEFGH?ref=invite" in html
+        assert client.get("/board-invite/zzzzzzzz").status_code == 302          # unknown board
+        assert client.get("/board-invite/bad id!").status_code == 302
+
+
+def test_players_sitemap_lists_finished_players():
+    players = mock.Mock()
+    players.distinct.return_value = ["amy", "b/c"]
+    with mock.patch.object(api, "player_collection", players):
+        xml = client.get("/sitemap-players.xml").get_data(as_text=True)
+    assert players.distinct.call_args.args[1] == {"status": {"$in": ["done", "done_with_errors"]}}
+    assert "<loc>https://www.riftingwrapped.com/player/amy</loc>" in xml and "/player/b%2Fc<" in xml
+
+
 def test_board_view_is_cached_until_someone_joins():
     boards = mock.Mock()
     boards.find_one.return_value = {"_id": "abcdEFGH", "members": ["amy"]}

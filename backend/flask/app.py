@@ -1216,6 +1216,22 @@ def share_page(puuid, year=None):
     )
 
 
+@app.route('/sitemap-players.xml')
+def players_sitemap():
+    """
+    Every finished player's Wrapped page, for search engines. robots.txt on the
+    site lists this alongside the static sitemap.xml (cross-host sitemaps are
+    allowed when the site's robots.txt names them).
+    """
+    puuids = player_collection.distinct("puuid", {"status": {"$in": ["done", "done_with_errors"]}})
+    urls = "".join(f"<url><loc>{SITE_URL}/player/{quote(p, safe='')}</loc></url>" for p in puuids)
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>'
+           f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>')
+    resp = Response(xml, mimetype="application/xml")
+    resp.headers["Cache-Control"] = "public, max-age=86400"
+    return resp
+
+
 @app.route("/get_card_preview/<puuid>", methods=['GET'])
 def get_card_preview(puuid):
     year_param = require_year_param()
@@ -1385,6 +1401,33 @@ def join_board(board_id):
     for key in [k for k in _board_cache if k[0] == board_id]:
         del _board_cache[key]
     return jsonify({"joined": True}), 200
+
+
+@app.route('/board-invite/<board_id>')
+def board_invite_page(board_id):
+    """
+    What a board's invite link serves: link-preview tags ("Join Amy's board"),
+    then a redirect to the board. Same idea as share_page: the site proxies
+    www.riftingwrapped.com/b/<id> here with an AWS Amplify rewrite.
+    """
+    board_url = f"{SITE_URL}/leaderboards/{board_id}?ref=invite"
+    board = board_collection.find_one({"_id": board_id}) if BOARD_ID_RE.match(board_id) else None
+    if not board:
+        return redirect(f"{SITE_URL}/leaderboards", code=302)
+
+    first = player_collection.find_one({"puuid": board["members"][0]}, {"displayName": 1}) if board["members"] else None
+    count = len(board["members"])
+    title = f"Join {first['displayName']}'s friends board" if first else "Join this friends board"
+    players = f"{count} player{'' if count == 1 else 's'}" if count else "No one yet"
+    description = f"{players} ranked by games, hours, kills, win rate and KDA. Add yourself with your Riot ID."
+    return render_template(
+        'board_invite.html',
+        title=title,
+        description=description,
+        invite_url=f"{SITE_URL}/b/{board_id}",
+        redirect_url=board_url,
+        image_url=f"{SITE_URL}/android-chrome-512x512.png",
+    )
 
 
 # ----------------------------------------------------------------------------

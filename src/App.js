@@ -30,6 +30,12 @@ function ShareRedirect() {
     return <Navigate to={`/player/${puuid}?year=${year}&from=share`} replace />;
 }
 
+/** Board invites (/b/<id>) work the same way, proxied to the API's invite page. */
+function InviteRedirect() {
+    const { boardId } = useParams();
+    return <Navigate to={`/leaderboards/${boardId}?ref=invite`} replace />;
+}
+
 export default function App() {
     usePageTracking();
     const { pathname } = useLocation();
@@ -50,6 +56,7 @@ export default function App() {
                         <Route path="/player/:puuid/week" element={<WeeklyRecap />} />
                         <Route path="/addPlayer/:puuid" element={<AddingPlayer />} />
                         <Route path="/s/:year/:puuid" element={<ShareRedirect />} />
+                        <Route path="/b/:boardId" element={<InviteRedirect />} />
                         <Route path="/leaderboards" element={<Leaderboards />} />
                         <Route path="/leaderboards/:boardId" element={<FriendBoard />} />
                         <Route path="/faq" element={<FAQ />} />

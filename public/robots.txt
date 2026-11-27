@@ -3,3 +3,4 @@ User-agent: *
 Disallow:
 
 Sitemap: https://www.riftingwrapped.com/sitemap.xml
+Sitemap: https://riftingwrapped.onrender.com/sitemap-players.xml

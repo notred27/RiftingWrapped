@@ -70,28 +70,6 @@
     color: var(--text-color);
 }
 
-.site-header__support {
-    position: relative;
-    padding: var(--space-2) var(--space-4);
-}
-
-.site-header__support:hover {
-    color: var(--accent-text);
-}
-
-.site-header__corner {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    /* border shorthands below use currentColor */
-    color: var(--text-muted-color);
-}
-
-.site-header__corner--tl { top: 0; left: 0; border-top: 1px solid; border-left: 1px solid; }
-.site-header__corner--tr { top: 0; right: 0; border-top: 1px solid; border-right: 1px solid; }
-.site-header__corner--bl { bottom: 0; left: 0; border-bottom: 1px solid; border-left: 1px solid; }
-.site-header__corner--br { bottom: 0; right: 0; border-bottom: 1px solid; border-right: 1px solid; }
-
 @media (max-width: 768px) {
     .site-header {
         flex-direction: column;

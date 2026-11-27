@@ -1,0 +1,62 @@
+[
+  {
+    "source": "https://riftingwrapped.com",
+    "status": "302",
+    "target": "https://www.riftingwrapped.com"
+  },
+  {
+    "source": "/s/<*>",
+    "status": "200",
+    "target": "https://riftingwrapped.onrender.com/share/<*>"
+  },
+  {
+    "source": "/b/<*>",
+    "status": "200",
+    "target": "https://riftingwrapped.onrender.com/board-invite/<*>"
+  },
+  {
+    "source": "/",
+    "status": "200",
+    "target": "/prerender/home.html"
+  },
+  {
+    "source": "/leaderboards",
+    "status": "200",
+    "target": "/prerender/leaderboards.html"
+  },
+  {
+    "source": "/faq",
+    "status": "200",
+    "target": "/prerender/faq.html"
+  },
+  {
+    "source": "/how-it-works",
+    "status": "200",
+    "target": "/prerender/how-it-works.html"
+  },
+  {
+    "source": "/privacy",
+    "status": "200",
+    "target": "/prerender/privacy.html"
+  },
+  {
+    "source": "/terms",
+    "status": "200",
+    "target": "/prerender/terms.html"
+  },
+  {
+    "source": "/<*>",
+    "status": "404-200",
+    "target": "/index.html"
+  },
+  {
+    "source": "</^[^.]+$|\\.(?!(css|gif|ico|jpg|js|png|webp|txt|svg|woff|ttf|map|json)$)([^.]+$)/>",
+    "status": "200",
+    "target": "/index.html"
+  },
+  {
+    "source": "https://www.riftingwrapped.com//riot.txt",
+    "status": "200",
+    "target": "https://www.riftingwrapped.com/riot.txt"
+  }
+]

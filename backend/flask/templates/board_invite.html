@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title }} | Rifting Wrapped</title>
+    <meta name="description" content="{{ description }}" />
+
+    <!-- Link previews (Discord, X/Twitter, iMessage, Slack...). Their crawlers
+         read these tags and never run the redirect below. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Rifting Wrapped" />
+    <meta property="og:title" content="{{ title }}" />
+    <meta property="og:description" content="{{ description }}" />
+    <meta property="og:url" content="{{ invite_url }}" />
+    <meta property="og:image" content="{{ image_url }}" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#c52184" />
+
+    <meta name="robots" content="noindex" />
+    <meta http-equiv="refresh" content="0; url={{ redirect_url }}" />
+    <script>window.location.replace({{ redirect_url | tojson }});</script>
+</head>
+<body style="background:#0a0e14;color:#fff;font-family:system-ui,sans-serif;text-align:center;padding-top:20vh">
+    <p>Opening the board&hellip; <a href="{{ redirect_url }}" style="color:#e0428f">continue</a></p>
+</body>
+</html>

@@ -34,19 +34,8 @@ export default function SiteHeader() {
             </Link>
 
             <nav className="site-header__nav">
+                <Link to="/leaderboards">Leaderboards</Link>
                 <Link to="/faq">FAQ</Link>
-                <a
-                    className="site-header__support"
-                    href="https://ko-fi.com/notred27"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    <span className="site-header__corner site-header__corner--tl" />
-                    <span className="site-header__corner site-header__corner--tr" />
-                    <span className="site-header__corner site-header__corner--bl" />
-                    <span className="site-header__corner site-header__corner--br" />
-                    Support Us
-                </a>
             </nav>
         </header>
     );
