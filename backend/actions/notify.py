@@ -99,7 +99,7 @@ def send_ready_emails(db, puuid=None):
 
             year = sub.get("year")
             site_url = os.getenv("SITE_URL") or DEFAULT_SITE_URL
-            url = f"{site_url}/player/{sub['puuid']}?year={year}&utm_source=ready_email"
+            url = f"{site_url}/player/{sub['puuid']}?year={year}&utm_source=ready_email&utm_medium=email&utm_campaign=wrap_ready"
             name = player.get("displayName") or "Summoner"
             text, body = _email_body(name, url, year)
             try:

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
+import { trackEvent } from '../../resources/analytics.js';
 import { fetchCached } from '../../resources/fetchCached.js';
 import { myBoards } from '../../resources/myBoards.js';
 import { isMyPlayer, lastMyPlayer } from '../../resources/myPlayers.js';
@@ -60,7 +61,10 @@ export function PeriodToggle({ period, onChange }) {
     return (
         <div className="lb-toggle" role="group" aria-label="Time period">
             {PERIODS.map((p) => (
-                <button key={p.id} type="button" aria-pressed={period === p.id} onClick={() => onChange(p.id)}>
+                <button key={p.id} type="button" aria-pressed={period === p.id} onClick={() => {
+                    if (p.id !== period) trackEvent('period_change', { period: p.id });
+                    onChange(p.id);
+                }}>
                     {p.label}
                 </button>
             ))}
@@ -82,6 +86,7 @@ function Board({ board, players, period, minGames }) {
                             <Link
                                 className={`lb-row${isMyPlayer(p.puuid) ? ' lb-row--me' : ''}`}
                                 to={period === 'week' ? `/player/${p.puuid}/week` : `/player/${p.puuid}?year=${WRAP_YEAR}`}
+                                onClick={() => trackEvent('board_player_click', { board: board.id, period, rank: i + 1 })}
                             >
                                 <span className="lb-rank">{i + 1}</span>
                                 {p.icon
@@ -129,6 +134,7 @@ function FriendsBoards() {
             });
             const body = await res.json().catch(() => null);
             if (!res.ok) throw new Error(body?.message || "Couldn't create a board. Please try again.");
+            trackEvent('board_create', { with_player: Boolean(puuid) });
             navigate(`/leaderboards/${body.id}`);
         } catch (err) {
             setError(err.message);

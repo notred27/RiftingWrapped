@@ -1,8 +1,8 @@
 import './Leaderboards.css';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 
 import GenericSearch from '../../components/common/GenericSearch.js';
 import { trackEvent } from '../../resources/analytics.js';
@@ -33,7 +33,7 @@ function useBoard(id, period, version) {
 }
 
 function InviteLink({ id }) {
-    const url = `${window.location.origin}/leaderboards/${id}`;
+    const url = `${window.location.origin}/leaderboards/${id}?ref=invite`;
     const [copied, setCopied] = useState(false);
 
     async function copy() {
@@ -57,7 +57,7 @@ function InviteLink({ id }) {
     );
 }
 
-function JoinForm({ id, onJoined }) {
+function JoinForm({ id, fromInvite, onJoined }) {
     const [message, setMessage] = useState(null);
     const [busy, setBusy] = useState(false);
 
@@ -83,7 +83,7 @@ function JoinForm({ id, onJoined }) {
             const body = await res.json().catch(() => null);
             if (!res.ok) throw new Error(body?.message || "Couldn't join this board. Please try again.");
             rememberMyPlayer(player.puuid);
-            trackEvent('board_join');
+            trackEvent('board_join', { from_invite: fromInvite });
             setMessage(null);
             onJoined();
         } catch (err) {
@@ -112,11 +112,23 @@ export default function FriendBoard() {
     const [period, setPeriod] = usePeriod();
     const [version, setVersion] = useState(0);
     const { board, status } = useBoard(boardId, period, version);
+    // Read once: the period toggle rewrites the query string and drops ?ref.
+    const [searchParams] = useSearchParams();
+    const [fromInvite] = useState(() => searchParams.get('ref') === 'invite');
 
     const me = board?.members.find((m) => isMyPlayer(m.puuid));
     useEffect(() => {
         if (board && me) rememberBoard(board.id, board.members);
     }, [board, me]);
+
+    // Non-member board_view vs board_join = how many visitors join. Once per
+    // board: period toggles and joins reload it and would double count.
+    const viewed = useRef(null);
+    useEffect(() => {
+        if (!board || viewed.current === board.id) return;
+        viewed.current = board.id;
+        trackEvent('board_view', { member: Boolean(me), from_invite: fromInvite });
+    }, [board, me, fromInvite]);
 
     return (
         <>
@@ -146,7 +158,7 @@ export default function FriendBoard() {
                         {me
                             ? <p className="bd-you">You're on this board as <strong>{me.displayName}#{me.tag}</strong>.</p>
                             : board.members.length < board.maxMembers
-                                ? <JoinForm id={board.id} onJoined={() => setVersion((v) => v + 1)} />
+                                ? <JoinForm id={board.id} fromInvite={fromInvite} onJoined={() => setVersion((v) => v + 1)} />
                                 : <p className="bd-you">This board is full.</p>}
 
                         {board.members.length === 0

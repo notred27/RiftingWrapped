@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { trackEvent } from '../../resources/analytics.js';
 import { fetchCached } from '../../resources/fetchCached.js';
 
 const SHOWN = 5;
@@ -38,7 +39,7 @@ export default function WeeklyTopPlayers() {
                 <ol className="hero-lb__list">
                     {players.map((p, i) => (
                         <li key={p.puuid}>
-                            <Link className="hero-lb__row" to={`/player/${p.puuid}/week`}>
+                            <Link className="hero-lb__row" to={`/player/${p.puuid}/week`} onClick={() => trackEvent('top_player_click', { rank: i + 1 })}>
                                 <span className="hero-lb__rank">{i + 1}</span>
                                 {p.icon
                                     ? <img className="hero-lb__icon" src={p.icon} alt="" loading="lazy" />
@@ -51,7 +52,7 @@ export default function WeeklyTopPlayers() {
                 </ol>
             )}
 
-            <Link className="btn btn--secondary btn--pill hero-lb__all" to="/leaderboards?period=week">
+            <Link className="btn btn--secondary btn--pill hero-lb__all" to="/leaderboards?period=week" onClick={() => trackEvent('top_players_see_all')}>
                 See all leaderboards
             </Link>
         </aside>
