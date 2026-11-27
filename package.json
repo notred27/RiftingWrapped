@@ -19,6 +19,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "prebuild": "node scripts/user-count.mjs",
     "build": "react-scripts build",
     "postbuild": "node scripts/prerender.mjs",
     "test": "react-scripts test",

@@ -22,7 +22,7 @@ import './Home.css';
 
 
 export default function Home() {
-    const [numUsers, setNumUsers] = useState(290);
+    const [numUsers, setNumUsers] = useState(Number(process.env.REACT_APP_USER_COUNT) || 920);
     const [selectedPlayer, setSelectedPlayer] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     // Which recap the search opens: the year's Wrapped or this week's recap.
