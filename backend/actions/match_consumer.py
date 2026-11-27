@@ -15,7 +15,7 @@ from match_doc import (
 )
 from notify import send_ready_emails
 from precompute_leaderboards import refresh_leaderboards
-from riot import RiotSession, get_routing_region
+from riot import RiotSession, get_routing_region, MATCH_ROUTING
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
@@ -41,12 +41,21 @@ STALE_STARTING_SECONDS = int(os.getenv("STALE_STARTING_SECONDS", str(60 * 60)))
 # The precompute workflow's hourly schedule really runs every 6-11 hours, so
 # the consumer (running ~4 hours at a time) refreshes the leaderboard cache too.
 LEADERBOARD_REFRESH_SECONDS = 60 * 60
+# One run per match-v5 routing region (americas | europe | asia | sea), since
+# Riot rate-limits each separately. Unset = every region in one line.
+CONSUMER_ROUTING = os.getenv("CONSUMER_ROUTING") or None
+# Shared housekeeping (stuck-work repair, catch-up emails, leaderboards) runs in one runner only.
+RUNS_HOUSEKEEPING = CONSUMER_ROUTING in (None, "americas")
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("consumer")
 
 if not RIOT_API_KEY:
     logger.error("RIOT_API_KEY is not set. Check your .env file.")
+    raise SystemExit(1)
+
+if CONSUMER_ROUTING and CONSUMER_ROUTING not in MATCH_ROUTING:
+    logger.error("CONSUMER_ROUTING must be one of %s", ", ".join(MATCH_ROUTING))
     raise SystemExit(1)
 
 if not MONGO_URI:
@@ -63,6 +72,18 @@ dlq_collection = db.get_collection("producer-dlq")
 runs_collection = db["consumer-runs"]   # per-run throughput, for queue wait estimates
 
 
+def claim_filter(routing: Optional[str]) -> dict:
+    """Pending matches this run may claim: all of them, or one routing region's."""
+    if not routing:
+        return {"status": "pending"}
+    if routing == "americas":
+        # The consumer treats a missing region as NA1, so americas also takes
+        # docs with no (or an unknown) region: everything no other runner claims.
+        others = sorted(p for r, ps in MATCH_ROUTING.items() if r != "americas" for p in ps)
+        return {"status": "pending", "region": {"$nin": others}}
+    return {"status": "pending", "region": {"$in": sorted(MATCH_ROUTING[routing])}}
+
+
 class Consumer:
     """Processes pending matches, extracts stats, prioritizing recent users."""
 
@@ -77,10 +98,11 @@ class Consumer:
         together - one player is finished before the next one starts.
 
         find_one_and_update makes the claim atomic, so two overlapping runs
-        can never pick up the same match.
+        can never pick up the same match, including runs for different
+        routing regions (CONSUMER_ROUTING).
         """
         return matches_collection.find_one_and_update(
-            {"status": "pending"},
+            claim_filter(CONSUMER_ROUTING),
             {"$set": {"status": "processing", "processing_started_at": datetime.now(timezone.utc)}},
             sort=QUEUE_SORT,
             return_document=ReturnDocument.AFTER,
@@ -218,6 +240,7 @@ class Consumer:
                 "finished_at": datetime.now(timezone.utc),
                 "processed": num_processed,
                 "busy_seconds": round(busy_seconds, 1),
+                "routing": CONSUMER_ROUTING or "all",
             })
         except Exception:
             logger.exception("Failed to record consumer run stats")
@@ -227,22 +250,24 @@ class Consumer:
         busy_seconds = 0.0
         run_started_at = datetime.now(timezone.utc)
         start_time = time.time()
-        logger.info("Consumer started; will run for up to %s seconds", MAX_RUN_SECONDS)
+        logger.info("Consumer started (routing=%s); will run for up to %s seconds",
+                    CONSUMER_ROUTING or "all", MAX_RUN_SECONDS)
 
-        try:
-            self.recover_stuck_work()
-        except Exception:
-            # Housekeeping must never stop the queue from being processed.
-            logger.exception("recover_stuck_work failed; continuing")
+        if RUNS_HOUSEKEEPING:
+            try:
+                self.recover_stuck_work()
+            except Exception:
+                # Housekeeping must never stop the queue from being processed.
+                logger.exception("recover_stuck_work failed; continuing")
 
-        # Players finished elsewhere (e.g. by the producer, when they had no new
-        # matches) and emails that failed to send last run.
-        send_ready_emails(db)
+            # Players finished elsewhere (e.g. by the producer, when they had no new
+            # matches) and emails that failed to send last run.
+            send_ready_emails(db)
 
         last_leaderboard_refresh = 0.0
         try:
             while True:
-                if time.time() - last_leaderboard_refresh >= LEADERBOARD_REFRESH_SECONDS:
+                if RUNS_HOUSEKEEPING and time.time() - last_leaderboard_refresh >= LEADERBOARD_REFRESH_SECONDS:
                     last_leaderboard_refresh = time.time()
                     try:
                         refresh_leaderboards(db, WRAP_YEAR)

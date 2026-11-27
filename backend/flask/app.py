@@ -250,12 +250,28 @@ THROUGHPUT_WINDOW = timedelta(hours=6)
 QUEUE_EFFICIENCY = 0.85
 QUEUE_END = datetime(9999, 1, 1, tzinfo=timezone.utc)
 _queue_cache = {}                 # year -> (built_at, snapshot)
+# match-v5 routing regions: the consumer runs one line per group. Must match
+# MATCH_ROUTING in backend/actions/riot.py (unlike get_routing_region above,
+# which is for account-v1 and has no "sea").
+MATCH_ROUTING = {
+    "americas": {"NA1", "BR1", "LA1", "LA2"},
+    "europe": {"EUN1", "EUW1", "TR1", "RU", "ME1"},
+    "asia": {"KR", "JP1"},
+    "sea": {"SG2", "OC1", "TW2", "VN2", "PH2", "TH2"},
+}
+
+
+def match_routing(region) -> str:
+    """Which consumer line a queued match is in; a missing/unknown region goes to americas, as in the consumer."""
+    region = (region or "").upper()
+    return next((r for r, platforms in MATCH_ROUTING.items() if region in platforms), "americas")
 
 
 def _queue_snapshot(year: int) -> dict:
     """
     Everyone with queued matches, in the order the consumer will process them,
-    plus recent processing speed. Must match the consumer's order:
+    plus recent processing speed, per routing region (each has its own
+    consumer, CONSUMER_ROUTING). Must match the consumer's order:
     QUEUE_SORT in backend/actions/match_doc.py (priority, then queue time,
     then puuid).
     """
@@ -272,24 +288,34 @@ def _queue_snapshot(year: int) -> dict:
             # Unstamped legacy entries go to the back, as the consumer's
             # recover_stuck_work stamps them with the current time.
             "queuedAt": {"$min": {"$ifNull": ["$created_at", QUEUE_END]}},
+            "region": {"$first": "$region"},
         }},
         {"$sort": {"priority": 1, "queuedAt": 1, "_id": 1}},
     ]))
 
-    # Matches per second while the consumer is actually working.
+    # Matches per second while each region's consumer is actually working.
+    # Runs with no routing (or "all") processed every region in one line, so
+    # they count for every group.
     since = datetime.now(timezone.utc) - THROUGHPUT_WINDOW
-    stats = list(db["consumer-runs"].aggregate([
+    stats = {s["_id"]: s for s in db["consumer-runs"].aggregate([
         {"$match": {"year": year, "finished_at": {"$gte": since}, "processed": {"$gt": 0}}},
-        {"$group": {"_id": None, "processed": {"$sum": "$processed"}, "busy": {"$sum": "$busy_seconds"}}},
-    ]))
-    rate = None
-    if stats and stats[0]["busy"] > 0:
-        rate = stats[0]["processed"] / stats[0]["busy"] * QUEUE_EFFICIENCY
+        {"$group": {"_id": {"$ifNull": ["$routing", "all"]},
+                    "processed": {"$sum": "$processed"}, "busy": {"$sum": "$busy_seconds"}}},
+    ])}
+    rate = {}
+    for routing in MATCH_ROUTING:
+        runs = [s for s in (stats.get(routing), stats.get("all")) if s]
+        busy = sum(s["busy"] for s in runs)
+        rate[routing] = sum(s["processed"] for s in runs) / busy * QUEUE_EFFICIENCY if busy > 0 else None
 
+    order = {routing: [] for routing in MATCH_ROUTING}
+    for r in rows:
+        order[match_routing(r.get("region"))].append(r["_id"])
     snapshot = {
-        "order": [r["_id"] for r in rows],
+        "order": order,                                   # routing -> puuids in queue order
+        "routing": {r["_id"]: match_routing(r.get("region")) for r in rows},
         "remaining": {r["_id"]: r["remaining"] for r in rows},
-        "rate": rate,
+        "rate": rate,                                     # routing -> matches/s or None
     }
     _queue_cache[year] = (time.time(), snapshot)
     return snapshot
@@ -309,13 +335,17 @@ def get_queue_position(puuid):
     if puuid not in snap["remaining"]:
         return jsonify({"inQueue": False}), 200
 
-    index = snap["order"].index(puuid)
-    matches_ahead = sum(snap["remaining"][p] for p in snap["order"][:index])
+    # Only players in the same routing region's line are ahead of this one.
+    routing = snap["routing"][puuid]
+    order = snap["order"][routing]
+    rate = snap["rate"][routing]
+    index = order.index(puuid)
+    matches_ahead = sum(snap["remaining"][p] for p in order[:index])
     remaining = snap["remaining"][puuid]
 
     estimated_minutes = None
-    if snap["rate"]:
-        estimated_minutes = max(1, ceil((matches_ahead + remaining) / snap["rate"] / 60))
+    if rate:
+        estimated_minutes = max(1, ceil((matches_ahead + remaining) / rate / 60))
 
     return jsonify({
         "inQueue": True,
@@ -323,7 +353,7 @@ def get_queue_position(puuid):
         "playersAhead": index,
         "matchesAhead": matches_ahead,
         "remaining": remaining,
-        "queueLength": len(snap["order"]),
+        "queueLength": len(order),
         "estimatedMinutes": estimated_minutes,
     }), 200
 
