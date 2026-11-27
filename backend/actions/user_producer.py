@@ -67,11 +67,16 @@ class Producer:
             )
             # Serves the consumer's "next match" query and the API's queue
             # position: pending matches in QUEUE_SORT order (match_doc.py).
+            # Partial: only queued matches, not the hundreds of thousands done.
             matches_collection.create_index(
                 [("status", ASCENDING), ("priority", ASCENDING),
                  ("created_at", ASCENDING), ("puuid", ASCENDING)],
-                name="queue_order", background=True,
+                name="queue_order_pending",
+                partialFilterExpression={"status": {"$in": ["pending", "processing"]}},
             )
+            # The full-collection version it replaces; dropped only once the new one exists.
+            if "queue_order" in matches_collection.index_information():
+                matches_collection.drop_index("queue_order")
             logger.info("Ensured necessary indexes.")
         except Exception as e:
             logger.exception("Index creation issue: %s", e)
