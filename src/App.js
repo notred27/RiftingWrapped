@@ -1,5 +1,6 @@
 import { lazy, useEffect } from 'react';
 
+import { Helmet } from 'react-helmet-async';
 import { Navigate, Route, Routes, useLocation, useNavigationType, useParams } from 'react-router-dom';
 
 import SiteFooter from './components/layout/SiteFooter.js';
@@ -46,6 +47,15 @@ export default function App() {
     }, [pathname, navType]);
     return (
         <>
+            {/* Link-preview card for every page; pages with their own (player cards) override it. */}
+            <Helmet>
+                <meta property="og:image" content="https://www.riftingwrapped.com/og-home.jpg" />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
+                <meta property="og:image:alt" content="Rifting Wrapped: your League of Legends year in review" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:image" content="https://www.riftingwrapped.com/og-home.jpg" />
+            </Helmet>
             {/* <div> */}
                 <SiteHeader />
 

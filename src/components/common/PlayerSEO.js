@@ -39,6 +39,8 @@ export default function PlayerSEO({ puuid, year }) {
                         <meta property="og:title" content={`${playerData["username"]}'s LoL Wrapped ${year} | Rifting Wrapped`} />
                         <meta property="og:description" content={`See ${playerData["username"]}'s ${year} League of Legends year in review: total hours, most played champion, and more.`} />
                         <meta property="og:image" content={`${process.env.REACT_APP_API_ENDPOINT}/share/${puuid}/image.jpg?year=${year}`} />
+                        <meta property="og:image:alt" content={`${playerData["username"]}'s ${year} League of Legends stats`} />
+                        <meta name="twitter:image" content={`${process.env.REACT_APP_API_ENDPOINT}/share/${puuid}/image.jpg?year=${year}`} />
                         <meta property="og:url" content={`https://www.riftingwrapped.com/player/${puuid}`} />
                         <meta name="twitter:card" content="summary_large_image" />
                     </>}

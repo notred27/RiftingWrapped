@@ -86,9 +86,7 @@ export default function Home() {
 
                 <meta property="og:title" content={`Rifting Wrapped ${WRAP_YEAR} | League of Legends Wrapped & LoL Stats`} />
                 <meta property="og:description" content={`Your LoL year in review: top champions, best (and worst) games, and exactly how many hours you've spent on the Rift in ${WRAP_YEAR}.`} />
-                <meta property="og:image" content="https://www.riftingwrapped.com/android-chrome-512x512.png" />
                 <meta property="og:url" content="https://www.riftingwrapped.com/" />
-                <meta name="twitter:card" content="summary_large_image" />
 
                 <link
                     rel="preload"
