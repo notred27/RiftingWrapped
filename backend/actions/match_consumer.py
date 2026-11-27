@@ -1,4 +1,5 @@
 import os
+import threading
 import time
 import logging
 from datetime import datetime, timezone
@@ -11,15 +12,15 @@ from pymongo import MongoClient, ReturnDocument
 
 from match_doc import (
     build_match_fields, build_match_update, add_to_player_grid, player_locations_name,
-    QUEUE_SORT, PRIORITY_NEW_PLAYER,
+    QUEUE_SORT, PRIORITY_NEW_PLAYER, needs_timeline,
 )
 from notify import send_ready_emails
 from precompute_leaderboards import refresh_leaderboards
-from riot import RiotSession, get_routing_region
+from riot import RiotSession, get_routing_region, MATCH_ROUTING, PLATFORMS
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
-RIOT_API_KEY = os.getenv("REACT_APP_API_KEY")
+RIOT_API_KEY = os.getenv("RIOT_API_KEY")
 MONGO_URI = os.getenv("MONGO_URI")
 
 
@@ -42,7 +43,7 @@ STALE_STARTING_SECONDS = int(os.getenv("STALE_STARTING_SECONDS", str(60 * 60)))
 # the consumer (running ~4 hours at a time) refreshes the leaderboard cache too.
 LEADERBOARD_REFRESH_SECONDS = 60 * 60
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s [%(threadName)s] %(message)s")
 logger = logging.getLogger("consumer")
 
 if not RIOT_API_KEY:
@@ -59,15 +60,30 @@ yy = WRAP_YEAR % 100
 matches_collection = db[f"matches-{yy:02d}"]
 player_locations_collection = db[player_locations_name(WRAP_YEAR)]   # per-player kill/death grids
 player_collection = db["tracked-players"]
-dlq_collection = db.get_collection("producer-dlq")
 runs_collection = db["consumer-runs"]   # per-run throughput, for queue wait estimates
+stop = threading.Event()                # set on Ctrl-C so every region's thread winds down
+
+
+def claim_filter(routing: str) -> dict:
+    """Pending matches one routing region's consumer may claim."""
+    if routing == "americas":
+        # The consumer treats a missing region as NA1, so americas also takes
+        # docs with no (or an unknown) region: everything no other runner claims.
+        others = sorted(p for r, ps in MATCH_ROUTING.items() if r != "americas" for p in ps)
+        return {"status": "pending", "region": {"$nin": others}}
+    return {"status": "pending", "region": {"$in": sorted(MATCH_ROUTING[routing])}}
 
 
 class Consumer:
-    """Processes pending matches, extracts stats, prioritizing recent users."""
+    """
+    Processes one match-v5 routing region's pending matches (Riot rate-limits
+    each region separately, so main() runs one Consumer per region in parallel).
+    """
 
-    def __init__(self, riot_api_key: str):
+    def __init__(self, riot_api_key: str, routing: str):
+        self.routing = routing
         self.rs = RiotSession(riot_api_key, rps=REQUESTS_PER_SECOND)
+        self.num_processed = 0
 
     def process_next_match(self) -> Optional[dict]:
         """
@@ -77,10 +93,11 @@ class Consumer:
         together - one player is finished before the next one starts.
 
         find_one_and_update makes the claim atomic, so two overlapping runs
-        can never pick up the same match.
+        can never pick up the same match, including runs for different
+        routing regions.
         """
         return matches_collection.find_one_and_update(
-            {"status": "pending"},
+            claim_filter(self.routing),
             {"$set": {"status": "processing", "processing_started_at": datetime.now(timezone.utc)}},
             sort=QUEUE_SORT,
             return_document=ReturnDocument.AFTER,
@@ -169,9 +186,13 @@ class Consumer:
         puuid = match_doc["puuid"]
         region = match_doc.get("region", "NA1")
         try:
+            if region.upper() not in PLATFORMS:
+                raise ValueError(f"Unknown region {region!r}")   # never put it in a host name with the key
             R = get_routing_region(region)
             match_data = self.rs.safe_request("GET", f"https://{R}.api.riotgames.com/lol/match/v5/matches/{match_id}")
-            timeline_data = self.rs.safe_request("GET", f"https://{R}.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline")
+            timeline_data = {}
+            if needs_timeline(match_data):
+                timeline_data = self.rs.safe_request("GET", f"https://{R}.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline")
 
             # Same document shape as the hourly scraper writes (match_doc.py);
             # drops the queue-only fields now that the match is done.
@@ -218,31 +239,21 @@ class Consumer:
                 "finished_at": datetime.now(timezone.utc),
                 "processed": num_processed,
                 "busy_seconds": round(busy_seconds, 1),
+                "routing": self.routing,
             })
         except Exception:
             logger.exception("Failed to record consumer run stats")
 
-    def run(self):
+    def run(self, refresh_boards: bool = False):
         num_processed = 0
         busy_seconds = 0.0
         run_started_at = datetime.now(timezone.utc)
         start_time = time.time()
-        logger.info("Consumer started; will run for up to %s seconds", MAX_RUN_SECONDS)
-
-        try:
-            self.recover_stuck_work()
-        except Exception:
-            # Housekeeping must never stop the queue from being processed.
-            logger.exception("recover_stuck_work failed; continuing")
-
-        # Players finished elsewhere (e.g. by the producer, when they had no new
-        # matches) and emails that failed to send last run.
-        send_ready_emails(db)
 
         last_leaderboard_refresh = 0.0
         try:
             while True:
-                if time.time() - last_leaderboard_refresh >= LEADERBOARD_REFRESH_SECONDS:
+                if refresh_boards and time.time() - last_leaderboard_refresh >= LEADERBOARD_REFRESH_SECONDS:
                     last_leaderboard_refresh = time.time()
                     try:
                         refresh_leaderboards(db, WRAP_YEAR)
@@ -250,8 +261,8 @@ class Consumer:
                         logger.exception("Leaderboard refresh failed; continuing")   # never stop the queue for it
 
                 elapsed = time.time() - start_time
-                if elapsed >= MAX_RUN_SECONDS:
-                    logger.info("Max run time reached (%.1fs). Stopping.", elapsed)
+                if elapsed >= MAX_RUN_SECONDS or stop.is_set():
+                    logger.info("Stopping after %.1fs.", elapsed)
                     break
 
                 match_doc = self.process_next_match()
@@ -263,7 +274,7 @@ class Consumer:
                     if sleep_for <= 0:
                         logger.info("No remaining time to wait. Exiting.")
                         break
-                    time.sleep(sleep_for)
+                    stop.wait(sleep_for)
                     continue
 
                 t0 = time.time()
@@ -271,30 +282,62 @@ class Consumer:
                 busy_seconds += time.time() - t0
                 num_processed += 1
 
-        except KeyboardInterrupt:
-            logger.info("Interrupted by user (KeyboardInterrupt). Exiting early.")
         except Exception:
             logger.exception("Unhandled exception in consumer.run()")
+            # End the whole job so the next run restarts every region, instead of
+            # the other threads keeping it alive for hours with this region idle.
+            stop.set()
         finally:
-            github_output = os.environ.get("GITHUB_OUTPUT")
-            if github_output:
-                try:
-                    with open(github_output, "a", encoding="utf-8") as fh:
-                        fh.write(f"num_matches={num_processed}\n")
-                except Exception as e:
-                    logger.exception("Failed to write GITHUB_OUTPUT: %s", e)
-            else:
-                logger.info("GITHUB_OUTPUT not present; writing local-github-output.txt")
-                try:
-                    with open("local-github-output.txt", "w", encoding="utf-8") as fh:
-                        fh.write(f"num_matches={num_processed}\n")
-                except Exception as e:
-                    logger.exception("Failed to write local output file: %s", e)
-
+            self.num_processed = num_processed
             self.record_run(run_started_at, num_processed, busy_seconds)
-            logger.info("Consumer finished. Total matches processed: %d", num_processed)
+            logger.info("Consumer finished. Matches processed: %d", num_processed)
+
+
+def main():
+    consumers = [Consumer(RIOT_API_KEY, routing) for routing in MATCH_ROUTING]
+    logger.info("Consumer started for %s; will run for up to %s seconds", ", ".join(MATCH_ROUTING), MAX_RUN_SECONDS)
+
+    # Shared housekeeping runs once, before the regions start.
+    try:
+        consumers[0].recover_stuck_work()
+    except Exception:
+        # Housekeeping must never stop the queue from being processed.
+        logger.exception("recover_stuck_work failed; continuing")
+
+    # Players finished elsewhere (e.g. by the producer, when they had no new
+    # matches) and emails that failed to send last run.
+    send_ready_emails(db)
+
+    threads = [threading.Thread(target=c.run, kwargs={"refresh_boards": i == 0}, name=c.routing)
+               for i, c in enumerate(consumers)]
+    for t in threads:
+        t.start()
+    try:
+        for t in threads:
+            t.join()
+    except KeyboardInterrupt:
+        logger.info("Interrupted by user (KeyboardInterrupt). Stopping every region.")
+        stop.set()
+        for t in threads:
+            t.join()
+
+    num_processed = sum(c.num_processed for c in consumers)
+    github_output = os.environ.get("GITHUB_OUTPUT")
+    if github_output:
+        try:
+            with open(github_output, "a", encoding="utf-8") as fh:
+                fh.write(f"num_matches={num_processed}\n")
+        except Exception as e:
+            logger.exception("Failed to write GITHUB_OUTPUT: %s", e)
+    else:
+        logger.info("GITHUB_OUTPUT not present; writing local-github-output.txt")
+        try:
+            with open("local-github-output.txt", "w", encoding="utf-8") as fh:
+                fh.write(f"num_matches={num_processed}\n")
+        except Exception as e:
+            logger.exception("Failed to write local output file: %s", e)
+    logger.info("All regions finished. Total matches processed: %d", num_processed)
 
 
 if __name__ == "__main__":
-    consumer = Consumer(RIOT_API_KEY)
-    consumer.run()
+    main()

@@ -74,6 +74,17 @@ def test_endpoint_serves_precomputed_without_scanning():
     assert res.status_code == 200 and res.get_json()["period"] == "week"
 
 
+
+def test_totals_filter_on_the_stored_date_so_the_index_is_used():
+    from datetime import datetime, timezone
+    matches = mock.Mock()
+    matches.aggregate.return_value = []
+    start, end = datetime(2026, 11, 23, tzinfo=timezone.utc), datetime(2026, 11, 30, tzinfo=timezone.utc)
+    leaderboards.leaderboard_totals({"matches-26": matches}, start, end)
+    pipeline = matches.aggregate.call_args.args[0]
+    assert pipeline[0] == {"$match": {"stats": {"$exists": True}, "matchInfo.gameCreated": {"$gte": start, "$lt": end}}}
+    assert "$addFields" not in str(pipeline)
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

@@ -1,13 +1,21 @@
 import os
-from datetime import datetime, timezone
+import sys
+from datetime import datetime, timedelta, timezone
 from math import floor
 from random import sample
 from pymongo import MongoClient
+
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "flask"))
+from stat_fields import F  # noqa: E402  (stored stat names, shared with the API)
 
 MONGO_URI = os.environ["MONGO_URI"]
 WRAP_YEAR = int(os.environ.get("WRAP_YEAR", "2026"))
 POOL_SIZE = int(os.environ.get("SPOTLIGHT_POOL_SIZE", "30"))
 MIN_HOURS_PLAYED = int(os.environ.get("SPOTLIGHT_MIN_HOURS", "50"))
+# Building the pool reads every finished player's matches, and the API picks
+# random cards from it on every request, so a daily rebuild is plenty.
+MAX_AGE = timedelta(hours=int(os.environ.get("SPOTLIGHT_MAX_AGE_HOURS", "24")))
+FORCE = os.environ.get("SPOTLIGHT_FORCE", "").lower() == "true"
 
 client = MongoClient(MONGO_URI)
 db = client["rifting-wrapped"]
@@ -52,7 +60,7 @@ def build_spotlight_pool():
     # Precompute other stats
     champ_results = matches_collection.aggregate([
         {"$match": {"puuid": {"$in": puuids}}},
-        {"$group": {"_id": {"puuid": "$puuid", "champ": "$stats.champion"}, "count": {"$sum": 1}}},
+        {"$group": {"_id": {"puuid": "$puuid", "champ": F("champion")}, "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},
     ])
 
@@ -83,6 +91,15 @@ def build_spotlight_pool():
 
 
 def main():
+    cached = cache_collection.find_one({"_id": f"spotlight-{WRAP_YEAR}"}, {"updatedAt": 1})
+    updated = cached and cached.get("updatedAt")
+    if updated and not FORCE:
+        if updated.tzinfo is None:
+            updated = updated.replace(tzinfo=timezone.utc)   # pymongo returns naive UTC
+        if datetime.now(timezone.utc) - updated < MAX_AGE:
+            print(f"Spotlight cache is from {updated.isoformat()}; rebuilt at most daily, skipping")
+            return
+
     cards = build_spotlight_pool()
 
     cache_collection.update_one(

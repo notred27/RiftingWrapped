@@ -8,7 +8,7 @@ Example .env file to provide secrets/tokens:
 ```.env
 REACT_APP_API_ENDPOINT = "URL for hosted backend API"
 
-// REACT_APP_API_KEY = "RIOT App API key for this project"
+// RIOT_API_KEY = "RIOT App API key (never prefix it REACT_APP_: those are built into the public site)"
 
 // MONGO_URI = "URI for backend database. Contains credentials"
 

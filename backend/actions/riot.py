@@ -14,6 +14,18 @@ logger = logging.getLogger("riot")
 MAX_RETRIES = 5
 BACKOFF_BASE = 2.0
 
+# match-v5 routing region -> its platforms. Riot rate-limits each routing region
+# separately. The API's queue estimate (backend/flask/app.py) keeps a copy: keep them in sync.
+MATCH_ROUTING = {
+    "americas": {"NA1", "BR1", "LA1", "LA2"},
+    "europe": {"EUN1", "EUW1", "TR1", "RU", "ME1"},
+    "asia": {"KR", "JP1"},
+    "sea": {"SG2", "OC1", "TW2", "VN2", "PH2", "TH2"},
+}
+# Every valid platform code. A region goes into the host name of requests that
+# carry the Riot key, so anything else must be rejected, never requested.
+PLATFORMS = set().union(*MATCH_ROUTING.values())
+
 
 def get_routing_region(region: str, api_endpoint: bool = False) -> str:
     """
@@ -21,19 +33,9 @@ def get_routing_region(region: str, api_endpoint: bool = False) -> str:
     account-v1 has no "sea" cluster, so pass api_endpoint=True for it.
     """
     r = (region or "").strip().upper()
-    americas = {"NA1", "BR1", "LA1", "LA2"}
-    europe = {"EUN1", "EUW1", "TR1", "RU", "ME1"}
-    asia = {"KR", "JP1"}
-    sea = {"SG2", "OC1", "TW2", "VN2", "PH2", "TH2"}
-
-    if r in americas:
-        return "americas"
-    if r in europe:
-        return "europe"
-    if r in asia:
-        return "asia"
-    if r in sea:
-        return "asia" if api_endpoint else "sea"
+    for routing, platforms in MATCH_ROUTING.items():
+        if r in platforms:
+            return "asia" if routing == "sea" and api_endpoint else routing
     return r.lower() or "unknown"
 
 

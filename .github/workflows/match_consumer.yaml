@@ -28,17 +28,17 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.10'
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/actions/requirements.txt
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r backend/actions/requirements.txt
+        run: pip install -r backend/actions/requirements.txt
 
       - name: Run scraper
         id: run-scraper
         env:
-            REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
+            RIOT_API_KEY: ${{ secrets.RIOT_API_KEY || secrets.REACT_APP_API_KEY }}   # delete the old secret once RIOT_API_KEY is set
             MONGO_URI: ${{ secrets.MONGO_URI }}
             WRAP_YEAR: ${{ vars.WRAP_YEAR }}
             MAX_RUN_SECONDS: '14100'

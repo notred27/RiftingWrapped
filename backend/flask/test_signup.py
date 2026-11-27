@@ -16,7 +16,7 @@ def resp(status, body=None, headers=None):
 
 
 ACCOUNT = resp(200, {"puuid": "P1", "gameName": "Faker", "tagLine": "KR1"})
-SUMMONER = resp(200, {})
+SUMMONER = resp(200, {"summonerLevel": 512, "profileIconId": 29})
 
 
 def post(riot_responses, existing=None, gh_status=204):
@@ -48,6 +48,8 @@ def test_signup_starts_the_producer_and_the_consumer():
     urls = [c.args[0] for c in gh.call_args_list]
     assert urls[0].endswith("/player_init.yaml/dispatches") and urls[1].endswith("/match_consumer.yaml/dispatches")
     assert gh.call_args_list[0].kwargs["json"]["inputs"]["displayName"] == "Faker"
+    assert gh.call_args_list[0].kwargs["json"]["inputs"]["puuid"] == "P1"     # the producer skips its own lookup
+    assert players.update_one.call_args.args[1]["$set"]["level"] == 512       # from the summoner check
     assert "inputs" not in gh.call_args_list[1].kwargs["json"]
 
 

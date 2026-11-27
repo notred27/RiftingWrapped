@@ -8,6 +8,8 @@ Only needs pymongo - keep Flask out of here so the job can import it.
 """
 from datetime import datetime, timedelta, timezone
 
+from stat_fields import F
+
 LEADERBOARD_SIZE = 10
 # Rates need enough games to mean something; a 1-0 week isn't a 100% win rate.
 LEADERBOARD_MIN_GAMES = {"week": 10, "year": 100}
@@ -31,23 +33,23 @@ def leaderboard_totals(db, start: datetime, end: datetime, puuids=None) -> list:
     """
     empty = {"games": 0, "wins": 0, "seconds": 0, "kills": 0, "deaths": 0, "assists": 0}
     totals = {} if puuids is None else {p: dict(empty) for p in puuids}
-    match = {"stats": {"$exists": True}}
+    # Filter on the stored date directly (every finished match stores a Date)
+    # so the game_created index serves it: a week reads one week of matches.
+    match = {"stats": {"$exists": True}, "matchInfo.gameCreated": {"$gte": start, "$lt": end}}
     if puuids is not None:
         match["puuid"] = {"$in": list(puuids)}
     last = (end - timedelta(microseconds=1)).year
     for year in range(start.year, last + 1):
         for r in matches_collection(db, year).aggregate([
             {"$match": match},
-            {"$addFields": {"gameDate": {"$toDate": "$matchInfo.gameCreated"}}},
-            {"$match": {"gameDate": {"$gte": start, "$lt": end}}},
             {"$group": {
                 "_id": "$puuid",
                 "games": {"$sum": 1},
-                "wins": {"$sum": {"$cond": ["$stats.win", 1, 0]}},
+                "wins": {"$sum": {"$cond": [F("win"), 1, 0]}},
                 "seconds": {"$sum": "$matchInfo.gameDuration"},
-                "kills": {"$sum": "$stats.kills"},
-                "deaths": {"$sum": "$stats.deaths"},
-                "assists": {"$sum": "$stats.assists"},
+                "kills": {"$sum": F("kills")},
+                "deaths": {"$sum": F("deaths")},
+                "assists": {"$sum": F("assists")},
             }},
         ], allowDiskUse=True):
             t = totals.setdefault(r["_id"], dict(empty))

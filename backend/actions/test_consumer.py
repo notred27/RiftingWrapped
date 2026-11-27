@@ -1,0 +1,94 @@
+"""Run: python backend/actions/test_consumer.py (or pytest). Needs no database."""
+import os
+from unittest import mock
+
+os.environ.setdefault("RIOT_API_KEY", "test")
+os.environ.setdefault("MONGO_URI", "mongodb://localhost:1")   # MongoClient connects lazily; never used
+
+import match_consumer
+
+
+def claimed_filter(routing):
+    coll = mock.Mock()
+    with mock.patch.object(match_consumer, "matches_collection", coll):
+        match_consumer.Consumer("key", routing).process_next_match()
+    return coll.find_one_and_update.call_args.args[0]
+
+
+def test_europe_claims_only_european_platforms():
+    f = claimed_filter("europe")
+    assert f["status"] == "pending" and set(f["region"]["$in"]) == {"EUN1", "EUW1", "TR1", "RU", "ME1"}
+
+
+def test_americas_also_claims_missing_and_unknown_regions():
+    f = claimed_filter("americas")
+    others = set(f["region"]["$nin"])
+    assert "NA1" not in others and "EUW1" in others and "KR" in others and "OC1" in others
+    # $nin matches docs without a region field, which the consumer treats as NA1.
+
+
+def test_every_platform_has_exactly_one_runner():
+    for platforms in match_consumer.MATCH_ROUTING.values():
+        for p in platforms:
+            owners = [r for r in match_consumer.MATCH_ROUTING
+                      if p in claimed_filter(r)["region"].get("$in", [])
+                      or ("$nin" in claimed_filter(r)["region"] and p not in claimed_filter(r)["region"]["$nin"])]
+            assert len(owners) == 1, (p, owners)
+
+
+def test_unknown_region_fails_the_match_without_calling_riot():
+    c = match_consumer.Consumer("key", "americas")
+    matches, players = mock.Mock(), mock.Mock()
+    matches.count_documents.return_value = 1                     # player still has work: no finalize
+    with mock.patch.object(match_consumer, "matches_collection", matches), \
+         mock.patch.object(match_consumer, "player_collection", players), \
+         mock.patch.object(c.rs, "safe_request") as riot:
+        c.process_match({"_id": 1, "matchId": "X_1", "puuid": "p", "region": "evil.com/#"})
+    assert riot.call_count == 0
+    assert matches.update_one.call_args.args[1]["$set"]["status"] == "failed"
+
+
+def test_timeline_is_only_fetched_for_rift_games():
+    def match(queue):
+        return {"info": {"queueId": queue, "gameCreation": 1, "gameDuration": 1, "teams": [],
+                         "participants": [{"puuid": "p", "participantId": 1, "teamId": 100}]}}
+    for queue, calls in ((450, 1), (420, 2)):                    # ARAM, ranked solo
+        c = match_consumer.Consumer("key", "americas")
+        matches = mock.Mock()
+        matches.count_documents.return_value = 1
+        matches.update_one.return_value = mock.Mock(matched_count=0)
+        with mock.patch.object(match_consumer, "matches_collection", matches), \
+             mock.patch.object(match_consumer, "player_collection", mock.Mock()), \
+             mock.patch.object(c.rs, "safe_request", side_effect=[match(queue), {}]) as riot:
+            c.process_match({"_id": 1, "matchId": "NA1_1", "puuid": "p", "region": "NA1"})
+        assert riot.call_count == calls, (queue, riot.call_count)
+        assert matches.update_one.call_args.args[1]["$set"]["status"] == "done"
+
+
+def test_a_failing_region_stops_every_region():
+    c = match_consumer.Consumer("key", "europe")
+    with mock.patch.object(c, "process_next_match", side_effect=Exception("db blip")), \
+         mock.patch.object(c, "record_run") as record:
+        c.run()
+    assert match_consumer.stop.is_set() and record.call_count == 1
+    match_consumer.stop.clear()
+
+
+def test_main_runs_one_thread_per_region_and_housekeeping_once():
+    ran = []
+    with mock.patch.object(match_consumer.Consumer, "run",
+                           lambda self, refresh_boards=False: ran.append((self.routing, refresh_boards))), \
+         mock.patch.object(match_consumer.Consumer, "recover_stuck_work") as recover, \
+         mock.patch.object(match_consumer, "send_ready_emails") as emails, \
+         mock.patch.dict(os.environ, {"GITHUB_OUTPUT": os.devnull}):
+        match_consumer.main()
+    assert sorted(r for r, _ in ran) == sorted(match_consumer.MATCH_ROUTING)
+    assert [r for r, boards in ran if boards] == ["americas"]   # leaderboards refreshed by one thread only
+    assert recover.call_count == 1 and emails.call_count == 1
+
+
+if __name__ == "__main__":
+    for name, fn in list(globals().items()):
+        if name.startswith("test_"):
+            fn()
+    print("consumer tests passed")

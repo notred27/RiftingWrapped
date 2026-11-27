@@ -1,6 +1,6 @@
 import os
-import time
 import logging
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -9,13 +9,13 @@ from dotenv import load_dotenv
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import DuplicateKeyError
 
-from match_doc import build_match_fields, build_match_update, add_to_player_grid, player_locations_name, riot_id_update
+from match_doc import needs_timeline, build_match_fields, build_match_update, add_to_player_grid, player_locations_name, riot_id_update
 from scrape_window import compute_cutoff
-from riot import RiotSession, get_routing_region
+from riot import RiotSession, get_routing_region, PLATFORMS
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
-RIOT_API_KEY = os.getenv("REACT_APP_API_KEY")
+RIOT_API_KEY = os.getenv("RIOT_API_KEY")
 MONGO_URI = os.getenv("MONGO_URI")
 
 WRAP_YEAR = int(os.getenv("WRAP_YEAR", "2026"))
@@ -39,11 +39,11 @@ MAX_CATCHUP_SECONDS = int(os.getenv("MAX_CATCHUP_SECONDS", str(14 * 24 * 60 * 60
 END_DATE = int(datetime(WRAP_YEAR + 1, 1, 1, tzinfo=timezone.utc).timestamp())
 RUN_STARTED_AT = datetime.now(timezone.utc)
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s [%(threadName)s] %(message)s")
 logger = logging.getLogger("sync")
 
 if not RIOT_API_KEY:
-    logger.error("REACT_APP_API_KEY is not set. Check your .env file.")
+    logger.error("RIOT_API_KEY is not set. Check your .env file.")
     raise SystemExit(1)
 
 if not MONGO_URI:
@@ -60,7 +60,7 @@ player_locations_collection = db[player_locations_name(WRAP_YEAR)]   # per-playe
 
 scraper_runs = db["scraper-runs"]   # one document per successful run
 
-rs = RiotSession(RIOT_API_KEY, rps=float(os.getenv("REQUESTS_PER_SECOND", "10.0")))
+REQUESTS_PER_SECOND = float(os.getenv("REQUESTS_PER_SECOND", "10.0"))
 
 _last_run = scraper_runs.find_one({"year": WRAP_YEAR}, sort=[("started_at", -1)])
 cutoffDate = compute_cutoff(RUN_STARTED_AT, _last_run["started_at"] if _last_run else None,
@@ -72,26 +72,28 @@ puuid_region = {p["puuid"]: p.get("region", "NA1") for p in tracked_players}
 
 
 newest_names = {}   # puuid -> riot_id_update() from the player's newest match this run
+ddragon_version = None   # for profile icon links; set at start of the run
+names_lock = threading.Lock()   # region threads share newest_names
 
 
 def match_id_exists(match_id, puuid):
     return matches_collection.count_documents({"matchId": match_id, "puuid": puuid}, limit=1) > 0
 
 
-def get_match_ids(puuid, region, start=0, count=20):
+def get_match_ids(rs, puuid, region, start=0, count=20):
     R = get_routing_region(region)
     url = f"https://{R}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids"
     params = {"start": start, "count": count, "startTime": cutoffDate, "endTime": END_DATE}
     return rs.safe_request("GET", url, params=params)
 
 
-def get_match_data(match_id, region):
+def get_match_data(rs, match_id, region):
     R = get_routing_region(region)
     url = f"https://{R}.api.riotgames.com/lol/match/v5/matches/{match_id}"
     return rs.safe_request("GET", url)
 
 
-def get_timeline_data(match_id, region):
+def get_timeline_data(rs, match_id, region):
     R = get_routing_region(region)
     url = f"https://{R}.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline"
     return rs.safe_request("GET", url)
@@ -107,12 +109,13 @@ def store_match(match_data, timeline_data):
         if puuid not in tracked_puuids:
             continue
 
-        # Riot IDs can change; recent matches carry the current one. Keep only
-        # each player's newest this run and save them all once at the end.
-        name_update = riot_id_update(match_data, player)
-        if name_update and (puuid not in newest_names
-                            or name_update[1]["$set"]["name_seen_at"] > newest_names[puuid][1]["$set"]["name_seen_at"]):
-            newest_names[puuid] = name_update
+        # Riot IDs, levels and icons change; recent matches carry the current
+        # ones. Keep only each player's newest this run and save them at the end.
+        name_update = riot_id_update(match_data, player, ddragon_version)
+        with names_lock:
+            if name_update and (puuid not in newest_names
+                                or name_update[1]["$set"]["name_seen_at"] > newest_names[puuid][1]["$set"]["name_seen_at"]):
+                newest_names[puuid] = name_update
 
         if match_id_exists(match_id, puuid):
             continue
@@ -141,58 +144,19 @@ def store_match(match_data, timeline_data):
     logger.info("Stored match %s for %d players", match_id, num_logged_players)
 
 
-if __name__ == "__main__":
-    try:
-        matches_collection.create_index(
-            [("puuid", ASCENDING), ("matchId", ASCENDING)],
-            unique=True,
-            name="unique_puuid_matchId"
-        )
-        logger.info("Unique compound index created successfully.")
-    except DuplicateKeyError as e:
-        logger.error("Duplicate keys found! Clean up duplicates before creating the index.")
-        logger.error(e)
-
-    logger.info("Starting Riot match sync -> db '%s', collection 'matches-%02d'...", DB_NAME, yy)
-    logger.info("Tracked players found: %d", len(tracked_puuids))
-    logger.info("Fetching matches since %s (last successful run started %s)",
-                datetime.fromtimestamp(cutoffDate, timezone.utc).isoformat(),
-                _last_run["started_at"].isoformat() if _last_run else "never")
-
-    version = None
-    try:
-        version = requests.get("https://ddragon.leagueoflegends.com/api/versions.json", timeout=10).json()[0]
-    except Exception:
-        logger.warning("Couldn't fetch ddragon version; icon links won't be updated this run.")
-
+def scan_region(players):
+    """Fetch and store new matches for one routing region's players. Returns (stored, failed)."""
+    rs = RiotSession(RIOT_API_KEY, rps=REQUESTS_PER_SECOND)
     num_processed = 0
     failed_matches = 0
 
-    for user_puuid in tracked_puuids:
-        region = puuid_region.get(user_puuid, "NA1")
+    for user_puuid, region in players:
         offset = 0
         count = 100
 
-        try:
-            summoner_data = rs.safe_request(
-                "GET", f"https://{region.upper()}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{user_puuid}")
-
-            level = summoner_data.get("summonerLevel")
-            profile_icon_id = summoner_data.get("profileIconId")
-
-            update_fields = {"level": level}
-            if version:
-                update_fields["icon"] = f"https://ddragon.leagueoflegends.com/cdn/{version}/img/profileicon/{profile_icon_id}.png"
-
-            player_collection.update_one({"puuid": user_puuid}, {"$set": update_fields})
-            logger.info("Updated %s: level %s, icon %s", user_puuid, level, profile_icon_id)
-
-        except requests.exceptions.RequestException as e:
-            logger.warning("Failed to update %s: %s", user_puuid, e)
-
         while True:
             try:
-                match_ids = get_match_ids(user_puuid, region, start=offset, count=count)
+                match_ids = get_match_ids(rs, user_puuid, region, start=offset, count=count)
             except Exception:
                 # One bad account (moved region, deleted) must not stop the
                 # scan for every player after it.
@@ -214,25 +178,71 @@ if __name__ == "__main__":
                     continue
 
                 try:
-                    match_data = get_match_data(match_id, region)
-                    timeline_data = get_timeline_data(match_id, region)
-
+                    match_data = get_match_data(rs, match_id, region)
+                    timeline_data = get_timeline_data(rs, match_id, region) if needs_timeline(match_data) else {}
                     store_match(match_data, timeline_data)
-
                     num_processed += 1
-                    time.sleep(1)
-
                 except Exception as e:
                     logger.exception("Error fetching match %s: %s", match_id, e)
                     failed_matches += 1
-                    time.sleep(1)
 
             offset += count
 
-    # One write per player who played, so players don't have to search again after renaming.
+    return num_processed, failed_matches
+
+
+if __name__ == "__main__":
+    try:
+        matches_collection.create_index(
+            [("puuid", ASCENDING), ("matchId", ASCENDING)],
+            unique=True,
+            name="unique_puuid_matchId"
+        )
+        logger.info("Unique compound index created successfully.")
+    except DuplicateKeyError as e:
+        logger.error("Duplicate keys found! Clean up duplicates before creating the index.")
+        logger.error(e)
+
+    logger.info("Starting Riot match sync -> db '%s', collection 'matches-%02d'...", DB_NAME, yy)
+    logger.info("Tracked players found: %d", len(tracked_puuids))
+    logger.info("Fetching matches since %s (last successful run started %s)",
+                datetime.fromtimestamp(cutoffDate, timezone.utc).isoformat(),
+                _last_run["started_at"].isoformat() if _last_run else "never")
+
+    try:
+        ddragon_version = requests.get("https://ddragon.leagueoflegends.com/api/versions.json", timeout=10).json()[0]
+    except Exception:
+        logger.warning("Couldn't fetch ddragon version; icon links won't be updated this run.")
+
+    # Riot rate-limits each routing region separately, so each region's
+    # players are scanned by their own thread with their own request budget.
+    by_routing = {}
+    for user_puuid in tracked_puuids:
+        region = (puuid_region.get(user_puuid) or "NA1").upper()
+        if region not in PLATFORMS:
+            logger.warning("Skipping %s: unknown region %r", user_puuid, region)
+            continue
+        by_routing.setdefault(get_routing_region(region), []).append((user_puuid, region))
+
+    results = {}   # routing -> (stored, failed)
+
+    def scan(routing, players):
+        results[routing] = scan_region(players)
+
+    threads = [threading.Thread(target=scan, args=item, name=item[0]) for item in by_routing.items()]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    # A region whose thread died has no result: count it as failed so this run isn't recorded.
+    num_processed = sum(r[0] for r in results.values())
+    failed_matches = sum(r[1] for r in results.values()) + len(by_routing) - len(results)
+
+    # One write per player who played: their Riot ID (so they don't have to
+    # search again after renaming), level and icon, all from their newest match.
     for name_update in newest_names.values():
         player_collection.update_one(*name_update)
-    logger.info("Refreshed Riot IDs for %d players", len(newest_names))
+    logger.info("Refreshed Riot IDs, levels and icons for %d players", len(newest_names))
 
     # Recorded only when every player was scanned and every match stored, so a
     # crash, a skipped player or a failed download (e.g. a Riot 503) makes the

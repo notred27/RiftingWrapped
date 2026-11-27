@@ -12,7 +12,7 @@ A finished ("done") match document looks like:
     {
       "_id", "puuid", "matchId", "status": "done", "queueId",
       "matchInfo": {"gameCreated", "gameDuration"},
-      "stats": {...see extract_match_stats...},
+      "stats": {...extract_match_stats, stored with short names (backend/flask/stat_fields.py)...},
       "locations": {"kills": [{x, y}], "deaths": [{x, y}]},
     }
 
@@ -20,14 +20,20 @@ Only add a field here if the API (backend/flask/app.py) or the frontend reads
 it - every byte is repeated in every match of every player.
 """
 
+import os
+import sys
 from datetime import datetime, timezone
 
 from pymongo.errors import DuplicateKeyError
 
-def riot_id_update(match_data: dict, participant: dict):
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "flask"))
+from stat_fields import shorten  # noqa: E402  (stored stat names, shared with the API)
+
+def riot_id_update(match_data: dict, participant: dict, ddragon_version=None):
     """
-    (filter, update) that saves a tracked player's Riot ID as it was in this
-    match, or None if the match doesn't carry one. Matches can arrive out of
+    (filter, update) that saves a tracked player's Riot ID, level and profile
+    icon as they were in this match, or None if the match doesn't carry a Riot
+    ID. (Matches carry level and icon, so the scraper needs no summoner call.) Matches can arrive out of
     order (a catch-up run goes newest first), so a name only replaces one seen
     in a later game or set at sign-up: the `name_seen_at` check stops an old
     match from undoing a rename.
@@ -37,9 +43,14 @@ def riot_id_update(match_data: dict, participant: dict):
     if not (name and tag and created):
         return None
     seen_at = datetime.fromtimestamp(created / 1000, timezone.utc)
+    fields = {"displayName": name, "tag": tag, "name_seen_at": seen_at}
+    if participant.get("summonerLevel"):
+        fields["level"] = participant["summonerLevel"]
+    if ddragon_version and participant.get("profileIcon") is not None:
+        fields["icon"] = f"https://ddragon.leagueoflegends.com/cdn/{ddragon_version}/img/profileicon/{participant['profileIcon']}.png"
     return (
         {"puuid": participant["puuid"], "$or": [{"name_seen_at": {"$lt": seen_at}}, {"name_seen_at": {"$exists": False}}]},
-        {"$set": {"displayName": name, "tag": tag, "name_seen_at": seen_at}},
+        {"$set": fields},
     )
 
 
@@ -141,6 +152,11 @@ def extract_match_stats(match_data: dict, participant: dict) -> dict:
     }
 
 
+def needs_timeline(match_data: dict) -> bool:
+    """The timeline is only used for kill/death positions, kept for Rift games only: skip the call otherwise."""
+    return match_data.get("info", {}).get("queueId") in SUMMONERS_RIFT_QUEUES
+
+
 def get_kill_death_positions(timeline_data: dict, participant_id: int, queue_id: int) -> dict:
     """Map coordinates of this player's kills and deaths (Rift queues only)."""
     if queue_id not in SUMMONERS_RIFT_QUEUES:
@@ -175,7 +191,7 @@ def build_match_fields(match_data: dict, timeline_data: dict, puuid: str) -> dic
             "gameCreated": datetime.fromtimestamp(info.get("gameCreation", 0) / 1000, tz=timezone.utc),
             "gameDuration": info.get("gameDuration", 0),
         },
-        "stats": extract_match_stats(match_data, participant),
+        "stats": shorten(extract_match_stats(match_data, participant)),
         "locations": get_kill_death_positions(timeline_data, participant["participantId"], queue_id),
     }
 
