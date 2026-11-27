@@ -560,6 +560,18 @@ def add_by_display_name():
     if sr.status_code != 200:
         return riot_error(sr, "summoner check")
 
+    # The summoner check carries level and icon: save them now, so the producer
+    # (player_init.yaml) needn't ask Riot again.
+    try:
+        summoner = sr.json() or {}
+    except ValueError:
+        summoner = {}
+    profile = {}
+    if summoner.get("summonerLevel"):
+        profile["level"] = summoner["summonerLevel"]
+    if LOL_VERSION and summoner.get("profileIconId") is not None:
+        profile["icon"] = f"https://ddragon.leagueoflegends.com/cdn/{LOL_VERSION}/img/profileicon/{summoner['profileIconId']}.png"
+
     existing = player_collection.find_one({"puuid": puuid}, {"_id": 0})
     # A failed player gets another go: otherwise "search again" (what the
     # failed page tells them to do) could never get past this 409.
@@ -580,6 +592,7 @@ def add_by_display_name():
             "tag": tag,
             "puuid": puuid,
             "region": region,
+            **profile,
             "name_seen_at": datetime.now(timezone.utc),
             "status": "starting",
             # The consumer fails players left in "starting" too long (the run never started).
@@ -590,7 +603,7 @@ def add_by_display_name():
 
     result = player_collection.update_one({"puuid": puuid}, user_doc, upsert=True)
 
-    triggered = _dispatch_workflow("player_init.yaml", {"displayName": displayName, "tag": tag, "region": region})
+    triggered = _dispatch_workflow("player_init.yaml", {"displayName": displayName, "tag": tag, "region": region, "puuid": puuid})
     if triggered:
         logger.info("GitHub Action triggered for %s#%s in %s", displayName, tag, region)
         # GitHub runs the consumer's */10 schedule only every few hours, leaving

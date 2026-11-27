@@ -1,5 +1,6 @@
 
 import os
+import re
 import sys
 import logging
 from datetime import datetime, timezone
@@ -31,6 +32,7 @@ END_DATE = int(datetime(WRAP_YEAR + 1, 1, 1, tzinfo=timezone.utc).timestamp())
 MATCH_PAGE_SIZE = 100
 REQUESTS_PER_SECOND = float(os.getenv("REQUESTS_PER_SECOND", "10.0"))
 BULK_OP_SIZE = 200
+PUUID_RE = re.compile(r"[A-Za-z0-9_-]{40,100}")   # Riot puuids are 78 URL-safe characters
  
 # logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -115,30 +117,38 @@ class Producer:
         return data or []
  
     # ----- Producer operations -----
-    def register_player(self, display_name: str, tag: str, region: str) -> str:
+    def register_player(self, display_name: str, tag: str, region: str, puuid: Optional[str] = None) -> str:
         """
-        Register player in the DB (upsert) and return puuid.
+        Register player in the DB (upsert) and return puuid. The API passes the
+        puuid it already looked up and saves level and icon from its own
+        summoner check, so then neither Riot call is repeated here.
         """
-        puuid = self.get_user_puuid(display_name, tag, region)
-        # fetch summoner details (platform region for this endpoint is the platform short code, not routing)
-        summoner_data = self.fetch_summoner_by_puuid(puuid, region.upper())
-        level = summoner_data.get("summonerLevel")
-        profile_icon_id = summoner_data.get("profileIconId")
- 
-        # fetch latest ddragon version safely (failure here shouldn't break registration)
-        version = None
-        try:
-            version = requests.get("https://ddragon.leagueoflegends.com/api/versions.json", timeout=10).json()[0]
-        except Exception:
-            logger.warning("Couldn't fetch ddragon version; icon link may be stale.")
- 
+        profile = {}
+        known = player_collection.find_one({"puuid": puuid}, {"level": 1, "icon": 1}) if puuid else None
+        if not puuid:
+            puuid = self.get_user_puuid(display_name, tag, region)
+        if not (known and known.get("level") and known.get("icon")):
+            # fetch summoner details (platform region for this endpoint is the platform short code, not routing)
+            summoner_data = self.fetch_summoner_by_puuid(puuid, region.upper())
+            profile_icon_id = summoner_data.get("profileIconId")
+
+            # fetch latest ddragon version safely (failure here shouldn't break registration)
+            version = None
+            try:
+                version = requests.get("https://ddragon.leagueoflegends.com/api/versions.json", timeout=10).json()[0]
+            except Exception:
+                logger.warning("Couldn't fetch ddragon version; icon link may be stale.")
+            profile = {
+                "level": summoner_data.get("summonerLevel"),
+                "icon": f"https://ddragon.leagueoflegends.com/cdn/{version}/img/profileicon/{profile_icon_id}.png" if version else None,
+            }
+
         player_update = {
             "$set": {
                 "displayName": display_name,
                 "tag": tag,
                 "puuid": puuid,
-                "level": level,
-                "icon": f"https://ddragon.leagueoflegends.com/cdn/{version}/img/profileicon/{profile_icon_id}.png" if version else None,
+                **profile,
                 "status": "counting",
                 "region": region,
                 # Reset on every registration (not just first insert) so a
@@ -280,11 +290,16 @@ def main():
     if region not in PLATFORMS:
         logger.error("Unknown region %r", region)
         sys.exit(2)
+    # Optional 4th argument: the puuid the API already looked up. It goes into Riot URLs.
+    known_puuid = sys.argv[4].strip() if len(sys.argv) > 4 else ""
+    if known_puuid and not PUUID_RE.fullmatch(known_puuid):
+        logger.error("Malformed puuid %r", known_puuid)
+        sys.exit(2)
  
     p = Producer(RIOT_API_KEY)
     puuid = None
     try:
-        puuid = p.register_player(username, tag, region)
+        puuid = p.register_player(username, tag, region, known_puuid or None)
         p.create_pending_matches(puuid, region)
     except Exception as e:
         logger.exception("Error adding user: %s", e)

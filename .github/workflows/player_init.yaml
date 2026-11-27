@@ -15,6 +15,10 @@ on:
         description: 'The region of the player'
         required: true
         default: ''
+      puuid:
+        description: "The player's puuid, when the API already looked it up (skips Riot calls)"
+        required: false
+        default: ''
 
 run-name: "Adding ${{ inputs.region }} user: ${{ inputs.displayName }}#${{ inputs.tag }}"
 
@@ -50,4 +54,5 @@ jobs:
             DISPLAY_NAME: ${{ github.event.inputs.displayName }}
             TAG: ${{ github.event.inputs.tag }}
             REGION: ${{ github.event.inputs.region }}
-        run: python backend/actions/user_producer.py "$DISPLAY_NAME" "$TAG" "$REGION"
+            PUUID: ${{ github.event.inputs.puuid }}
+        run: python backend/actions/user_producer.py "$DISPLAY_NAME" "$TAG" "$REGION" "$PUUID"
