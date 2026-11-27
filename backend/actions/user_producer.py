@@ -270,7 +270,8 @@ def main():
         logger.error("Usage: python producer.py <displayName> <tag> <region>")
         sys.exit(2)
  
-    username, tag, region = sys.argv[1], sys.argv[2], sys.argv[3]
+    # Uppercase like the API does: the consumer's per-region threads match platform codes exactly.
+    username, tag, region = sys.argv[1], sys.argv[2], sys.argv[3].strip().upper()
  
     p = Producer(RIOT_API_KEY)
     puuid = None

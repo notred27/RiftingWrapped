@@ -36,6 +36,15 @@ def test_every_platform_has_exactly_one_runner():
             assert len(owners) == 1, (p, owners)
 
 
+def test_a_failing_region_stops_every_region():
+    c = match_consumer.Consumer("key", "europe")
+    with mock.patch.object(c, "process_next_match", side_effect=Exception("db blip")), \
+         mock.patch.object(c, "record_run") as record:
+        c.run()
+    assert match_consumer.stop.is_set() and record.call_count == 1
+    match_consumer.stop.clear()
+
+
 def test_main_runs_one_thread_per_region_and_housekeeping_once():
     ran = []
     with mock.patch.object(match_consumer.Consumer, "run",

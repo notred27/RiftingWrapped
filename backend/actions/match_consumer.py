@@ -281,6 +281,9 @@ class Consumer:
 
         except Exception:
             logger.exception("Unhandled exception in consumer.run()")
+            # End the whole job so the next run restarts every region, instead of
+            # the other threads keeping it alive for hours with this region idle.
+            stop.set()
         finally:
             self.num_processed = num_processed
             self.record_run(run_started_at, num_processed, busy_seconds)
