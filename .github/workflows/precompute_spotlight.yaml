@@ -1,4 +1,4 @@
-name: Precompute Spotlight Players
+name: Precompute Spotlight Players and Leaderboards
 
 on:
   schedule:
@@ -36,3 +36,10 @@ jobs:
           MONGO_URI: ${{ secrets.MONGO_URI }}
           WRAP_YEAR: ${{ vars.WRAP_YEAR }}
         run: python backend/actions/precompute_spotlight.py
+
+      - name: Rebuild leaderboard cache
+        if: ${{ !cancelled() }}     # independent of the spotlight step
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          WRAP_YEAR: ${{ vars.WRAP_YEAR }}
+        run: python backend/actions/precompute_leaderboards.py

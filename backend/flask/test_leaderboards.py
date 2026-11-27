@@ -3,6 +3,8 @@ from unittest import mock
 
 with mock.patch("requests.get", side_effect=Exception("offline")):   # app fetches ddragon on import
     import app as api
+import leaderboards
+from datetime import timedelta
 
 
 def row(puuid, games, wins, kills=0, deaths=0, assists=0, seconds=0):
@@ -23,9 +25,14 @@ PLAYERS = [{"puuid": p, "displayName": p.title(), "tag": "NA1", "region": "na1",
 def build(period="week"):
     fake_players = mock.Mock()
     fake_players.find.return_value = PLAYERS
-    with mock.patch.object(api, "_leaderboard_totals", return_value=[dict(r) for r in ROWS]), \
-         mock.patch.object(api, "player_collection", fake_players):
-        return api._build_leaderboards(period, 2026)
+    with mock.patch.object(leaderboards, "leaderboard_totals", return_value=[dict(r) for r in ROWS]):
+        return leaderboards.build_leaderboards({"tracked-players": fake_players}, period, 2026)
+
+
+def cache_db(payload):
+    cache = mock.Mock()
+    cache.find_one.return_value = {"payload": payload} if payload else None
+    return {leaderboards.CACHE_COLLECTION: cache}
 
 
 def test_counts_rank_everyone_and_skip_deleted_players():
@@ -45,6 +52,26 @@ def test_week_starts_monday_utc():
     data = build()
     assert data["start"].endswith("T00:00:00+00:00")
     assert api.datetime.fromisoformat(data["start"]).weekday() == 0
+
+
+def test_precomputed_board_is_used_until_stale():
+    fresh = build()
+    hours3 = timedelta(hours=3)
+    assert leaderboards.cached_leaderboards(cache_db(fresh), "week", 2026, hours3) == fresh
+    assert leaderboards.cached_leaderboards(cache_db(None), "week", 2026, hours3) is None
+
+    old = dict(fresh, updatedAt=(api.datetime.fromisoformat(fresh["updatedAt"]) - timedelta(hours=4)).isoformat())
+    assert leaderboards.cached_leaderboards(cache_db(old), "week", 2026, hours3) is None      # job stopped
+
+    last_week = dict(fresh, end=fresh["start"])
+    assert leaderboards.cached_leaderboards(cache_db(last_week), "week", 2026, hours3) is None  # new week began
+
+
+def test_endpoint_serves_precomputed_without_scanning():
+    with mock.patch.object(api, "cached_leaderboards", return_value={"boards": {}, "period": "week"}), \
+         mock.patch.object(api, "build_leaderboards", side_effect=AssertionError("should not rebuild")):
+        res = api.app.test_client().get("/leaderboards?period=week")
+    assert res.status_code == 200 and res.get_json()["period"] == "week"
 
 
 if __name__ == "__main__":

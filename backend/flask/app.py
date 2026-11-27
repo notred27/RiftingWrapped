@@ -20,6 +20,7 @@ from math import ceil, floor
 from collections import OrderedDict
 
 from share_image import render_share_image
+from leaderboards import BOARD_MIN_GAMES, LEADERBOARD_MIN_GAMES, build_leaderboards, cached_leaderboards
 
 app = Flask(__name__, template_folder='./templates')
 CORS(app)
@@ -1249,94 +1250,13 @@ def get_spotlight_players():
 # Leaderboards
 # ----------------------------------------------------------------------------
 # Top tracked players for this week (Monday to Sunday, UTC, since the board is
-# the same for everyone) or a whole wrap year. Every request would scan the
-# match collection, so one result per (period, year) is kept in memory.
+# the same for everyone) or a whole wrap year. Building one scans the match
+# collection, so the hourly precompute job (backend/actions/precompute_leaderboards.py)
+# stores them in leaderboard-cache. If that copy is missing or stale (job down,
+# new week, an older year) the board is built here and kept in memory.
 LEADERBOARD_CACHE_SECONDS = int(os.getenv("LEADERBOARD_CACHE_SECONDS", "600"))
-LEADERBOARD_SIZE = 10
-# Rates need enough games to mean something; a 1-0 week isn't a 100% win rate.
-LEADERBOARD_MIN_GAMES = {"week": 10, "year": 100}
+LEADERBOARD_PRECOMPUTED_MAX_AGE = timedelta(hours=3)    # job runs hourly; allow a couple of misses
 _leaderboard_cache = {}           # (period, year) -> (built_at, payload)
-
-
-def _leaderboard_totals(start: datetime, end: datetime, puuids=None) -> list:
-    """
-    Per-player totals for finished games in [start, end), across wrap-year
-    collections. With `puuids`, only those players, each listed even with no games.
-    """
-    empty = {"games": 0, "wins": 0, "seconds": 0, "kills": 0, "deaths": 0, "assists": 0}
-    totals = {} if puuids is None else {p: dict(empty) for p in puuids}
-    match = {"stats": {"$exists": True}}
-    if puuids is not None:
-        match["puuid"] = {"$in": list(puuids)}
-    last = (end - timedelta(microseconds=1)).year
-    for year in range(start.year, last + 1):
-        for r in get_matches_collection(year).aggregate([
-            {"$match": match},
-            {"$addFields": {"gameDate": {"$toDate": "$matchInfo.gameCreated"}}},
-            {"$match": {"gameDate": {"$gte": start, "$lt": end}}},
-            {"$group": {
-                "_id": "$puuid",
-                "games": {"$sum": 1},
-                "wins": {"$sum": {"$cond": ["$stats.win", 1, 0]}},
-                "seconds": {"$sum": "$matchInfo.gameDuration"},
-                "kills": {"$sum": "$stats.kills"},
-                "deaths": {"$sum": "$stats.deaths"},
-                "assists": {"$sum": "$stats.assists"},
-            }},
-        ], allowDiskUse=True):
-            t = totals.setdefault(r["_id"], dict(empty))
-            for field in t:
-                t[field] += r.get(field) or 0
-    return [{"puuid": puuid, **t} for puuid, t in totals.items()]
-
-
-def _build_leaderboards(period: str, year: int, puuids=None) -> dict:
-    """The public boards, or with `puuids` a friends board that ranks every member."""
-    if period == "week":
-        now = datetime.now(timezone.utc)
-        start = (now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
-        end = start + timedelta(weeks=1)
-    else:
-        start = datetime(year, 1, 1, tzinfo=timezone.utc)
-        end = datetime(year + 1, 1, 1, tzinfo=timezone.utc)
-
-    rows = _leaderboard_totals(start, end, puuids)
-    for r in rows:
-        r["hours"] = round(r["seconds"] / 3600, 1)
-        r["winRate"] = round(r["wins"] / r["games"] * 100, 1) if r["games"] else 0
-        r["kda"] = round((r["kills"] + r["assists"]) / max(1, r["deaths"]), 2)
-
-    min_games = (BOARD_MIN_GAMES if puuids is not None else LEADERBOARD_MIN_GAMES)[period]
-    qualified = [r for r in rows if r["games"] >= min_games]
-    boards = {
-        "games": sorted(rows, key=lambda r: -r["games"]),
-        "hours": sorted(rows, key=lambda r: -r["seconds"]),
-        "kills": sorted(rows, key=lambda r: -r["kills"]),
-        "winRate": sorted(qualified, key=lambda r: (-r["winRate"], -r["games"])),
-        "kda": sorted(qualified, key=lambda r: (-r["kda"], -r["games"])),
-    }
-    if puuids is None:
-        boards = {name: board[:LEADERBOARD_SIZE] for name, board in boards.items()}
-
-    puuids = {r["puuid"] for board in boards.values() for r in board}
-    players = {p["puuid"]: p for p in player_collection.find(
-        {"puuid": {"$in": list(puuids)}},
-        {"_id": 0, "puuid": 1, "displayName": 1, "tag": 1, "region": 1, "icon": 1},
-    )}
-    for name, board in boards.items():
-        boards[name] = [
-            {**players[r["puuid"]], **{k: r[k] for k in ("games", "wins", "hours", "kills", "winRate", "kda")}}
-            for r in board if r["puuid"] in players       # skip players deleted since their games were stored
-        ]
-
-    return {
-        "period": period,
-        "start": start.isoformat(),
-        "end": end.isoformat(),
-        "minGames": min_games,
-        "updatedAt": datetime.now(timezone.utc).isoformat(),
-        "boards": boards,
-    }
 
 
 @app.route('/leaderboards', methods=['GET'])
@@ -1350,12 +1270,16 @@ def get_leaderboards():
         abort(400, description="`period` must be `week` or `year`")
     year = require_year_param() if period == "year" else WRAP_YEAR
 
+    precomputed = cached_leaderboards(db, period, year, LEADERBOARD_PRECOMPUTED_MAX_AGE)
+    if precomputed:
+        return jsonify(precomputed)
+
     key = (period, year)
     cached = _leaderboard_cache.get(key)
     if cached and time.time() - cached[0] < LEADERBOARD_CACHE_SECONDS:
         return jsonify(cached[1])
 
-    payload = _build_leaderboards(period, year)
+    payload = build_leaderboards(db, period, year)
     _leaderboard_cache[key] = (time.time(), payload)
     return jsonify(payload)
 
@@ -1366,12 +1290,13 @@ def get_leaderboards():
 # A board is just a list of members: {_id, members: [puuid], created_at,
 # last_viewed_at}. The id is the invite link, and anyone who has it can join
 # as any tracked player (no accounts yet, so no removing or moderation).
-# Stats are worked out on each view from the members' matches.
+# Stats are worked out from the members' matches, cached a few minutes per board.
 board_collection = db["boards"]
 BOARD_MAX_MEMBERS = 50
-BOARD_MIN_GAMES = {"week": 3, "year": 20}     # friends play less than the public top 10
 BOARD_RETENTION = timedelta(days=180)         # boards nobody opens for this long are deleted
 BOARD_ID_RE = re.compile(r"^[A-Za-z0-9_-]{8}$")
+BOARD_CACHE_SECONDS = int(os.getenv("BOARD_CACHE_SECONDS", "300"))
+_board_cache = {}                 # (board_id, period, year) -> (built_at, response); cleared on join
 _board_indexes_ready = False
 
 
@@ -1419,15 +1344,27 @@ def get_board(board_id):
     if period not in BOARD_MIN_GAMES:
         abort(400, description="`period` must be `week` or `year`")
     year = require_year_param() if period == "year" else WRAP_YEAR
+    key = (board_id, period, year)
+    cached = _board_cache.get(key)
+    if cached and time.time() - cached[0] < BOARD_CACHE_SECONDS:
+        return jsonify(cached[1])
+
     board = _board_or_404(board_id)
-    board_collection.update_one({"_id": board_id}, {"$set": {"last_viewed_at": datetime.now(timezone.utc)}})
+    # Only refresh once a day: it just keeps the board from expiring, and a write per view adds up.
+    now = datetime.now(timezone.utc)
+    board_collection.update_one({"_id": board_id, "last_viewed_at": {"$lt": now - timedelta(days=1)}},
+                                {"$set": {"last_viewed_at": now}})
 
     members = list(player_collection.find(
         {"puuid": {"$in": board["members"]}},
         {"_id": 0, "puuid": 1, "displayName": 1, "tag": 1, "region": 1, "icon": 1},
     ))
-    payload = _build_leaderboards(period, year, [m["puuid"] for m in members])
-    return jsonify({"id": board_id, "maxMembers": BOARD_MAX_MEMBERS, "members": members, **payload})
+    payload = build_leaderboards(db, period, year, [m["puuid"] for m in members])
+    response = {"id": board_id, "maxMembers": BOARD_MAX_MEMBERS, "members": members, **payload}
+    if len(_board_cache) > 1000:      # shortcut: wholesale clear, fine at this traffic; use an LRU if boards grow
+        _board_cache.clear()
+    _board_cache[key] = (time.time(), response)
+    return jsonify(response)
 
 
 @app.route('/boards/<board_id>/join', methods=['POST'])
@@ -1445,6 +1382,8 @@ def join_board(board_id):
     )
     if result.matched_count == 0:
         return jsonify({"error": "Conflict", "message": f"This board is full ({BOARD_MAX_MEMBERS} players)."}), 409
+    for key in [k for k in _board_cache if k[0] == board_id]:
+        del _board_cache[key]
     return jsonify({"joined": True}), 200
 
 
