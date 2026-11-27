@@ -10,14 +10,9 @@ import match_consumer
 
 def claimed_filter(routing):
     coll = mock.Mock()
-    with mock.patch.object(match_consumer, "CONSUMER_ROUTING", routing), \
-         mock.patch.object(match_consumer, "matches_collection", coll):
-        match_consumer.Consumer.process_next_match(None)
+    with mock.patch.object(match_consumer, "matches_collection", coll):
+        match_consumer.Consumer("key", routing).process_next_match()
     return coll.find_one_and_update.call_args.args[0]
-
-
-def test_unset_routing_claims_everything():
-    assert claimed_filter(None) == {"status": "pending"}
 
 
 def test_europe_claims_only_european_platforms():
@@ -39,6 +34,19 @@ def test_every_platform_has_exactly_one_runner():
                       if p in claimed_filter(r)["region"].get("$in", [])
                       or ("$nin" in claimed_filter(r)["region"] and p not in claimed_filter(r)["region"]["$nin"])]
             assert len(owners) == 1, (p, owners)
+
+
+def test_main_runs_one_thread_per_region_and_housekeeping_once():
+    ran = []
+    with mock.patch.object(match_consumer.Consumer, "run",
+                           lambda self, refresh_boards=False: ran.append((self.routing, refresh_boards))), \
+         mock.patch.object(match_consumer.Consumer, "recover_stuck_work") as recover, \
+         mock.patch.object(match_consumer, "send_ready_emails") as emails, \
+         mock.patch.dict(os.environ, {"GITHUB_OUTPUT": os.devnull}):
+        match_consumer.main()
+    assert sorted(r for r, _ in ran) == sorted(match_consumer.MATCH_ROUTING)
+    assert [r for r, boards in ran if boards] == ["americas"]   # leaderboards refreshed by one thread only
+    assert recover.call_count == 1 and emails.call_count == 1
 
 
 if __name__ == "__main__":

@@ -5,18 +5,14 @@ on:
     - cron: '*/10 * * * *'
   workflow_dispatch: {}
 
+concurrency:
+  group: match-scraper
+  cancel-in-progress: false
+
+  
 jobs:
   run-script:
     runs-on: ubuntu-latest
-    # Riot rate-limits each match-v5 routing region separately, so each one
-    # gets its own consumer. americas also does the shared housekeeping.
-    strategy:
-      fail-fast: false
-      matrix:
-        routing: [americas, europe, sea, asia]
-    concurrency:
-      group: match-scraper-${{ matrix.routing }}
-      cancel-in-progress: false
     # GitHub only starts the */10 schedule every few hours in practice, so each
     # run works through the queue for up to ~4 hours instead of 20 minutes.
     timeout-minutes: 245
@@ -46,7 +42,6 @@ jobs:
             MONGO_URI: ${{ secrets.MONGO_URI }}
             WRAP_YEAR: ${{ vars.WRAP_YEAR }}
             MAX_RUN_SECONDS: '14100'
-            CONSUMER_ROUTING: ${{ matrix.routing }}
             # "Your Wrapped is ready" emails (backend/actions/notify.py). Optional:
             # without RESEND_API_KEY, sign-ups wait and nothing is sent.
             RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
