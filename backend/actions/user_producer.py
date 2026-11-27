@@ -67,6 +67,8 @@ class Producer:
                 [("puuid", ASCENDING), ("matchId", ASCENDING)],
                 unique=True, name="unique_puuid_matchId", background=True,
             )
+            # The leaderboards' date range: the weekly board reads one week of matches.
+            matches_collection.create_index([("matchInfo.gameCreated", ASCENDING)], name="game_created")
             # Serves the consumer's "next match" query and the API's queue
             # position: pending matches in QUEUE_SORT order (match_doc.py).
             # Partial: only queued matches, not the hundreds of thousands done.
