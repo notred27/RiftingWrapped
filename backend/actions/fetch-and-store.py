@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import DuplicateKeyError
 
-from match_doc import build_match_fields, build_match_update, add_to_player_grid, player_locations_name, riot_id_update
+from match_doc import needs_timeline, build_match_fields, build_match_update, add_to_player_grid, player_locations_name, riot_id_update
 from scrape_window import compute_cutoff
 from riot import RiotSession, get_routing_region, PLATFORMS
 
@@ -218,7 +218,7 @@ if __name__ == "__main__":
 
                 try:
                     match_data = get_match_data(match_id, region)
-                    timeline_data = get_timeline_data(match_id, region)
+                    timeline_data = get_timeline_data(match_id, region) if needs_timeline(match_data) else {}
 
                     store_match(match_data, timeline_data)
 

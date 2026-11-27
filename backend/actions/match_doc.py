@@ -146,6 +146,11 @@ def extract_match_stats(match_data: dict, participant: dict) -> dict:
     }
 
 
+def needs_timeline(match_data: dict) -> bool:
+    """The timeline is only used for kill/death positions, kept for Rift games only: skip the call otherwise."""
+    return match_data.get("info", {}).get("queueId") in SUMMONERS_RIFT_QUEUES
+
+
 def get_kill_death_positions(timeline_data: dict, participant_id: int, queue_id: int) -> dict:
     """Map coordinates of this player's kills and deaths (Rift queues only)."""
     if queue_id not in SUMMONERS_RIFT_QUEUES:

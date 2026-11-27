@@ -12,7 +12,7 @@ from pymongo import MongoClient, ReturnDocument
 
 from match_doc import (
     build_match_fields, build_match_update, add_to_player_grid, player_locations_name,
-    QUEUE_SORT, PRIORITY_NEW_PLAYER,
+    QUEUE_SORT, PRIORITY_NEW_PLAYER, needs_timeline,
 )
 from notify import send_ready_emails
 from precompute_leaderboards import refresh_leaderboards
@@ -191,7 +191,9 @@ class Consumer:
                 raise ValueError(f"Unknown region {region!r}")   # never put it in a host name with the key
             R = get_routing_region(region)
             match_data = self.rs.safe_request("GET", f"https://{R}.api.riotgames.com/lol/match/v5/matches/{match_id}")
-            timeline_data = self.rs.safe_request("GET", f"https://{R}.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline")
+            timeline_data = {}
+            if needs_timeline(match_data):
+                timeline_data = self.rs.safe_request("GET", f"https://{R}.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline")
 
             # Same document shape as the hourly scraper writes (match_doc.py);
             # drops the queue-only fields now that the match is done.

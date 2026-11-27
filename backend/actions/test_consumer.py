@@ -48,6 +48,23 @@ def test_unknown_region_fails_the_match_without_calling_riot():
     assert matches.update_one.call_args.args[1]["$set"]["status"] == "failed"
 
 
+def test_timeline_is_only_fetched_for_rift_games():
+    def match(queue):
+        return {"info": {"queueId": queue, "gameCreation": 1, "gameDuration": 1, "teams": [],
+                         "participants": [{"puuid": "p", "participantId": 1, "teamId": 100}]}}
+    for queue, calls in ((450, 1), (420, 2)):                    # ARAM, ranked solo
+        c = match_consumer.Consumer("key", "americas")
+        matches = mock.Mock()
+        matches.count_documents.return_value = 1
+        matches.update_one.return_value = mock.Mock(matched_count=0)
+        with mock.patch.object(match_consumer, "matches_collection", matches), \
+             mock.patch.object(match_consumer, "player_collection", mock.Mock()), \
+             mock.patch.object(c.rs, "safe_request", side_effect=[match(queue), {}]) as riot:
+            c.process_match({"_id": 1, "matchId": "NA1_1", "puuid": "p", "region": "NA1"})
+        assert riot.call_count == calls, (queue, riot.call_count)
+        assert matches.update_one.call_args.args[1]["$set"]["status"] == "done"
+
+
 def test_a_failing_region_stops_every_region():
     c = match_consumer.Consumer("key", "europe")
     with mock.patch.object(c, "process_next_match", side_effect=Exception("db blip")), \
