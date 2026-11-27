@@ -29,10 +29,11 @@ from pymongo.errors import DuplicateKeyError
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "flask"))
 from stat_fields import shorten  # noqa: E402  (stored stat names, shared with the API)
 
-def riot_id_update(match_data: dict, participant: dict):
+def riot_id_update(match_data: dict, participant: dict, ddragon_version=None):
     """
-    (filter, update) that saves a tracked player's Riot ID as it was in this
-    match, or None if the match doesn't carry one. Matches can arrive out of
+    (filter, update) that saves a tracked player's Riot ID, level and profile
+    icon as they were in this match, or None if the match doesn't carry a Riot
+    ID. (Matches carry level and icon, so the scraper needs no summoner call.) Matches can arrive out of
     order (a catch-up run goes newest first), so a name only replaces one seen
     in a later game or set at sign-up: the `name_seen_at` check stops an old
     match from undoing a rename.
@@ -42,9 +43,14 @@ def riot_id_update(match_data: dict, participant: dict):
     if not (name and tag and created):
         return None
     seen_at = datetime.fromtimestamp(created / 1000, timezone.utc)
+    fields = {"displayName": name, "tag": tag, "name_seen_at": seen_at}
+    if participant.get("summonerLevel"):
+        fields["level"] = participant["summonerLevel"]
+    if ddragon_version and participant.get("profileIcon") is not None:
+        fields["icon"] = f"https://ddragon.leagueoflegends.com/cdn/{ddragon_version}/img/profileicon/{participant['profileIcon']}.png"
     return (
         {"puuid": participant["puuid"], "$or": [{"name_seen_at": {"$lt": seen_at}}, {"name_seen_at": {"$exists": False}}]},
-        {"$set": {"displayName": name, "tag": tag, "name_seen_at": seen_at}},
+        {"$set": fields},
     )
 
 

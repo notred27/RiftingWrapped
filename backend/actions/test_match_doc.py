@@ -38,6 +38,12 @@ def test_riot_id_update_only_replaces_older_names():
     assert riot_id_update(match, {"puuid": "P1", "riotIdGameName": "", "riotIdTagline": "oaks"}) is None
     assert riot_id_update({"info": {}}, {"puuid": "P1", "riotIdGameName": "jar", "riotIdTagline": "oaks"}) is None
 
+    # Level and icon come along, under the same newer-match guard.
+    _, update = riot_id_update(match, {"puuid": "P1", "riotIdGameName": "jar", "riotIdTagline": "oaks",
+                                       "summonerLevel": 312, "profileIcon": 29}, "15.1.1")
+    assert update["$set"]["level"] == 312
+    assert update["$set"]["icon"] == "https://ddragon.leagueoflegends.com/cdn/15.1.1/img/profileicon/29.png"
+
 
 MATCH = {"info": {"queueId": 450, "gameCreation": 1_764_000_000_000, "gameDuration": 1200,
                   "teams": [{"teamId": 100, "objectives": {"baron": {"kills": 1}, "dragon": {"kills": 2}}}],

@@ -72,6 +72,7 @@ puuid_region = {p["puuid"]: p.get("region", "NA1") for p in tracked_players}
 
 
 newest_names = {}   # puuid -> riot_id_update() from the player's newest match this run
+ddragon_version = None   # for profile icon links; set at start of the run
 
 
 def match_id_exists(match_id, puuid):
@@ -107,9 +108,9 @@ def store_match(match_data, timeline_data):
         if puuid not in tracked_puuids:
             continue
 
-        # Riot IDs can change; recent matches carry the current one. Keep only
-        # each player's newest this run and save them all once at the end.
-        name_update = riot_id_update(match_data, player)
+        # Riot IDs, levels and icons change; recent matches carry the current
+        # ones. Keep only each player's newest this run and save them at the end.
+        name_update = riot_id_update(match_data, player, ddragon_version)
         if name_update and (puuid not in newest_names
                             or name_update[1]["$set"]["name_seen_at"] > newest_names[puuid][1]["$set"]["name_seen_at"]):
             newest_names[puuid] = name_update
@@ -159,9 +160,8 @@ if __name__ == "__main__":
                 datetime.fromtimestamp(cutoffDate, timezone.utc).isoformat(),
                 _last_run["started_at"].isoformat() if _last_run else "never")
 
-    version = None
     try:
-        version = requests.get("https://ddragon.leagueoflegends.com/api/versions.json", timeout=10).json()[0]
+        ddragon_version = requests.get("https://ddragon.leagueoflegends.com/api/versions.json", timeout=10).json()[0]
     except Exception:
         logger.warning("Couldn't fetch ddragon version; icon links won't be updated this run.")
 
@@ -175,23 +175,6 @@ if __name__ == "__main__":
             continue
         offset = 0
         count = 100
-
-        try:
-            summoner_data = rs.safe_request(
-                "GET", f"https://{region.upper()}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{user_puuid}")
-
-            level = summoner_data.get("summonerLevel")
-            profile_icon_id = summoner_data.get("profileIconId")
-
-            update_fields = {"level": level}
-            if version:
-                update_fields["icon"] = f"https://ddragon.leagueoflegends.com/cdn/{version}/img/profileicon/{profile_icon_id}.png"
-
-            player_collection.update_one({"puuid": user_puuid}, {"$set": update_fields})
-            logger.info("Updated %s: level %s, icon %s", user_puuid, level, profile_icon_id)
-
-        except requests.exceptions.RequestException as e:
-            logger.warning("Failed to update %s: %s", user_puuid, e)
 
         while True:
             try:
@@ -232,10 +215,11 @@ if __name__ == "__main__":
 
             offset += count
 
-    # One write per player who played, so players don't have to search again after renaming.
+    # One write per player who played: their Riot ID (so they don't have to
+    # search again after renaming), level and icon, all from their newest match.
     for name_update in newest_names.values():
         player_collection.update_one(*name_update)
-    logger.info("Refreshed Riot IDs for %d players", len(newest_names))
+    logger.info("Refreshed Riot IDs, levels and icons for %d players", len(newest_names))
 
     # Recorded only when every player was scanned and every match stored, so a
     # crash, a skipped player or a failed download (e.g. a Riot 503) makes the
