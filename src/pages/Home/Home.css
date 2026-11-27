@@ -559,7 +559,9 @@ iframe {
 /* ---------- Layout B: search on the left, this week's top players on the right ---------- */
 .hero-main {
     position: relative;
-    z-index: var(--z-raised);
+    /* Above .marquee-section (also --z-raised, later in the page), so the
+       search autocomplete dropdown opens over the player cards. */
+    z-index: calc(var(--z-raised) + 1);
     width: 100%;
     display: flex;
     flex-wrap: wrap;
