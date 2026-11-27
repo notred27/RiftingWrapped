@@ -2,7 +2,7 @@
 import os
 from unittest import mock
 
-os.environ.setdefault("REACT_APP_API_KEY", "test")
+os.environ.setdefault("RIOT_API_KEY", "test")
 os.environ.setdefault("MONGO_URI", "mongodb://localhost:1")   # MongoClient connects lazily; never used
 
 import match_consumer

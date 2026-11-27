@@ -15,7 +15,7 @@ from riot import RiotSession, get_routing_region, PLATFORMS
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
-RIOT_API_KEY = os.getenv("REACT_APP_API_KEY")
+RIOT_API_KEY = os.getenv("RIOT_API_KEY")
 MONGO_URI = os.getenv("MONGO_URI")
 
 WRAP_YEAR = int(os.getenv("WRAP_YEAR", "2026"))
@@ -43,7 +43,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 logger = logging.getLogger("sync")
 
 if not RIOT_API_KEY:
-    logger.error("REACT_APP_API_KEY is not set. Check your .env file.")
+    logger.error("RIOT_API_KEY is not set. Check your .env file.")
     raise SystemExit(1)
 
 if not MONGO_URI:

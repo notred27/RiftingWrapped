@@ -42,7 +42,7 @@ jobs:
 
       - name: Run initialization script
         env:
-            REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
+            RIOT_API_KEY: ${{ secrets.RIOT_API_KEY || secrets.REACT_APP_API_KEY }}   # delete the old secret once RIOT_API_KEY is set
             MONGO_URI: ${{ secrets.MONGO_URI }}
             WRAP_YEAR: ${{ vars.WRAP_YEAR }}
             # Inputs come from user sign-ups: pass them as env vars, never

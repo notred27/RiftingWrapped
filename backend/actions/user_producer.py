@@ -16,7 +16,7 @@ from pymongo.errors import BulkWriteError
  
 load_dotenv(Path(__file__).resolve().parent / ".env")
  
-RIOT_API_KEY = os.getenv("REACT_APP_API_KEY")
+RIOT_API_KEY = os.getenv("RIOT_API_KEY")
 MONGO_URI = os.getenv("MONGO_URI")
 
 
