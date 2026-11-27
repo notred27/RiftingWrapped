@@ -14,6 +14,7 @@ from match_doc import (
     QUEUE_SORT, PRIORITY_NEW_PLAYER,
 )
 from notify import send_ready_emails
+from precompute_leaderboards import refresh_leaderboards
 from riot import RiotSession, get_routing_region
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
@@ -37,6 +38,9 @@ STALE_PROCESSING_SECONDS = int(os.getenv("STALE_PROCESSING_SECONDS", str(30 * 60
 # The producer moves a sign-up out of "starting" within a minute or two of the
 # API dispatching it; one still there after this never got a working run.
 STALE_STARTING_SECONDS = int(os.getenv("STALE_STARTING_SECONDS", str(60 * 60)))
+# The precompute workflow's hourly schedule really runs every 6-11 hours, so
+# the consumer (running ~4 hours at a time) refreshes the leaderboard cache too.
+LEADERBOARD_REFRESH_SECONDS = 60 * 60
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("consumer")
@@ -235,8 +239,16 @@ class Consumer:
         # matches) and emails that failed to send last run.
         send_ready_emails(db)
 
+        last_leaderboard_refresh = 0.0
         try:
             while True:
+                if time.time() - last_leaderboard_refresh >= LEADERBOARD_REFRESH_SECONDS:
+                    last_leaderboard_refresh = time.time()
+                    try:
+                        refresh_leaderboards(db, WRAP_YEAR)
+                    except Exception:
+                        logger.exception("Leaderboard refresh failed; continuing")   # never stop the queue for it
+
                 elapsed = time.time() - start_time
                 if elapsed >= MAX_RUN_SECONDS:
                     logger.info("Max run time reached (%.1fs). Stopping.", elapsed)

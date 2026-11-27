@@ -37,6 +37,20 @@ def test_riot_rate_limit_is_retried_once():
     assert r.status_code == 201 and get.call_count == 3
 
 
+def test_signup_starts_the_producer_and_the_consumer():
+    with mock.patch.object(api.requests, "post", return_value=resp(204)) as gh:
+        players = mock.Mock(find_one=mock.Mock(return_value=None),
+                            update_one=mock.Mock(return_value=mock.Mock(upserted_id="new", matched_count=0, modified_count=0)))
+        with mock.patch.object(api, "player_collection", players), \
+             mock.patch.object(api.requests, "get", side_effect=[ACCOUNT, SUMMONER]), \
+             mock.patch.dict(os.environ, {"RIOT_API_KEY": "k"}):
+            assert api.app.test_client().post("/users", data={"displayName": "faker", "tag": "kr1", "region": "KR"}).status_code == 201
+    urls = [c.args[0] for c in gh.call_args_list]
+    assert urls[0].endswith("/player_init.yaml/dispatches") and urls[1].endswith("/match_consumer.yaml/dispatches")
+    assert gh.call_args_list[0].kwargs["json"]["inputs"]["displayName"] == "Faker"
+    assert "inputs" not in gh.call_args_list[1].kwargs["json"]
+
+
 def test_persistent_rate_limit_is_a_503_not_a_502():
     r, _, _ = post([resp(429), resp(429)])
     assert r.status_code == 503

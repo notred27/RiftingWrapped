@@ -13,6 +13,7 @@ from pymongo.errors import PyMongoError
 from werkzeug.exceptions import HTTPException
 import os
 import re
+import threading
 import time
 from urllib.parse import quote
 from datetime import datetime, timedelta, timezone
@@ -429,6 +430,23 @@ def riot_error(r, what):
         return jsonify({"error": "Service Unavailable", "message": "Riot's servers are busy right now. Please try again in a minute."}), 503
     return jsonify({"error": "Bad Gateway", "message": "Riot API encountered an error"}), 502
 
+def _dispatch_workflow(workflow: str, inputs=None) -> bool:
+    """Start a GitHub Actions workflow on master. True if GitHub accepted it."""
+    try:
+        resp = requests.post(
+            f"https://api.github.com/repos/notred27/RiftingWrapped/actions/workflows/{workflow}/dispatches",
+            headers={"Accept": "application/vnd.github+json", "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}"},
+            json={"ref": "master", **({"inputs": inputs} if inputs else {})},
+            timeout=GITHUB_TIMEOUT,
+        )
+    except requests.RequestException:
+        logger.exception("Failed to trigger %s", workflow)
+        return False
+    if resp.status_code != 204:
+        logger.error("Failed to trigger %s: %s %s", workflow, resp.status_code, resp.text[:200])
+    return resp.status_code == 204
+
+
 @app.route('/users', methods=['POST'])
 @limiter.limit(
     SIGNUP_RATE_LIMIT,
@@ -541,26 +559,13 @@ def add_by_display_name():
 
     result = player_collection.update_one({"puuid": puuid}, user_doc, upsert=True)
 
-    triggered = False
-    try:
-        GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-        url = "https://api.github.com/repos/notred27/RiftingWrapped/actions/workflows/player_init.yaml/dispatches"
-        headers = {
-            "Accept": "application/vnd.github+json",
-            "Authorization": f"Bearer {GITHUB_TOKEN}"
-        }
-        payload = {
-            "ref": "master",
-            "inputs": {"displayName": displayName, "tag": tag, "region": region}
-        }
-        gh_resp = requests.post(url, headers=headers, json=payload, timeout=GITHUB_TIMEOUT)
-        triggered = gh_resp.status_code == 204
-        if triggered:
-            logger.info("GitHub Action triggered for %s#%s in %s", displayName, tag, region)
-        else:
-            logger.error("Failed to trigger workflow: %s %s", gh_resp.status_code, gh_resp.text[:200])
-    except requests.RequestException:
-        logger.exception("Failed to trigger GitHub Action")
+    triggered = _dispatch_workflow("player_init.yaml", {"displayName": displayName, "tag": tag, "region": region})
+    if triggered:
+        logger.info("GitHub Action triggered for %s#%s in %s", displayName, tag, region)
+        # GitHub runs the consumer's */10 schedule only every few hours, leaving
+        # gaps where nothing processes the queue. Start one now; if a run is
+        # already going, its concurrency group just queues one more behind it.
+        _dispatch_workflow("match_consumer.yaml")
 
     if not triggered:
         # Nothing ever picks up a "starting" player, so keeping the record would
@@ -1126,6 +1131,9 @@ PUBLIC_API_URL = os.getenv("PUBLIC_API_URL", "https://riftingwrapped.onrender.co
 SHARE_IMAGE_CACHE_SECONDS = 60 * 60
 SHARE_IMAGE_CACHE_SIZE = 100
 _share_image_cache = OrderedDict()   # (puuid, year) -> (built_at, jpeg bytes)
+# gunicorn runs threads (Procfile): OrderedDict reordering and share_image.py's splash
+# cache aren't safe to change from two threads at once, so renders take turns.
+_share_image_lock = threading.Lock()
 
 
 def _share_stats(puuid: str, year_param: int):
@@ -1170,18 +1178,19 @@ def share_image(puuid):
     year_param = require_year_param()
     key = (puuid, year_param)
 
-    cached = _share_image_cache.get(key)
-    if cached and time.time() - cached[0] < SHARE_IMAGE_CACHE_SECONDS:
-        image = cached[1]
-    else:
-        stats = _share_stats(puuid, year_param)
-        if stats is None:
-            abort(404, description="User not found")
-        image = render_share_image(stats, year_param)
-        _share_image_cache[key] = (time.time(), image)
-        _share_image_cache.move_to_end(key)
-        while len(_share_image_cache) > SHARE_IMAGE_CACHE_SIZE:
-            _share_image_cache.popitem(last=False)
+    with _share_image_lock:
+        cached = _share_image_cache.get(key)
+        if cached and time.time() - cached[0] < SHARE_IMAGE_CACHE_SECONDS:
+            image = cached[1]
+        else:
+            stats = _share_stats(puuid, year_param)
+            if stats is None:
+                abort(404, description="User not found")
+            image = render_share_image(stats, year_param)
+            _share_image_cache[key] = (time.time(), image)
+            _share_image_cache.move_to_end(key)
+            while len(_share_image_cache) > SHARE_IMAGE_CACHE_SIZE:
+                _share_image_cache.popitem(last=False)
 
     resp = Response(image, mimetype="image/jpeg")
     resp.headers["Cache-Control"] = f"public, max-age={SHARE_IMAGE_CACHE_SECONDS}"
@@ -1267,11 +1276,12 @@ def get_spotlight_players():
 # ----------------------------------------------------------------------------
 # Top tracked players for this week (Monday to Sunday, UTC, since the board is
 # the same for everyone) or a whole wrap year. Building one scans the match
-# collection, so the hourly precompute job (backend/actions/precompute_leaderboards.py)
-# stores them in leaderboard-cache. If that copy is missing or stale (job down,
-# new week, an older year) the board is built here and kept in memory.
+# collection, so backend/actions/precompute_leaderboards.py stores them in
+# leaderboard-cache (hourly from the match consumer, and the precompute
+# workflow). If that copy is missing or stale (jobs down, new week, an older
+# year) the board is built here and kept in memory.
 LEADERBOARD_CACHE_SECONDS = int(os.getenv("LEADERBOARD_CACHE_SECONDS", "600"))
-LEADERBOARD_PRECOMPUTED_MAX_AGE = timedelta(hours=3)    # job runs hourly; allow a couple of misses
+LEADERBOARD_PRECOMPUTED_MAX_AGE = timedelta(hours=6)    # refreshed hourly while the consumer runs; covers its gaps
 _leaderboard_cache = {}           # (period, year) -> (built_at, payload)
 
 
@@ -1398,8 +1408,8 @@ def join_board(board_id):
     )
     if result.matched_count == 0:
         return jsonify({"error": "Conflict", "message": f"This board is full ({BOARD_MAX_MEMBERS} players)."}), 409
-    for key in [k for k in _board_cache if k[0] == board_id]:
-        del _board_cache[key]
+    for key in [k for k in list(_board_cache) if k[0] == board_id]:     # list(): other threads may add keys
+        _board_cache.pop(key, None)
     return jsonify({"joined": True}), 200
 
 
